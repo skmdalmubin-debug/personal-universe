@@ -1,5 +1,4 @@
-:root{--bg:#fff;--fg:#1d1d1f;--mut:#86868b;--line:#e8e8ed;--soft:#f5f5f7}
-@media(prefers-color-scheme:dark){:root{--bg:#000;--fg:#f5f5f7;--mut:#86868b;--line:#2a2a2d;--soft:#111}}
+:root{color-scheme:light;--bg:#fff;--fg:#1d1d1f;--mut:#86868b;--line:#e8e8ed;--soft:#f5f5f7}
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--fg);font:400 17px/1.6 -apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
