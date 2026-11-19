@@ -5,20 +5,17 @@
 <link rel="stylesheet" href="style.css">
 </head><body><div class="wrap" id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js"></script>
+<script src="config.js"></script><script src="common.js"></script>
 <script>
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const app = document.getElementById("app");
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const T = (n, k) => ({ n, k });
 const PUB = [["published", "Published", "bool"], ["sort_order", "Order (small number first)", "number"]];
 const S = {
   profile: { label: "Intro", single: true, title: "name", fields: [["name", "Name", "text"], ["tagline", "Tagline", "text"], ["bio", "Bio", "area"], ["photo_url", "Photo", "image"], ["email", "Email", "text"]] },
-  travel: { label: "Travel", title: "title", fields: [["title", "Title", "text"], ["location", "Place", "text"], ["country", "Country", "text"], ["visited_on", "Date", "date"], ["description", "Description", "area"], ["cover_url", "Cover photo", "image"], ...PUB] },
-  collections: { label: "Collection", title: "title", fields: [["title", "Title", "text"], ["category", "Category", "text"], ["description", "Description", "area"], ["image_url", "Photo", "image"], ...PUB] },
-  journal: { label: "Journal", title: "title", fields: [["title", "Title", "text"], ["written_on", "Date", "date"], ["body", "Entry", "area"], ["cover_url", "Cover photo", "image"], ["published", "Published", "bool"]] },
-  achievements: { label: "Achievements", title: "title", fields: [["title", "Title", "text"], ["achieved_on", "Date", "date"], ["description", "Description", "area"], ["image_url", "Photo", "image"], ...PUB] },
-  memories: { label: "Memories", title: "title", fields: [["title", "Title", "text"], ["memory_date", "Date", "date"], ["description", "Description", "area"], ["image_url", "Photo", "image"], ...PUB] }
+  travel: { label: "Travel", title: "title", fields: [["title", "Title", "text"], ["location", "Place", "text"], ["country", "Country", "text"], ["visited_on", "Date", "date"], ["description", "Description", "area"], ["cover_url", "Cover photo", "image"], ["images", "More photos", "gallery"], ...PUB] },
+  collections: { label: "Collection", title: "title", fields: [["title", "Title", "text"], ["category", "Category", "text"], ["description", "Description", "area"], ["image_url", "Cover photo", "image"], ["images", "More photos", "gallery"], ...PUB] },
+  journal: { label: "Journal", title: "title", fields: [["title", "Title", "text"], ["written_on", "Date", "date"], ["body", "Entry", "area"], ["cover_url", "Cover photo", "image"], ["images", "More photos", "gallery"], ["published", "Published", "bool"]] },
+  achievements: { label: "Achievements", title: "title", fields: [["title", "Title", "text"], ["achieved_on", "Date", "date"], ["description", "Description", "area"], ["image_url", "Cover photo", "image"], ["images", "More photos", "gallery"], ...PUB] },
+  memories: { label: "Memories", title: "title", fields: [["title", "Title", "text"], ["memory_date", "Date", "date"], ["description", "Description", "area"], ["image_url", "Cover photo", "image"], ["images", "More photos", "gallery"], ...PUB] }
 };
 let tab = "profile";
 
@@ -67,7 +64,13 @@ async function list() {
   });
 }
 
+let gal = {};
+function drawGal(k) {
+  const el = document.getElementById("g-" + k); el.innerHTML = "";
+  gal[k].forEach((u, i) => { const d = document.createElement("div"); d.innerHTML = `<img src="${esc(u)}"><b>×</b>`; d.querySelector("b").onclick = () => { gal[k].splice(i, 1); drawGal(k); }; el.appendChild(d); });
+}
 async function form(row) {
+  gal = {};
   const s = S[tab], main = document.getElementById("main");
   if (row === null) { const { data } = await sb.from("profile").select("*").eq("id", 1).maybeSingle(); row = data || { id: 1 }; }
   main.innerHTML = s.fields.map(([k, l, t]) => {
@@ -75,9 +78,22 @@ async function form(row) {
     if (t === "area") return `<label>${l}</label><textarea data-k="${k}">${esc(v)}</textarea>`;
     if (t === "bool") return `<label class="chk"><input type="checkbox" data-k="${k}" ${v === false ? "" : "checked"}> ${l}</label>`;
     if (t === "image") return `<label>${l}</label><input type="file" accept="image/*" data-up="${k}"><input type="hidden" data-k="${k}" value="${esc(v)}">${v ? `<img class="pv" src="${esc(v)}">` : ""}`;
+    if (t === "gallery") { gal[k] = [...(v || [])]; return `<label>${l}</label><input type="file" accept="image/*" multiple data-gup="${k}"><div class="thumbs" id="g-${k}"></div>`; }
     return `<label>${l}</label><input data-k="${k}" type="${t}" value="${esc(v)}">`;
   }).join("") + `<div class="actions"><button class="pri" id="save">Save</button>${s.single ? "" : '<button id="cancel">Cancel</button>'}</div><p class="msg" id="m"></p>`;
   if (!s.single) cancel.onclick = list;
+  Object.keys(gal).forEach(drawGal);
+  main.querySelectorAll("[data-gup]").forEach(inp => inp.onchange = async () => {
+    const k = inp.dataset.gup;
+    for (const f of inp.files) {
+      m.textContent = "Uploading " + f.name + "…";
+      const path = `${tab}/${Date.now()}-${f.name.replace(/[^\w.\-]/g, "_")}`;
+      const { error } = await sb.storage.from("media").upload(path, f);
+      if (error) { m.textContent = error.message; return; }
+      gal[k].push(sb.storage.from("media").getPublicUrl(path).data.publicUrl); drawGal(k);
+    }
+    inp.value = ""; m.textContent = "Photos ready. Press Save.";
+  });
   main.querySelectorAll("[data-up]").forEach(inp => inp.onchange = async () => {
     const f = inp.files[0]; if (!f) return;
     m.textContent = "Uploading…";
@@ -94,6 +110,7 @@ async function form(row) {
       const k = e.dataset.k, t = s.fields.find(f => f[0] === k)[2];
       o[k] = t === "bool" ? e.checked : t === "number" ? (e.value === "" ? 0 : +e.value) : (e.value === "" && t !== "text" && t !== "area" ? null : e.value);
     });
+    s.fields.filter(f => f[2] === "gallery").forEach(f => o[f[0]] = gal[f[0]]);
     if (s.single) o.id = 1;
     else if (row.id) o.id = row.id;
     o.title === "" && (m.textContent = "Title is required.");

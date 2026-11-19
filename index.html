@@ -4,47 +4,39 @@
 <title>Al Mubin</title><meta name="description" content="The personal digital world of Al Mubin.">
 <link rel="stylesheet" href="style.css">
 </head><body>
-<nav><a href="#travel">Travel</a><a href="#collection">Collection</a><a href="#journal">Journal</a><a href="#achievements">Achievements</a><a href="#memories">Memories</a></nav>
+<nav><a href="#travel">Travel</a><a href="#collections">Collection</a><a href="#journal">Journal</a><a href="#achievements">Achievements</a><a href="#memories">Memories</a></nav>
 <header class="hero" id="hero"></header>
-<section id="travel"><h2>Travel</h2><div class="grid" id="c-travel"></div></section>
-<section id="collection"><h2>Collection</h2><div class="grid" id="c-collections"></div></section>
-<section id="journal"><h2>Journal</h2><div class="list" id="c-journal"></div></section>
-<section id="achievements"><h2>Achievements</h2><div class="list" id="c-achievements"></div></section>
-<section id="memories"><h2>Memories</h2><div class="grid" id="c-memories"></div></section>
+<main id="main"></main>
 <footer id="foot"></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js"></script>
+<script src="config.js"></script><script src="common.js"></script>
 <script>
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const fmt = d => d ? new Date(d).toLocaleDateString("en-GB",{year:"numeric",month:"long",day:"numeric"}) : "";
-const img = u => u ? `<img src="${esc(u)}" alt="" loading="lazy">` : "";
-const empty = '<p class="empty">Coming soon.</p>';
-const card = (t, meta, d, u) => `<article class="card">${img(u)}<h3>${esc(t)}</h3><div class="meta">${esc(meta)}</div><p>${esc(d)}</p></article>`;
-const row = (t, meta, d) => `<div class="row"><h3>${esc(t)}</h3><div class="meta">${esc(meta)}</div>${d ? `<p>${esc(d)}</p>` : ""}</div>`;
-const R = {
-  travel: { order: ["sort_order", "visited_on"], f: r => card(r.title, [r.location, r.country].filter(Boolean).join(", ") + (r.visited_on ? " · " + fmt(r.visited_on) : ""), r.description, r.cover_url) },
-  collections: { order: ["sort_order", "created_at"], f: r => card(r.title, r.category, r.description, r.image_url) },
-  journal: { order: ["written_on"], f: r => row(r.title, fmt(r.written_on), r.body) },
-  achievements: { order: ["sort_order", "achieved_on"], f: r => row(r.title, fmt(r.achieved_on), r.description) },
-  memories: { order: ["sort_order", "memory_date"], f: r => card(r.title, fmt(r.memory_date), r.description, r.image_url) }
-};
+const main = document.getElementById("main");
+Object.entries(MAP).forEach(([t, c]) => main.insertAdjacentHTML("beforeend", `<section id="${t}"><h2>${c.label}</h2><div id="c-${t}"></div></section>`));
+function mag(t, r, i, off) {
+  const c = MAP[t], img = r[c.cover] || (r.images && r.images[0]);
+  const flip = (i + off) % 2 === 1, txt = (r[c.text] || "").trim();
+  return `<a class="mag${flip ? " flip" : ""}" href="detail.html?t=${t}&id=${esc(r.id)}">
+    <div class="pic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
+    <div class="txt"><div class="meta">${esc(c.meta(r))}</div><h3>${esc(r.title)}</h3>${txt ? `<p>${esc(txt)}</p>` : ""}<span class="more">View details ›</span></div></a>`;
+}
 (async () => {
   const { data: p } = await sb.from("profile").select("*").eq("id", 1).maybeSingle();
   const name = p?.name || "Al Mubin";
   document.title = name;
   document.getElementById("hero").innerHTML = `${p?.photo_url ? `<img src="${esc(p.photo_url)}" alt="">` : ""}<h1>${esc(name)}</h1><p class="tag">${esc(p?.tagline)}</p>${p?.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}`;
   document.getElementById("foot").textContent = `© ${new Date().getFullYear()} ${name}`;
-  for (const [t, c] of Object.entries(R)) {
-    const el = document.getElementById("c-" + t);
+  let off = 0;
+  for (const [t, c] of Object.entries(MAP)) {
+    const el = document.getElementById("c-" + t), o = off++ % 2;
     try {
       let q = sb.from(t).select("*").eq("published", true);
-      c.order.forEach((o, i) => q = q.order(o, { ascending: t === "journal" ? false : i === 0 ? true : false, nullsFirst: false }));
+      c.order.forEach((k, i) => q = q.order(k, { ascending: t !== "journal" && i === 0, nullsFirst: false }));
       const { data, error } = await q;
       if (error) throw error;
-      el.innerHTML = data.length ? data.map(c.f).join("") : empty;
-    } catch (e) { el.innerHTML = empty; }
+      el.innerHTML = data.length ? data.map((r, i) => mag(t, r, i, o)).join("") : '<p class="empty">Coming soon.</p>';
+    } catch (e) { el.innerHTML = '<p class="empty">Coming soon.</p>'; }
   }
+  if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
 })();
-</script>
-</body></html>
+</script></body></html>
