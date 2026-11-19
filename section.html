@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Al Mubin</title><link rel="stylesheet" href="style.css">
+</head><body>
+<section id="s"><p class="empty">Loading…</p></section>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script><script src="common.js"></script>
+<script>
+const t = new URLSearchParams(location.search).get("t"), s = document.getElementById("s");
+(async () => {
+  await loadProfile();
+  if (!MAP[t]) { s.innerHTML = '<a class="back" href="index.html">‹ Back</a><p class="empty">Not found.</p>'; return; }
+  document.title = MAP[t].label;
+  const { data, error } = await query(t);
+  s.innerHTML = `<a class="back" href="index.html#${t}">‹ Home</a><h2>${MAP[t].label}</h2>` +
+    (error || !data.length ? '<p class="empty">Coming soon.</p>' : data.map((r, i) => mag(t, r, i, 0)).join(""));
+})();
+</script></body></html>

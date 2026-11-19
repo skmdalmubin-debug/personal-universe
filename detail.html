@@ -4,23 +4,28 @@
 <title>Al Mubin</title><link rel="stylesheet" href="style.css">
 </head><body>
 <div class="dwrap" id="d"><p class="empty">Loading…</p></div>
-<div class="lb" id="lb"><img id="lbi" alt=""></div>
+<div class="lb" id="lb"><img id="lbi" alt=""><p id="lbp"></p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script><script src="common.js"></script>
 <script>
 const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("id"), d = document.getElementById("d");
+const lb = document.getElementById("lb"), lbi = document.getElementById("lbi"), lbp = document.getElementById("lbp");
 lb.onclick = () => lb.classList.remove("on");
+const open = (src, cap) => { lbi.src = src; lbp.textContent = cap || ""; lb.classList.add("on"); };
 (async () => {
-  if (!MAP[t] || !id) { d.innerHTML = '<a class="back" href="index.html">‹ Back</a><p class="empty">Not found.</p>'; return; }
+  await loadProfile();
+  const nf = '<a class="back" href="index.html">‹ Back</a><p class="empty">Not found.</p>';
+  if (!MAP[t] || !id) { d.innerHTML = nf; return; }
   const { data: r } = await sb.from(t).select("*").eq("id", id).maybeSingle();
-  if (!r) { d.innerHTML = '<a class="back" href="index.html">‹ Back</a><p class="empty">Not found.</p>'; return; }
-  const c = MAP[t], cover = r[c.cover], all = [...new Set([cover, ...(r.images || [])].filter(Boolean))];
+  if (!r) { d.innerHTML = nf; return; }
+  const c = MAP[t], cover = r[c.cover], imgs = (r.images || []).filter(i => i && i.url);
   document.title = r.title;
-  d.innerHTML = `<a class="back" href="index.html#${t}">‹ ${esc(c.label)}</a>
+  d.innerHTML = `<a class="back" href="section.html?t=${t}">‹ ${esc(c.label)}</a>
     <div class="meta">${esc(c.meta(r))}</div><h1 class="dt">${esc(r.title)}</h1>
     ${cover ? `<img class="dcover" src="${esc(cover)}" alt="">` : ""}
     <p class="dtext">${esc(r[c.text])}</p>
-    ${all.length > 1 ? `<div class="gal">${all.map(u => `<img src="${esc(u)}" alt="" loading="lazy">`).join("")}</div>` : ""}`;
-  d.querySelectorAll("img").forEach(i => i.onclick = () => { lbi.src = i.src; lb.classList.add("on"); });
+    ${imgs.length ? `<div class="gal">${imgs.map((i, n) => `<figure><img data-n="${n}" src="${esc(i.url)}" alt="" loading="lazy">${i.caption ? `<figcaption>${esc(i.caption)}</figcaption>` : ""}</figure>`).join("")}</div>` : ""}`;
+  d.querySelector(".dcover")?.addEventListener("click", e => open(e.target.src, ""));
+  d.querySelectorAll(".gal img").forEach(i => i.onclick = () => open(i.src, imgs[+i.dataset.n].caption));
 })();
 </script></body></html>

@@ -4,7 +4,7 @@
 <title>Al Mubin</title><meta name="description" content="The personal digital world of Al Mubin.">
 <link rel="stylesheet" href="style.css">
 </head><body>
-<nav><a href="#travel">Travel</a><a href="#collections">Collection</a><a href="#journal">Journal</a><a href="#achievements">Achievements</a><a href="#memories">Memories</a></nav>
+<nav><a href="#travel">Travel</a><a href="#collections">Collection</a><a href="#journal">Journal</a><a href="#achievements">Achievements</a><a href="#memories">Memories</a><a href="#contact">Contact</a></nav>
 <header class="hero" id="hero"></header>
 <main id="main"></main>
 <footer id="foot"></footer>
@@ -13,28 +13,48 @@
 <script>
 const main = document.getElementById("main");
 Object.entries(MAP).forEach(([t, c]) => main.insertAdjacentHTML("beforeend", `<section id="${t}"><h2>${c.label}</h2><div id="c-${t}"></div></section>`));
-function mag(t, r, i, off) {
-  const c = MAP[t], img = r[c.cover] || (r.images && r.images[0]);
-  const flip = (i + off) % 2 === 1, txt = (r[c.text] || "").trim();
-  return `<a class="mag${flip ? " flip" : ""}" href="detail.html?t=${t}&id=${esc(r.id)}">
-    <div class="pic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
-    <div class="txt"><div class="meta">${esc(c.meta(r))}</div><h3>${esc(r.title)}</h3>${txt ? `<p>${esc(txt)}</p>` : ""}<span class="more">View details ›</span></div></a>`;
+main.insertAdjacentHTML("beforeend", '<section id="contact"><h2>Contact</h2><div class="contact" id="contact-box"></div></section>');
+
+function contactView(p) {
+  const wa = /^\+?[\d\s-]{6,}$/.test(p.whatsapp || "") ? "https://wa.me/" + p.whatsapp.replace(/\D/g, "") : safeUrl(p.whatsapp);
+  const rows = [
+    ["Email", p.email, p.email ? "mailto:" + p.email : ""], ["Phone", p.phone, p.phone ? "tel:" + p.phone.replace(/\s/g, "") : ""],
+    ["Address", p.address, ""], ["WhatsApp", p.whatsapp && "Message me", wa], ["Instagram", p.instagram && "Instagram", safeUrl(p.instagram)],
+    ["Facebook", p.facebook && "Facebook", safeUrl(p.facebook)], ["LinkedIn", p.linkedin && "LinkedIn", safeUrl(p.linkedin)]
+  ].filter(r => r[1]);
+  document.getElementById("contact-box").innerHTML = `<div><h3>Get in touch</h3><ul>${rows.map(([l, v, h]) => `<li><span>${l}</span>${h ? `<a href="${esc(h)}" target="_blank" rel="noopener">${esc(v)}</a>` : esc(v)}</li>`).join("") || '<li class="empty">Coming soon.</li>'}</ul></div>
+  <form id="cf"><h3>Send a message</h3>
+    <input name="name" placeholder="Your name" maxlength="100" required style="margin-bottom:12px">
+    <input name="email" type="email" placeholder="Your email" maxlength="200" required style="margin-bottom:12px">
+    <textarea name="message" placeholder="Message" maxlength="2000" required></textarea>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off">
+    <div class="actions"><button class="pri" type="submit">Send</button></div><p class="msg" id="cm"></p></form>`;
+  document.getElementById("cf").onsubmit = async e => {
+    e.preventDefault(); const f = e.target;
+    if (f.website.value) return;
+    const { error } = await sb.from("messages").insert({ name: f.name.value.trim(), email: f.email.value.trim(), message: f.message.value.trim() });
+    document.getElementById("cm").textContent = error ? "Could not send. Please try again." : "Thank you! Your message has been sent.";
+    if (!error) f.reset();
+  };
 }
+
 (async () => {
-  const { data: p } = await sb.from("profile").select("*").eq("id", 1).maybeSingle();
-  const name = p?.name || "Al Mubin";
+  const p = await loadProfile(), name = p.name || "Al Mubin", hero = document.getElementById("hero");
   document.title = name;
-  document.getElementById("hero").innerHTML = `${p?.photo_url ? `<img src="${esc(p.photo_url)}" alt="">` : ""}<h1>${esc(name)}</h1><p class="tag">${esc(p?.tagline)}</p>${p?.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}`;
+  const bg = safeUrl(p.hero_url) || safeUrl(p.photo_url);
+  hero.className = "hero" + (bg ? "" : " noimg");
+  hero.innerHTML = `${bg ? `<img src="${esc(bg)}" alt="">` : ""}<h1>${esc(name)}</h1>${p.tagline ? `<p class="tag">${esc(p.tagline)}</p>` : ""}${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}`;
   document.getElementById("foot").textContent = `© ${new Date().getFullYear()} ${name}`;
+  contactView(p);
   let off = 0;
   for (const [t, c] of Object.entries(MAP)) {
     const el = document.getElementById("c-" + t), o = off++ % 2;
     try {
-      let q = sb.from(t).select("*").eq("published", true);
-      c.order.forEach((k, i) => q = q.order(k, { ascending: t !== "journal" && i === 0, nullsFirst: false }));
-      const { data, error } = await q;
+      const { data, error } = await query(t).limit(3);
       if (error) throw error;
-      el.innerHTML = data.length ? data.map((r, i) => mag(t, r, i, o)).join("") : '<p class="empty">Coming soon.</p>';
+      el.innerHTML = data.length
+        ? data.slice(0, 2).map((r, i) => mag(t, r, i, o)).join("") + (data.length > 2 ? mag(t, data[2], 2, o, true) + `<a class="seemore" href="section.html?t=${t}">See more ›</a>` : "")
+        : '<p class="empty">Coming soon.</p>';
     } catch (e) { el.innerHTML = '<p class="empty">Coming soon.</p>'; }
   }
   if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
