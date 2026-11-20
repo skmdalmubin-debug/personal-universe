@@ -224,3 +224,27 @@ function startStrip(el, speed) {
   const step = t => { if (last && !hold) { x -= v * Math.min(.05, (t - last) / 1000); if (x <= -one) x += one; tr.style.transform = `translateX(${x}px)`; } last = t; requestAnimationFrame(step); };
   requestAnimationFrame(step);
 }
+
+/* about section (summary on home, full on about.html) */
+function bioHtml(p, hs, full) {
+  const b = p.about_bio || "", docs = (p.about_docs || []).some(d => d && d.url);
+  if (!b && (full || !docs)) return "";
+  const w = b.match(/\S+\s*/g) || [], long = !full && w.length > 200;
+  const more = !full && (long || docs) ? ' <a href="about.html" class="bm">See more…</a>' : "";
+  return `<div class="bio"${sty(hs["about.bio"])}>${esc(long ? w.slice(0, 200).join("").trim() + "…" : b)}${more}</div>`;
+}
+function aboutView(p, full) {
+  const hs = p.styles || {}, docs = (p.about_docs || []).filter(d => d && d.url);
+  if (!(p.about_pic || p.about_headline || p.about_bio || p.about_facts || docs.length)) return "";
+  const facts = (p.about_facts || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const i = l.includes("|") ? l.indexOf("|") : l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; });
+  const h = Math.min(100, Math.max(50, +p.about_height || 60)), rad = Math.min(80, Math.max(0, Number.isFinite(+p.about_radius) ? +p.about_radius : 24));
+  const v = ["start", "center", "end"].includes(p.about_valign) ? p.about_valign : "center", pic = safeUrl(p.about_pic);
+  return `<section id="about"><div class="ab${p.about_side === "right" ? " right" : ""}">
+    ${pic ? `<div class="abpic" style="--abh:${h}vh;--abr:${rad}px;--abv:${v}"><img class="zoom" src="${esc(pic)}" alt=""></div>` : ""}
+    <div><div class="eyebrow"${sty(hs["about.title"])}>${esc(p.about_title || "About me")}</div>
+      ${p.about_headline ? `<h3${sty(hs["about.headline"])}>${esc(p.about_headline)}</h3>` : ""}
+      ${bioHtml(p, hs, full)}
+      ${facts.length ? `<dl class="facts"${sty(hs["about.facts"])}>${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}</div></div>
+    ${full && docs.length ? `<div class="docs"><h3${sty(hs["about.docs_title"])}>${esc(p.about_docs_title || "Licenses & Credentials")}</h3><div class="dgrid">${docs.map((d, n) => `<figure><img data-n="${n}" src="${esc(d.url)}" alt="" loading="lazy">${d.caption ? `<figcaption${sty(d.style)}>${esc(d.caption)}</figcaption>` : ""}</figure>`).join("")}</div></div>` : ""}</section>`;
+}
+

@@ -401,9 +401,33 @@ function startStrip(el, speed) {
   requestAnimationFrame(step);
 }
 
+/* about section (summary on home, full on about.html) */
+function bioHtml(p, hs, full) {
+  const b = p.about_bio || "", docs = (p.about_docs || []).some(d => d && d.url);
+  if (!b && (full || !docs)) return "";
+  const w = b.match(/\S+\s*/g) || [], long = !full && w.length > 200;
+  const more = !full && (long || docs) ? ' <a href="about.html" class="bm">See more…</a>' : "";
+  return `<div class="bio"${sty(hs["about.bio"])}>${esc(long ? w.slice(0, 200).join("").trim() + "…" : b)}${more}</div>`;
+}
+function aboutView(p, full) {
+  const hs = p.styles || {}, docs = (p.about_docs || []).filter(d => d && d.url);
+  if (!(p.about_pic || p.about_headline || p.about_bio || p.about_facts || docs.length)) return "";
+  const facts = (p.about_facts || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const i = l.includes("|") ? l.indexOf("|") : l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; });
+  const h = Math.min(100, Math.max(50, +p.about_height || 60)), rad = Math.min(80, Math.max(0, Number.isFinite(+p.about_radius) ? +p.about_radius : 24));
+  const v = ["start", "center", "end"].includes(p.about_valign) ? p.about_valign : "center", pic = safeUrl(p.about_pic);
+  return `<section id="about"><div class="ab${p.about_side === "right" ? " right" : ""}">
+    ${pic ? `<div class="abpic" style="--abh:${h}vh;--abr:${rad}px;--abv:${v}"><img class="zoom" src="${esc(pic)}" alt=""></div>` : ""}
+    <div><div class="eyebrow"${sty(hs["about.title"])}>${esc(p.about_title || "About me")}</div>
+      ${p.about_headline ? `<h3${sty(hs["about.headline"])}>${esc(p.about_headline)}</h3>` : ""}
+      ${bioHtml(p, hs, full)}
+      ${facts.length ? `<dl class="facts"${sty(hs["about.facts"])}>${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}</div></div>
+    ${full && docs.length ? `<div class="docs"><h3${sty(hs["about.docs_title"])}>${esc(p.about_docs_title || "Licenses & Credentials")}</h3><div class="dgrid">${docs.map((d, n) => `<figure><img data-n="${n}" src="${esc(d.url)}" alt="" loading="lazy">${d.caption ? `<figcaption${sty(d.style)}>${esc(d.caption)}</figcaption>` : ""}</figure>`).join("")}</div></div>` : ""}</section>`;
+}
+
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v9 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v10 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Sub photos (as many as you like). Each has its own description and text style", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -521,7 +545,10 @@ function orderView() {
 let gbSub = "pending";
 async function gbAdmin() {
   const main = $("main");
-  main.innerHTML = `<div class="tabs">${[["pending", "Pending approval"], ["approved", "Published pages"], ["design", "Cover design"]].map(([k, l]) => `<button data-g="${k}" class="${gbSub === k ? "on" : ""}">${l}</button>`).join("")}</div><div id="gbm"></div>`;
+  const { data: all, error: e0 } = await sb.from("guestbook").select("*").order("created_at");
+  if (e0) { main.textContent = e0.message; return; }
+  const cnt = s => all.filter(r => r.status === s).length;
+  main.innerHTML = `<div class="tabs">${[["pending", `Pending (${cnt("pending")})`], ["approved", `Published (${cnt("approved")})`], ["design", "Cover design"]].map(([k, l]) => `<button data-g="${k}" class="${gbSub === k ? "on" : ""}">${l}</button>`).join("")}</div><div id="gbm"></div>`;
   main.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { gbSub = b.dataset.g; gbAdmin(); });
   const box = $("gbm");
   if (gbSub === "design") {
@@ -532,14 +559,13 @@ async function gbAdmin() {
     $("gs").onclick = async () => { const o = {}; box.querySelectorAll("[data-c]").forEach(e => o[e.dataset.c] = e.value); const { error } = await sb.from("sections").update({ config: o }).eq("key", "guestbook"); $("m").textContent = error ? error.message : "Saved."; await loadReg(); };
     return;
   }
-  const { data, error } = await sb.from("guestbook").select("*").eq("status", gbSub).order("created_at", { ascending: gbSub === "approved" });
-  if (error) { box.textContent = error.message; return; }
-  box.innerHTML = data.length ? "" : `<p class="msg">${gbSub === "pending" ? "No messages waiting." : "No published pages yet."}</p>`;
-  data.forEach(r => {
+  const rows = all.filter(r => r.status === gbSub).reverse();
+  box.innerHTML = rows.length ? "" : `<p class="msg">${gbSub === "pending" ? "No messages waiting." : "No published pages yet."}</p>`;
+  rows.forEach(r => {
     const d = document.createElement("div"); d.className = "msgbox";
-    d.innerHTML = `<b>${esc(r.name)}</b> <small>${esc(r.location || "")} · ${esc(new Date(r.created_at).toLocaleDateString())}</small><p>${esc(r.message)}</p><button class="pri ok">${gbSub === "pending" ? "Approve" : "Unpublish"}</button> <button class="del">Delete</button>`;
-    d.querySelector(".ok").onclick = async () => { await sb.from("guestbook").update({ status: gbSub === "pending" ? "approved" : "pending" }).eq("id", r.id); gbAdmin(); };
-    d.querySelector(".del").onclick = async () => { if (confirm("Delete this message?")) { await sb.from("guestbook").delete().eq("id", r.id); gbAdmin(); } };
+    d.innerHTML = `<b>${esc(r.name)}</b> <small>${esc(r.location || "")} · ${esc(new Date(r.created_at).toLocaleDateString())}</small><p>${esc(r.message)}</p><button class="pri ok">${gbSub === "pending" ? "Approve" : "Hold (hide from book)"}</button> <button class="del">Delete</button>`;
+    d.querySelector(".ok").onclick = async () => { const { error } = await sb.from("guestbook").update({ status: gbSub === "pending" ? "approved" : "pending" }).eq("id", r.id); if (error) alert(error.message); gbAdmin(); };
+    d.querySelector(".del").onclick = async () => { if (!confirm("Delete this message for good?")) return; const { error } = await sb.from("guestbook").delete().eq("id", r.id); if (error) alert(error.message); gbAdmin(); };
     box.appendChild(d);
   });
 }

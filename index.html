@@ -11,25 +11,6 @@
 <script src="config.js?v=4"></script><script src="common.js?v=4"></script>
 <script>
 const main = $("main");
-function bioHtml(p, hs) {
-  const b = p.about_bio || ""; if (!b) return "";
-  const w = b.match(/\S+\s*/g) || [];
-  return `<div class="bio"${sty(hs["about.bio"])}>${w.length > 200 ? `<span class="bs">${esc(w.slice(0, 200).join("").trim())}…</span><span class="bf" hidden>${esc(b)}</span> <a href="#" class="bm">See more…</a>` : esc(b)}</div>`;
-}
-function aboutView(p) {
-  const hs = p.styles || {}, docs = (p.about_docs || []).filter(d => d && d.url);
-  if (!(p.about_pic || p.about_headline || p.about_bio || p.about_facts || docs.length)) return "";
-  const facts = (p.about_facts || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const i = l.includes("|") ? l.indexOf("|") : l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; });
-  const h = Math.min(100, Math.max(50, +p.about_height || 60)), rad = Math.min(80, Math.max(0, Number.isFinite(+p.about_radius) ? +p.about_radius : 24));
-  const v = ["start", "center", "end"].includes(p.about_valign) ? p.about_valign : "center", pic = safeUrl(p.about_pic);
-  return `<section id="about"><div class="ab${p.about_side === "right" ? " right" : ""}">
-    ${pic ? `<div class="abpic" style="--abh:${h}vh;--abr:${rad}px;--abv:${v}"><img class="zoom" src="${esc(pic)}" alt=""></div>` : ""}
-    <div><div class="eyebrow"${sty(hs["about.title"])}>${esc(p.about_title || "About me")}</div>
-      ${p.about_headline ? `<h3${sty(hs["about.headline"])}>${esc(p.about_headline)}</h3>` : ""}
-      ${bioHtml(p, hs)}
-      ${facts.length ? `<dl class="facts"${sty(hs["about.facts"])}>${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}</div></div>
-    ${docs.length ? `<div class="docs"><h3${sty(hs["about.docs_title"])}>${esc(p.about_docs_title || "Licenses & Credentials")}</h3><div class="dgrid">${docs.map((d, n) => `<figure><img data-n="${n}" src="${esc(d.url)}" alt="" loading="lazy">${d.caption ? `<figcaption${sty(d.style)}>${esc(d.caption)}</figcaption>` : ""}</figure>`).join("")}</div></div>` : ""}</section>`;
-}
 function contactView(list) { $("contact-box").innerHTML = list.length ? contactCards(list) : '<p class="empty">Coming soon.</p>'; }
 const hx = (v, d) => /^#[0-9a-f]{6}$/i.test(v || "") ? v : d, pad = n => String(n).padStart(3, "0");
 async function bookView(cfg) {
@@ -67,8 +48,7 @@ async function bookView(cfg) {
   const vis = REG.filter(s => s.visible), ttl = s => (sp[s.key] && sp[s.key].title) || s.title || (MAP[s.key] && MAP[s.key].label) || s.key;
   main.innerHTML = vis.map(s => s.type === "about" ? aboutView(p) : s.type === "contact" ? '<section id="contact"><h2>Contact</h2><div class="clist" id="contact-box"></div></section>'
     : s.type === "guestbook" ? `<section id="guestbook"><h2>${esc(ttl(s))}</h2><div id="gb"></div></section>` : `<section id="${s.key}"><h2>${esc(ttl(s))}</h2><div id="c-${s.key}" class="${WRAP[s.key] || ""}"></div></section>`).join("");
-  const ab = $("about"); if (ab) { const docs = (p.about_docs || []).filter(d => d && d.url); ab.querySelector(".bm")?.addEventListener("click", e => { e.preventDefault(); const f = ab.querySelector(".bf"), s = ab.querySelector(".bs"), open = f.hidden; f.hidden = !open; s.hidden = open; e.target.textContent = open ? "See less" : "See more…"; });
-    ab.querySelectorAll(".abpic img").forEach(i => i.onclick = () => openLB(i.src, "")); ab.querySelectorAll(".dgrid img").forEach(i => i.onclick = () => openLB(i.src, (docs[+i.dataset.n] || {}).caption)); }
+  const ab = $("about"); if (ab) { const docs = (p.about_docs || []).filter(d => d && d.url); ab.querySelectorAll(".abpic img").forEach(i => i.onclick = () => openLB(i.src, "")); ab.querySelectorAll(".dgrid img").forEach(i => i.onclick = () => openLB(i.src, (docs[+i.dataset.n] || {}).caption)); }
   if ($("contact-box")) { const { data: cts } = await sb.from("contacts").select("*").eq("published", true).order("sort_order").order("created_at"); contactView(cts || []); }
   const gs = vis.find(s => s.type === "guestbook"); if (gs) bookView(gs.config || {});
   if (!IS_RELOAD && location.hash) $(location.hash.slice(1))?.scrollIntoView();

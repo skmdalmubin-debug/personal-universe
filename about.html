@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About me</title><link rel="stylesheet" href="style.css?v=4">
+</head><body>
+<div id="a"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js?v=4"></script><script src="common.js?v=4"></script>
+<script>
+(async () => {
+  const [p, sps] = await Promise.all([loadProfile(), loadSections()]), a = $("a");
+  buildNav(p, false, sps);
+  const html = aboutView(p, true);
+  a.innerHTML = html ? html.replace('<section id="about">', '<section id="about"><a class="back" href="index.html#about">‹ Home</a>') : '<div class="dwrap"><p class="empty">Not found.</p></div>';
+  const docs = (p.about_docs || []).filter(d => d && d.url);
+  a.querySelectorAll(".abpic img").forEach(i => i.onclick = () => openLB(i.src, ""));
+  a.querySelectorAll(".dgrid img").forEach(i => i.onclick = () => openLB(i.src, (docs[+i.dataset.n] || {}).caption));
+  reveal();
+})();
+</script></body></html>
