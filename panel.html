@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Admin</title>
+<style>
+:root{color-scheme:light;--bg:#fff;--fg:#1d1d1f;--mut:#86868b;--line:#e8e8ed;--soft:#f5f5f7;--r:24px;--ratio:4/5;--blue:#0066cc}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font:400 17px/1.6 -apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%}a{color:inherit}
+/* nav + logo */
+.nav{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px clamp(16px,4vw,40px);color:#fff;transition:background .3s,color .3s,box-shadow .3s}
+.nav.solid{background:rgba(255,255,255,.86);-webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);color:var(--fg);box-shadow:0 1px 0 var(--line)}
+.logo{flex:none;display:flex;align-items:center;text-decoration:none;font-weight:600;letter-spacing:-.01em;min-height:36px}
+.logo img{display:block;width:auto;max-width:42vw;object-fit:contain}
+.links{display:flex;gap:clamp(14px,2.4vw,30px);font-size:13px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;min-width:0}
+.links::-webkit-scrollbar{display:none}.links a{text-decoration:none;opacity:.8}.links a:hover{opacity:1}
+/* hero */
+.hero{position:relative;height:100vh;height:100svh;min-height:460px;display:flex;flex-direction:column;justify-content:flex-end;padding:0 clamp(20px,6vw,80px) clamp(40px,9vh,100px);color:#fff;background:#1d1d1f;overflow:hidden}
+.hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.62),rgba(0,0,0,.05) 60%,rgba(0,0,0,.22))}
+.hero>*:not(img){position:relative;z-index:1;width:100%}
+.hero.noimg{background:var(--bg);color:var(--fg);justify-content:center;text-align:center}.hero.noimg:after{display:none}
+.hero h1{font-size:clamp(46px,10vw,120px);font-weight:600;letter-spacing:-.04em;line-height:1.02}
+.hero .tag{font-size:clamp(18px,3vw,30px);margin-top:14px;opacity:.95;line-height:1.3}
+.hero .cap{font-size:clamp(14px,1.6vw,17px);margin-top:12px;opacity:.88}
+/* sections */
+section{padding:clamp(64px,11vw,120px) clamp(16px,4vw,24px) 24px;max-width:1180px;margin:0 auto;scroll-margin-top:56px}
+h2{font-size:clamp(30px,5vw,56px);font-weight:600;letter-spacing:-.03em;margin-bottom:clamp(32px,6vw,64px);line-height:1.1}
+.empty{color:var(--mut);font-size:15px}
+footer{padding:80px 24px;text-align:center;color:var(--mut);font-size:13px}
+.seemore{display:block;text-align:center;margin:-6px 0 40px;font-size:clamp(17px,2.4vw,22px);font-weight:500;color:var(--blue);text-decoration:none}
+/* magazine zig-zag (same proportions on phone and desktop) */
+.mag,.sub{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(16px,5vw,72px);align-items:center;text-decoration:none}
+.mag{margin-bottom:clamp(44px,9vw,110px)}
+.sub{margin:clamp(36px,8vw,100px) 0}
+.mag.flip .pic,.sub.flip .pic{order:2}
+.pic{aspect-ratio:var(--ratio);border-radius:var(--r);overflow:hidden;background:var(--soft)}
+.pic img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .8s ease;cursor:zoom-in}
+.mag .pic img{cursor:pointer}.mag:hover .pic img{transform:scale(1.03)}
+.mag .meta,.dintro .meta{font-size:clamp(10px,1.2vw,13px);letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.mag h3{font-size:clamp(20px,4vw,48px);font-weight:600;letter-spacing:-.03em;line-height:1.12;margin:clamp(6px,1vw,12px) 0 clamp(8px,1.6vw,18px)}
+.mag p,.sub .cap{color:var(--mut);font-size:clamp(13px,1.2vw + 7px,17px);white-space:pre-wrap;line-height:1.6}
+.mag p{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.sub .cap{color:var(--fg)}
+.mag .more{display:inline-block;margin-top:clamp(10px,2vw,24px);font-size:clamp(12px,1.4vw,15px);color:var(--blue)}
+.mag.peek{max-height:clamp(200px,34vw,300px);overflow:hidden;margin-bottom:0;-webkit-mask-image:linear-gradient(#000 15%,transparent 92%);mask-image:linear-gradient(#000 15%,transparent 92%)}
+.mag.peek .pic,.mag.peek .txt{filter:blur(5px)}
+/* collection grid */
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(24px,4vw,48px) clamp(14px,2.4vw,28px)}
+.ccard{text-decoration:none;display:block}
+.cpic{aspect-ratio:var(--ratio);border-radius:var(--r);overflow:hidden;background:var(--soft);margin-bottom:clamp(10px,1.6vw,18px)}
+.cpic img{width:100%;height:100%;object-fit:cover;transition:transform .7s ease}.ccard:hover .cpic img{transform:scale(1.04)}
+.chip{display:inline-block;font-size:clamp(9px,1vw,11px);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);padding:2px 9px;border-radius:980px;margin-bottom:8px}
+.ccard h3{font-size:clamp(15px,2vw,21px);font-weight:600;letter-spacing:-.015em;line-height:1.25}
+.ccard p{font-size:clamp(12px,1.2vw,15px);color:var(--mut);margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ccard.peek{max-height:clamp(220px,34vw,360px);overflow:hidden;-webkit-mask-image:linear-gradient(#000 20%,transparent 95%);mask-image:linear-gradient(#000 20%,transparent 95%)}
+.ccard.peek .cpic,.ccard.peek h3,.ccard.peek p,.ccard.peek .chip{filter:blur(5px)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:-24px 0 40px}.chips button{font-size:14px}
+@media(max-width:640px){.cgrid{grid-template-columns:repeat(2,1fr)}}
+/* journal list */
+.jlist{border-top:1px solid var(--fg)}
+.jrow{display:grid;grid-template-columns:clamp(70px,12vw,150px) 1fr clamp(56px,10vw,120px);gap:clamp(12px,3vw,32px);align-items:start;padding:clamp(20px,3.4vw,36px) 0;border-bottom:1px solid var(--line);text-decoration:none}
+.jdate{font-size:clamp(11px,1.2vw,13px);color:var(--mut);letter-spacing:.04em;padding-top:8px}
+.jmain h3{font-size:clamp(17px,3vw,34px);font-weight:600;letter-spacing:-.025em;line-height:1.2;transition:color .2s}.jrow:hover h3{color:var(--blue)}
+.jmain p{color:var(--mut);margin-top:8px;font-size:clamp(13px,1.2vw + 6px,17px);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.jmeta{display:inline-block;margin-top:10px;font-size:11px;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+.jthumb{aspect-ratio:1;border-radius:calc(var(--r)/2);overflow:hidden;background:var(--soft)}.jthumb img{width:100%;height:100%;object-fit:cover}
+.jrow.peek{max-height:clamp(120px,20vw,200px);overflow:hidden;-webkit-mask-image:linear-gradient(#000 10%,transparent 95%);mask-image:linear-gradient(#000 10%,transparent 95%)}
+.jrow.peek .jmain,.jrow.peek .jthumb{filter:blur(5px)}
+.yr{font-size:13px;letter-spacing:.1em;color:var(--mut);margin:56px 0 12px;font-weight:600}
+/* about */
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,80px);align-items:center}
+.ab.right .abpic{order:2}
+.abpic{height:var(--abh,60vh);border-radius:var(--abr,24px);overflow:hidden;background:var(--soft);align-self:var(--abv,center)}
+.abpic img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.ab .eyebrow{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.ab h3{font-size:clamp(26px,4vw,46px);font-weight:600;letter-spacing:-.03em;line-height:1.12;margin:12px 0 20px}
+.ab .bio{white-space:pre-wrap;color:var(--fg);opacity:.85}
+.facts{margin-top:28px;border-top:1px solid var(--line)}
+.facts div{display:grid;grid-template-columns:130px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+.facts dt{color:var(--mut)}.facts dd{margin:0}
+.docs{margin-top:clamp(56px,9vw,100px)}
+.docs h3{font-size:clamp(22px,3vw,32px);font-weight:600;letter-spacing:-.02em;margin-bottom:28px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(130px,22vw,220px),1fr));gap:24px 16px}
+.dgrid img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:calc(var(--r)/1.6);background:var(--soft);cursor:zoom-in;display:block}
+.dgrid figcaption{font-size:13px;color:var(--mut);margin-top:8px;white-space:pre-wrap}
+@media(max-width:700px){.ab{grid-template-columns:1fr}.ab.right .abpic{order:0}.abpic{height:min(var(--abh,60vh),115vw)}.facts div{grid-template-columns:100px 1fr}}
+/* detail / section pages */
+.chero{height:100vh;height:100svh;min-height:420px;background:var(--soft)}
+.chero img{width:100%;height:100%;object-fit:cover;display:block;max-width:none;cursor:zoom-in}
+.dwrap{max-width:1100px;margin:0 auto;padding:clamp(88px,12vw,120px) clamp(16px,4vw,24px) 120px}
+.dwrap.afterhero{padding-top:clamp(36px,6vw,64px)}
+.dintro{max-width:760px;margin:0 auto clamp(24px,4vw,48px)}
+.dintro .dt{margin:8px 0 18px}
+.dt{font-size:clamp(30px,6vw,64px);font-weight:600;letter-spacing:-.035em;line-height:1.06}
+.dtext{white-space:pre-wrap;font-size:clamp(15px,1.4vw + 8px,19px);line-height:1.75}
+.back{display:inline-block;margin-bottom:28px;font-size:15px;color:var(--blue);text-decoration:none}
+.article{max-width:700px;margin:0 auto}
+.article .dt{margin:6px 0 16px}
+.article .by{color:var(--mut);font-size:14px;margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.article .dcover{width:100%;border-radius:var(--r);margin-bottom:40px;cursor:zoom-in}
+.article .dtext{font-size:clamp(16px,1.2vw + 10px,20px);line-height:1.85}
+.article figure{margin-top:40px}.article figure img{width:100%;border-radius:var(--r);cursor:zoom-in;display:block}
+.article figcaption{font-size:14px;color:var(--mut);margin-top:10px;white-space:pre-wrap}
+.lb{position:fixed;inset:0;background:rgba(255,255,255,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:60;padding:20px}
+.lb.on{display:flex}.lb img{max-width:100%;max-height:82%;border-radius:12px}.lb p{color:var(--mut);font-size:15px;text-align:center;white-space:pre-wrap}
+/* contact */
+.contact{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(28px,6vw,64px)}
+.contact h3{font-size:clamp(22px,3vw,28px);font-weight:600;letter-spacing:-.02em;margin-bottom:20px}
+.clist{display:grid;gap:12px}
+.cc{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:18px;text-decoration:none;transition:background .2s}a.cc:hover{background:var(--soft)}
+.ci{flex:none;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center}.ci svg{width:22px;height:22px}
+.cx{min-width:0}.cx b{display:block;font-weight:600;font-size:15px}.cx small{display:block;color:var(--mut);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:700px){.contact{grid-template-columns:1fr}}
+/* forms + admin */
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 120px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+button,.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:9px 18px;border-radius:980px;cursor:pointer}
+button.on,button.pri{background:var(--fg);color:var(--bg);border-color:var(--fg)}button.del{color:#d70015}
+input,textarea,select{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg)}
+input[type=color]{height:46px;padding:4px}textarea{min-height:130px;resize:vertical}
+label{display:block;font-size:13px;color:var(--mut);margin:18px 0 6px}
+label.chk{display:flex;gap:10px;align-items:center}label.chk input{width:auto}
+.item{display:flex;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}.item b{flex:1;font-weight:500}.item small{color:var(--mut)}
+.msgbox{padding:16px 0;border-top:1px solid var(--line)}.msgbox p{white-space:pre-wrap;margin:6px 0 10px}.msgbox small{color:var(--mut)}
+.pv{width:96px;height:72px;object-fit:cover;border-radius:10px;margin-top:8px;display:block;background:var(--soft)}
+.msg{font-size:14px;margin-top:14px;color:var(--mut)}.actions{display:flex;gap:10px;margin-top:28px}
+.hint{font-size:12px;color:var(--mut);margin-top:4px}
+.gi{display:grid;grid-template-columns:72px 1fr 30px;gap:10px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.gi img{width:72px;height:54px;object-fit:cover;border-radius:10px}.gi textarea{min-height:64px;padding:9px 12px;font-size:15px}
+.gi .x{width:30px;height:30px;border-radius:50%;background:var(--fg);color:var(--bg);text-align:center;line-height:30px;cursor:pointer}.gi .gs{grid-column:1/-1}
+.sted summary{font-size:13px;color:var(--blue);cursor:pointer;margin-top:6px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin-bottom:6px}.sgrid label{margin:10px 0 4px}.sgrid input,.sgrid select{padding:9px 12px;font-size:15px}
+.sted .rs{font-size:12px;padding:5px 12px;margin-top:4px}
+.hp{position:absolute;left:-9999px}
+
+</style>
+</head><body><div class="wrap" id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js?v=4"></script><script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = d => d ? new Date(d).toLocaleDateString("en-GB",{year:"numeric",month:"long",day:"numeric"}) : "";
+const safeUrl = u => /^https?:\/\//i.test(u || "") ? u : "";
+
+/* refresh always starts from the top (hero) */
+const IS_RELOAD = ((performance.getEntriesByType("navigation")[0]) || {}).type === "reload";
+if (IS_RELOAD) {
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  scrollTo(0, 0);
+}
+
+const MAP = {
+  travel:       { label: "Travel",       text: "description", cover: "cover_url", order: ["sort_order", "visited_on"],  meta: r => [[r.location, r.country].filter(Boolean).join(", "), fmt(r.visited_on)].filter(Boolean).join(" · ") },
+  collections:  { label: "Collection",   text: "description", cover: "image_url", order: ["sort_order", "created_at"], meta: r => r.category || "" },
+  journal:      { label: "Journal",      text: "body",        cover: "cover_url", order: ["written_on"],               meta: r => fmt(r.written_on) },
+  achievements: { label: "Achievements", text: "description", cover: "image_url", order: ["sort_order", "achieved_on"], meta: r => fmt(r.achieved_on) },
+  memories:     { label: "Memories",     text: "description", cover: "image_url", order: ["sort_order", "memory_date"], meta: r => fmt(r.memory_date) }
+};
+
+/* ---------- fonts (g = group, c = css, gf = Google font, m = has bold weight) ---------- */
+const FONTS = {
+  system:{n:"System (Apple style)",g:"Basic",c:'-apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",Arial,sans-serif'},
+  inter:{n:"Inter",g:"Basic",c:'"Inter",sans-serif',gf:"Inter",m:1},
+  poppins:{n:"Poppins",g:"Basic",c:'"Poppins",sans-serif',gf:"Poppins",m:1},
+  montserrat:{n:"Montserrat",g:"Basic",c:'"Montserrat",sans-serif',gf:"Montserrat",m:1},
+  lora:{n:"Lora",g:"Basic",c:'"Lora",Georgia,serif',gf:"Lora",m:1},
+  playfair:{n:"Playfair Display",g:"Basic",c:'"Playfair Display",Georgia,serif',gf:"Playfair Display",m:1},
+  poiret:{n:"Poiret One (elegant, art deco)",g:"Elegant",c:'"Poiret One",sans-serif',gf:"Poiret One"},
+  cormorant:{n:"Cormorant Garamond (elegant serif)",g:"Elegant",c:'"Cormorant Garamond",Georgia,serif',gf:"Cormorant Garamond",m:1},
+  cinzel:{n:"Cinzel (classic, luxury)",g:"Elegant",c:'"Cinzel",serif',gf:"Cinzel",m:1},
+  bodoni:{n:"Bodoni Moda (fashion)",g:"Elegant",c:'"Bodoni Moda",serif',gf:"Bodoni Moda",m:1},
+  greatvibes:{n:"Great Vibes (fancy script)",g:"Fancy",c:'"Great Vibes",cursive',gf:"Great Vibes"},
+  pacifico:{n:"Pacifico (fancy, friendly)",g:"Fancy",c:'"Pacifico",cursive',gf:"Pacifico"},
+  dancing:{n:"Dancing Script (fancy)",g:"Fancy",c:'"Dancing Script",cursive',gf:"Dancing Script",m:1},
+  spacegrotesk:{n:"Space Grotesk (modern)",g:"Modern",c:'"Space Grotesk",sans-serif',gf:"Space Grotesk",m:1},
+  dmsans:{n:"DM Sans (modern, clean)",g:"Modern",c:'"DM Sans",sans-serif',gf:"DM Sans",m:1},
+  outfit:{n:"Outfit (modern, geometric)",g:"Modern",c:'"Outfit",sans-serif',gf:"Outfit",m:1},
+  bebas:{n:"Bebas Neue (bold, tall)",g:"Bold",c:'"Bebas Neue",sans-serif',gf:"Bebas Neue"},
+  anton:{n:"Anton (bold, heavy)",g:"Bold",c:'"Anton",sans-serif',gf:"Anton"},
+  oswald:{n:"Oswald (bold, condensed)",g:"Bold",c:'"Oswald",sans-serif',gf:"Oswald",m:1},
+  kaushan:{n:"Kaushan Script (brush)",g:"Brush",c:'"Kaushan Script",cursive',gf:"Kaushan Script"},
+  yellowtail:{n:"Yellowtail (brush, retro)",g:"Brush",c:'"Yellowtail",cursive',gf:"Yellowtail"},
+  marker:{n:"Permanent Marker (marker)",g:"Brush",c:'"Permanent Marker",cursive',gf:"Permanent Marker"},
+  fredoka:{n:"Fredoka (funky, round)",g:"Funky",c:'"Fredoka",sans-serif',gf:"Fredoka",m:1},
+  bangers:{n:"Bangers (funky, comic)",g:"Funky",c:'"Bangers",cursive',gf:"Bangers"},
+  caveat:{n:"Caveat (handwriting)",g:"Funky",c:'"Caveat",cursive',gf:"Caveat",m:1},
+  righteous:{n:"Righteous (funky, retro)",g:"Funky",c:'"Righteous",cursive',gf:"Righteous"}
+};
+const fontOpts = () => Object.entries(Object.entries(FONTS).reduce((a, [k, f]) => ((a[f.g] = a[f.g] || []).push([k, f.n]), a), {}))
+  .map(([g, l]) => `<optgroup label="${g}">${l.map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join("")}</optgroup>`).join("");
+const _fl = new Set();
+function useFont(k) {
+  const f = FONTS[k]; if (!f || !f.gf || _fl.has(k)) return; _fl.add(k);
+  const l = document.createElement("link"); l.rel = "stylesheet";
+  l.href = "https://fonts.googleapis.com/css2?family=" + f.gf.replace(/ /g, "+") + (f.m ? ":wght@400;700" : "") + "&display=swap";
+  document.head.appendChild(l);
+}
+/* one text's saved style -> inline style attribute (sizes shrink gracefully on phones) */
+function sty(st) {
+  if (!st || typeof st !== "object") return "";
+  const o = [], f = FONTS[st.font];
+  if (f) { o.push("font-family:" + f.c); useFont(st.font); }
+  if (/^#[0-9a-f]{6}$/i.test(st.color || "")) o.push("color:" + st.color);
+  const sz = +st.size;
+  if (sz >= 8 && sz <= 300) {
+    const lo = sz >= 48 ? Math.round(sz * .4) : sz >= 28 ? Math.round(sz * .55) : Math.min(sz, Math.max(13, Math.round(sz * .75)));
+    o.push(`font-size:clamp(${lo}px,${(sz / 10).toFixed(2)}vw,${sz}px)`);
+  }
+  if (["left", "center", "right"].includes(st.align)) o.push("text-align:" + st.align);
+  [["pad", "padding"], ["mt", "margin-top"], ["mb", "margin-bottom"]].forEach(([k, p]) => {
+    if (st[k] !== undefined && st[k] !== "" && Number.isFinite(+st[k])) o.push(`${p}:${Math.max(-200, Math.min(400, +st[k]))}px`);
+  });
+  return o.length ? ` style="${esc(o.join(";"))}"` : "";
+}
+
+/* ---------- design + data ---------- */
+let DESIGN = {};
+function applyDesign(p) {
+  DESIGN = p || {};
+  const root = document.documentElement.style;
+  root.setProperty("--r", Math.min(60, Math.max(0, Number.isFinite(+DESIGN.img_radius) && DESIGN.img_radius !== null ? +DESIGN.img_radius : 24)) + "px");
+  root.setProperty("--ratio", ({ portrait: "4/5", square: "1/1", landscape: "4/3", wide: "16/9" })[DESIGN.img_ratio] || "4/5");
+}
+async function loadProfile() {
+  const { data } = await sb.from("profile").select("*").eq("id", 1).maybeSingle();
+  applyDesign(data || {});
+  return data || {};
+}
+async function loadSections() {
+  const { data } = await sb.from("section_pages").select("*");
+  return Object.fromEntries((data || []).map(r => [r.key, r]));
+}
+function query(t) {
+  let q = sb.from(t).select("*").eq("published", true);
+  MAP[t].order.forEach((k, i) => q = q.order(k, { ascending: t !== "journal" && i === 0, nullsFirst: false }));
+  return q;
+}
+
+/* ---------- navigation with logo ---------- */
+function buildNav(p, overHero, sp) {
+  const onIndex = !/(section|detail|admin)(\.html)?$/.test(location.pathname), pre = onIndex ? "" : "index.html";
+  const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
+  const names = { about: "About", contact: "Contact" };
+  const links = [["about", "About"], ...Object.keys(MAP).map(k => [k, (sp && sp[k] && sp[k].title) || MAP[k].label]), ["contact", "Contact"]];
+  const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
+  nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
+  document.body.prepend(nav);
+  nav.querySelector(".logo").onclick = e => { if (onIndex) { e.preventDefault(); history.replaceState(null, "", location.pathname); scrollTo({ top: 0, behavior: "smooth" }); } };
+  if (overHero) { const f = () => nav.classList.toggle("solid", scrollY > 40); addEventListener("scroll", f, { passive: true }); f(); }
+}
+
+/* ---------- lightbox ---------- */
+function openLB(src, cap) {
+  let lb = $("lb");
+  if (!lb) { lb = document.createElement("div"); lb.id = "lb"; lb.className = "lb"; lb.innerHTML = '<img alt=""><p></p>'; lb.onclick = () => lb.classList.remove("on"); document.body.appendChild(lb); }
+  lb.querySelector("img").src = src; lb.querySelector("p").textContent = cap || ""; lb.classList.add("on");
+}
+
+/* ---------- list blocks ---------- */
+const firstImg = (r, c) => r[c.cover] || (((r.images || [])[0]) || {}).url;
+const link = (t, r, peek) => peek ? `section.html?t=${t}` : `detail.html?t=${t}&id=${esc(r.id)}`;
+const readTime = s => Math.max(1, Math.round((s || "").trim().split(/\s+/).filter(Boolean).length / 200)) + " min read";
+const st_ = (r, k) => sty(r.styles && r.styles[k]);
+
+function mag(t, r, i, off, peek) {
+  const c = MAP[t], img = firstImg(r, c), side = DESIGN.side_mode;
+  const flip = side === "left" ? false : side === "right" ? true : (i + off) % 2 === 1, txt = (r[c.text] || "").trim();
+  return `<a class="mag${flip ? " flip" : ""}${peek ? " peek" : ""}" href="${link(t, r, peek)}">
+    <div class="pic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
+    <div class="txt"><div class="meta">${esc(c.meta(r))}</div><h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}<span class="more">View details ›</span></div></a>`;
+}
+function card(t, r, i, off, peek) {
+  const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
+  return `<a class="ccard${peek ? " peek" : ""}" href="${link(t, r, peek)}"><div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
+    ${r.category ? `<span class="chip">${esc(r.category)}</span>` : ""}<h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}</a>`;
+}
+function entry(t, r, i, off, peek) {
+  const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
+  return `<a class="jrow${peek ? " peek" : ""}" href="${link(t, r, peek)}"><div class="jdate">${esc(fmt(r.written_on))}</div>
+    <div class="jmain"><h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}<span class="jmeta">${readTime(r.body)}</span></div>
+    ${img ? `<div class="jthumb"><img src="${esc(img)}" alt="" loading="lazy"></div>` : ""}</a>`;
+}
+const WRAP = { collections: "cgrid", journal: "jlist" };
+const render = (t, r, i, off, peek) => (t === "collections" ? card : t === "journal" ? entry : mag)(t, r, i, off, peek);
+
+/* sub pictures: zig-zag, each with its own description */
+function subs(imgs) {
+  return imgs.map((m, n) => `<div class="sub${n % 2 ? " flip" : ""}"><div class="pic"><img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy"></div>
+    <div class="txt">${m.caption ? `<p class="cap"${sty(m.style)}>${esc(m.caption)}</p>` : ""}</div></div>`).join("");
+}
+const coverHero = u => u ? `<div class="chero"><img class="zoom" src="${esc(u)}" alt=""></div>` : "";
+function wireZoom(root, imgs) {
+  root.querySelectorAll(".zoom").forEach(i => i.onclick = () => openLB(i.src, ""));
+  root.querySelectorAll("[data-n]").forEach(i => i.onclick = () => openLB(i.src, (imgs[+i.dataset.n] || {}).caption));
+}
+
+/* ---------- contact icons ---------- */
+const ICO = {
+  email: ["#0a84ff", '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>'],
+  phone: ["#34c759", '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>'],
+  address: ["#ff453a", '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'],
+  instagram: ["linear-gradient(45deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888)", '<rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>'],
+  facebook: ["#1877f2", '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>'],
+  youtube: ["#ff0000", '<path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>'],
+  linkedin: ["#0a66c2", '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>'],
+  whatsapp: ["#25d366", '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'],
+  telegram: ["#26a5e4", '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>'],
+  twitter: ["#111", '<path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>'],
+  github: ["#24292f", '<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>'],
+  tiktok: ["#111", '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
+  website: ["#5856d6", '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>']
+};
+const ICON_NAMES = { auto: "Auto-detect", email: "Email", phone: "Phone", address: "Address / map", whatsapp: "WhatsApp", instagram: "Instagram", facebook: "Facebook", youtube: "YouTube", linkedin: "LinkedIn", telegram: "Telegram", twitter: "X / Twitter", github: "GitHub", tiktok: "TikTok", website: "Website" };
+function iconKey(c) {
+  if (c.icon && c.icon !== "auto" && ICO[c.icon]) return c.icon;
+  const v = (c.value || "").toLowerCase(), t = (c.title || "").toLowerCase(), both = v + " " + t;
+  for (const [k, re] of [["youtube", /youtu\.?be/], ["instagram", /instagram/], ["facebook", /facebook|fb\.(com|me)/], ["whatsapp", /whatsapp|wa\.me/], ["linkedin", /linkedin/], ["telegram", /telegram|t\.me/], ["twitter", /twitter|x\.com|\bx\b/], ["github", /github/], ["tiktok", /tiktok/]]) if (re.test(both)) return k;
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "email";
+  if (/^\+?[\d\s\-()]{6,}$/.test(v)) return "phone";
+  if (/^https?:/.test(v)) return "website";
+  if (/address|location|office|shop/.test(t)) return "address";
+  return "website";
+}
+function contactHref(c, k) {
+  const v = (c.value || "").trim();
+  if (/^https?:\/\//i.test(v)) return v;
+  if (k === "email" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "mailto:" + v;
+  if (/^\+?[\d\s\-()]{6,}$/.test(v)) return k === "whatsapp" ? "https://wa.me/" + v.replace(/\D/g, "") : "tel:" + v.replace(/[^\d+]/g, "");
+  if (k === "address") return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(v);
+  return "";
+}
+function contactCards(list) {
+  return list.map(c => {
+    const k = iconKey(c), [bg, svg] = ICO[k], h = contactHref(c, k);
+    const inner = `<span class="ci" style="background:${bg}"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${svg}</svg></span><span class="cx"><b>${esc(c.title)}</b><small>${esc(c.value)}</small></span>`;
+    return h ? `<a class="cc" href="${esc(h)}" target="_blank" rel="noopener">${inner}</a>` : `<div class="cc">${inner}</div>`;
+  }).join("");
+}
+
+</script>
+<script>
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v5 standalone";
+const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
+const GAL = { k: "images", l: "Sub photos (as many as you like). Each has its own description and text style", t: "gallery" };
+const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
+const TX = (k, l, extra) => F(k, l, "text", Object.assign({ sty: true }, extra));
+const AR = (k, l, extra) => F(k, l, "area", Object.assign({ sty: true }, extra));
+const S = {
+  intro: { label: "Intro / Hero", table: "profile", single: true, fields: [
+    TX("name", "Name", { sk: "hero.name" }), TX("tagline", "Tagline", { sk: "hero.tagline" }),
+    AR("hero_cap1", "Caption 1", { sk: "hero.cap1" }), AR("hero_cap2", "Caption 2", { sk: "hero.cap2" }),
+    F("hero_url", "Header photo (full screen)", "image")] },
+  logo: { label: "Logo", table: "profile", single: true, fields: [
+    F("logo_url", "Logo (top-left of the website; clicking it goes to the home hero)", "image"),
+    F("logo_h", "Logo height in px (16 to 120)", "number")] },
+  about: { label: "About me", table: "profile", single: true, fields: [
+    TX("about_title", "Small title above (e.g. About me)", { sk: "about.title" }),
+    TX("about_headline", "Headline (one strong sentence)", { sk: "about.headline" }),
+    AR("about_bio", "Bio (your story; blank line between paragraphs)", { sk: "about.bio" }),
+    AR("about_facts", "Quick facts, one per line like: Based in | Dhaka", { sk: "about.facts", hint: "Examples: Born | 2000, Education | BBA, Business | Retail" }),
+    F("about_pic", "Big photo", "image"),
+    F("about_height", "Photo height", "select", { opts: [["50", "Half screen"], ["60", "A little more than half"], ["80", "Large"], ["100", "Full screen"]] }),
+    F("about_side", "Photo side", "select", { opts: [["left", "Left"], ["right", "Right"]] }),
+    F("about_valign", "Photo vertical position", "select", { opts: [["start", "Top"], ["center", "Middle"], ["end", "Bottom"]] }),
+    F("about_radius", "Photo corner roundness (0 to 80)", "number"),
+    TX("about_docs_title", "Title above licenses (e.g. Licenses & Credentials)", { sk: "about.docs_title" }),
+    F("about_docs", "Business licenses and certificates (each with a description)", "gallery")] },
+  contacts: { label: "Contact", title: "title", sub: "value", order: ["sort_order", true], fields: [
+    F("title", "Title (e.g. YouTube)", "text"), F("value", "Link, email, phone or address", "text", { hint: "A link opens as a link. An email or phone number is clickable. Anything else is shown as text." }),
+    F("icon", "App icon", "select", { opts: Object.entries(ICON_NAMES) }), ...PUB] },
+  travel: { label: "Travel", title: "title", fields: [TX("title", "Cover title"), F("location", "Place", "text"), F("country", "Country", "text"), F("visited_on", "Date", "date"), AR("description", "Cover description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, ...PUB], styled: true },
+  collections: { label: "Collection", title: "title", fields: [TX("title", "Group title (e.g. Watches)"), F("category", "Category label", "text"), AR("description", "Group description"), F("image_url", "Cover photo (shown full screen)", "image"), GAL, ...PUB], styled: true },
+  journal: { label: "Journal", title: "title", fields: [TX("title", "Title"), F("written_on", "Date", "date"), AR("body", "Entry"), F("cover_url", "Cover photo", "image"), GAL, { k: "published", l: "Published", t: "bool" }], styled: true },
+  achievements: { label: "Achievements", title: "title", fields: [TX("title", "Cover title"), F("achieved_on", "Date", "date"), AR("description", "Cover description"), F("image_url", "Cover photo (shown full screen)", "image"), GAL, ...PUB], styled: true },
+  memories: { label: "Memories", title: "title", fields: [TX("title", "Cover title"), F("memory_date", "Date", "date"), AR("description", "Cover description"), F("image_url", "Cover photo (shown full screen)", "image"), GAL, ...PUB], styled: true },
+  pages: { label: "Section pages", table: "section_pages", pk: "key", title: "title", order: ["key", true], nonew: true, nodel: true, noreq: true, styled: true, fields: [
+    TX("title", "Page title (also the section name on the home page)"), AR("description", "Page description (shown under the full-screen cover)"), F("cover_url", "Full-screen cover photo for this page", "image")] },
+  design: { label: "Pictures", table: "profile", single: true, fields: [
+    F("img_radius", "Picture corner roundness (0 = square, 60 = very round)", "number"),
+    F("img_ratio", "Picture shape", "select", { opts: [["portrait", "Tall (4:5)"], ["square", "Square"], ["landscape", "Landscape (4:3)"], ["wide", "Wide (16:9)"]] }),
+    F("side_mode", "Picture side in lists", "select", { opts: [["alternate", "Alternate left / right"], ["left", "Always left"], ["right", "Always right"]] })] },
+  messages: { label: "Messages", readonly: true }
+};
+let tab = "intro", gal = {}, stys = {};
+
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return loginView();
+  const { data: a } = await sb.from("admins").select("user_id").maybeSingle();
+  if (!a) { app.innerHTML = `<p>This account is not an admin.</p><div class="actions"><button id="lo">Sign out</button></div>`; $("lo").onclick = out; return; }
+  shell();
+}
+async function out() { await sb.auth.signOut(); location.reload(); }
+function loginView() {
+  app.innerHTML = `<h2 style="font-size:32px;margin:80px 0 24px">Sign in</h2>
+  <label>Email</label><input id="em" type="email" autocomplete="username"><label>Password</label><input id="pw" type="password" autocomplete="current-password">
+  <div class="actions"><button class="pri" id="go">Sign in</button></div><p class="msg" id="m"></p>`;
+  $("go").onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: $("em").value.trim(), password: $("pw").value }); if (error) $("m").textContent = error.message; else boot(); };
+}
+function shell() {
+  app.innerHTML = `<div class="bar"><b>Admin <small style="color:var(--mut);font-weight:400">${VERSION}</small></b><span><a href="index.html" style="font-size:14px;margin-right:14px">View site</a><button id="lo">Sign out</button></span></div>
+  <div class="tabs">${Object.entries(S).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${v.label}</button>`).join("")}</div><div id="main"></div>`;
+  $("lo").onclick = out;
+  app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { tab = b.dataset.t; shell(); });
+  const s = S[tab]; s.readonly ? inbox() : s.single ? form(null) : list();
+}
+async function inbox() {
+  const main = $("main"); main.textContent = "Loading…";
+  const { data, error } = await sb.from("messages").select("*").order("created_at", { ascending: false });
+  if (error) { main.textContent = error.message; return; }
+  main.innerHTML = data.length ? "" : '<p class="msg">No messages yet.</p>';
+  data.forEach(r => {
+    const d = document.createElement("div"); d.className = "msgbox";
+    d.innerHTML = `<b>${esc(r.name)}</b> <small>${esc(r.email)} · ${esc(new Date(r.created_at).toLocaleString())}</small><p>${esc(r.message)}</p><button class="del">Delete</button>`;
+    d.querySelector("button").onclick = async () => { if (confirm("Delete this message?")) { await sb.from("messages").delete().eq("id", r.id); inbox(); } };
+    main.appendChild(d);
+  });
+}
+async function list() {
+  const s = S[tab], pk = s.pk || "id", main = $("main"), ord = s.order || ["created_at", false];
+  main.innerHTML = `${s.nonew ? "" : '<div class="actions" style="margin:0 0 12px"><button class="pri" id="new">+ New</button></div>'}<div id="rows">Loading…</div>`;
+  if (!s.nonew) $("new").onclick = () => form({});
+  const { data, error } = await sb.from(s.table || tab).select("*").order(ord[0], { ascending: ord[1] });
+  const rows = $("rows");
+  if (error) { rows.textContent = error.message; return; }
+  rows.innerHTML = data.length ? "" : '<p class="msg">Nothing yet.</p>';
+  data.forEach(r => {
+    const d = document.createElement("div"); d.className = "item";
+    d.innerHTML = `<b>${esc(r[s.title] || r[pk])}${s.sub ? ` <small>${esc(r[s.sub])}</small>` : ""}</b>${r.published === false ? "<small>draft</small>" : ""}<button>Edit</button>${s.nodel ? "" : '<button class="del">Delete</button>'}`;
+    d.querySelector("button").onclick = () => form(r);
+    const del = d.querySelector(".del"); if (del) del.onclick = async () => { if (confirm("Delete this?")) { const { error } = await sb.from(s.table || tab).delete().eq(pk, r[pk]); if (error) alert(error.message); else list(); } };
+    rows.appendChild(d);
+  });
+}
+/* ---- per-text style editor ---- */
+function styleEditor(st) {
+  const dt = document.createElement("details"); dt.className = "sted";
+  const nm = (f, l) => `<label>${l}<input type="number" data-f="${f}" placeholder="auto"></label>`;
+  dt.innerHTML = `<summary>Text style (font, size, color, alignment, spacing)</summary><div class="sgrid">
+    <label>Font<select data-f="font"><option value="">Default</option>${fontOpts()}</select></label>${nm("size", "Size (px)")}
+    <label>Color<input type="color" data-f="color" value="#1d1d1f"></label>
+    <label>Alignment<select data-f="align"><option value="">Default</option><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
+    ${nm("pad", "Padding (px)")}${nm("mt", "Margin top (px)")}${nm("mb", "Margin bottom (px)")}</div><button type="button" class="rs">Reset text style</button>`;
+  const fill = () => dt.querySelectorAll("[data-f]").forEach(e => { const v = st[e.dataset.f]; e.value = v !== undefined ? v : e.dataset.f === "color" ? "#1d1d1f" : ""; });
+  fill();
+  dt.querySelectorAll("[data-f]").forEach(e => { const h = () => { const f = e.dataset.f; if (e.value === "") delete st[f]; else st[f] = e.type === "number" ? +e.value : e.value; }; e.oninput = h; e.onchange = h; });
+  dt.querySelector(".rs").onclick = () => { Object.keys(st).forEach(k => delete st[k]); fill(); };
+  return dt;
+}
+function drawGal(k) {
+  const el = $("g-" + k); el.innerHTML = "";
+  gal[k].forEach((it, i) => {
+    const d = document.createElement("div"); d.className = "gi";
+    d.innerHTML = `<img src="${esc(it.url)}"><textarea placeholder="Description of this photo"></textarea><div class="x">×</div><div class="gs"></div>`;
+    const ta = d.querySelector("textarea"); ta.value = it.caption || ""; ta.oninput = () => it.caption = ta.value;
+    d.querySelector(".x").onclick = () => { gal[k].splice(i, 1); drawGal(k); };
+    d.querySelector(".gs").appendChild(styleEditor(it.style = it.style || {}));
+    el.appendChild(d);
+  });
+  const c = $("gc-" + k); if (c) c.textContent = `(${gal[k].length} photos)`;
+}
+async function shrink(f) {
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type) || f.size < 400 * 1024) return f;
+  try {
+    const b = await createImageBitmap(f), sc = Math.min(1, 2400 / Math.max(b.width, b.height));
+    if (sc === 1 && f.size < 1.5 * 1024 * 1024) return f;
+    const c = document.createElement("canvas"); c.width = Math.round(b.width * sc); c.height = Math.round(b.height * sc);
+    c.getContext("2d").drawImage(b, 0, 0, c.width, c.height);
+    const type = f.type === "image/png" ? "image/png" : "image/jpeg";
+    const out = await new Promise(r => c.toBlob(r, type, .86));
+    return out && out.size < f.size ? new File([out], f.name.replace(/\.\w+$/, type === "image/png" ? ".png" : ".jpg"), { type }) : f;
+  } catch (e) { return f; }
+}
+async function upload(f0) {
+  const f = await shrink(f0);
+  const path = `${tab}/${Date.now()}-${f.name.replace(/[^\w.\-]/g, "_")}`;
+  const { error } = await sb.storage.from("media").upload(path, f);
+  if (error) throw error;
+  return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
+}
+async function form(row) {
+  const s = S[tab], tb = s.table || tab, pk = s.pk || "id", main = $("main"); gal = {}; stys = {};
+  if (row === null) { const { data } = await sb.from("profile").select("*").eq("id", 1).maybeSingle(); row = data || { id: 1 }; }
+  const saved = row.styles || {};
+  main.innerHTML = s.fields.map(f => {
+    const v = row[f.k], k = f.k, l = f.l, t = f.t;
+    const hint = f.hint ? `<div class="hint">${esc(f.hint)}</div>` : "", sk = f.sk || f.k;
+    const stySlot = f.sty ? `<div data-sty="${esc(sk)}"></div>` : "";
+    if (t === "area") return `<label>${l}</label><textarea data-k="${k}">${esc(v)}</textarea>${hint}${stySlot}`;
+    if (t === "bool") return `<label class="chk"><input type="checkbox" data-k="${k}" ${v === false ? "" : "checked"}> ${l}</label>`;
+    if (t === "select") return `<label>${l}</label><select data-k="${k}">${f.opts.map(([o, n]) => `<option value="${esc(o)}" ${String(o) === String(v) ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>`;
+    if (t === "image") return `<label>${l}</label><input type="file" accept="image/*" data-up="${k}"><input type="hidden" data-k="${k}" value="${esc(v)}"><div id="pv-${k}">${v ? `<img class="pv" src="${esc(v)}"> <button type="button" class="del" data-rm="${k}" style="margin-top:6px">Remove photo</button>` : ""}</div>`;
+    if (t === "gallery") { gal[k] = Array.isArray(v) ? v.filter(i => i && i.url).map(i => ({ url: i.url, caption: i.caption || "", style: Object.assign({}, i.style) })) : []; return `<label>${l} <b id="gc-${k}"></b></label><input type="file" accept="image/*" multiple data-gup="${k}"><div id="g-${k}"></div>`; }
+    return `<label>${l}</label><input data-k="${k}" type="${t}" value="${esc(v)}">${hint}${stySlot}`;
+  }).join("") + `<div class="actions"><button class="pri" id="save">Save</button>${s.single ? "" : '<button id="cancel">Cancel</button>'}</div><p class="msg" id="m"></p>`;
+  if (!s.single) $("cancel").onclick = list;
+  main.querySelectorAll("[data-sty]").forEach(ph => { const sk = ph.dataset.sty; ph.appendChild(styleEditor(stys[sk] = Object.assign({}, saved[sk]))); });
+  Object.keys(gal).forEach(drawGal);
+  main.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { const k = b.dataset.rm; main.querySelector(`[data-k="${k}"]`).value = ""; $("pv-" + k).innerHTML = ""; $("m").textContent = "Photo removed. Press Save."; });
+  main.querySelectorAll("[data-gup]").forEach(inp => inp.onchange = async () => {
+    const k = inp.dataset.gup, files = [...inp.files], room = Math.max(0, MAXPICS - gal[k].length);
+    try { for (const f of files.slice(0, room)) { $("m").textContent = "Uploading " + f.name + "…"; gal[k].push({ url: await upload(f), caption: "", style: {} }); drawGal(k); } $("m").textContent = "Photos ready. Add descriptions, then press Save."; }
+    catch (e) { $("m").textContent = e.message; }
+    inp.value = "";
+  });
+  main.querySelectorAll("[data-up]").forEach(inp => inp.onchange = async () => {
+    const f = inp.files[0]; if (!f) return; $("m").textContent = "Uploading…";
+    try { const u = await upload(f), k = inp.dataset.up; main.querySelector(`[data-k="${k}"]`).value = u; $("pv-" + k).innerHTML = `<img class="pv" src="${esc(u)}">`; $("m").textContent = "Photo ready. Press Save."; }
+    catch (e) { $("m").textContent = e.message; }
+  });
+  $("save").onclick = async () => {
+    const o = {};
+    main.querySelectorAll("[data-k]").forEach(e => {
+      const k = e.dataset.k, t = s.fields.find(f => f.k === k).t;
+      o[k] = t === "bool" ? e.checked : t === "number" ? (e.value === "" ? null : +e.value) : (e.value === "" && ["date", "image"].includes(t) ? null : e.value);
+    });
+    s.fields.filter(f => f.t === "gallery").forEach(f => o[f.k] = gal[f.k].slice(0, MAXPICS));
+    s.fields.filter(f => f.t === "number" && o[f.k] === null).forEach(f => delete o[f.k]);
+    if (Object.keys(stys).length) o.styles = Object.assign({}, saved, stys);
+    if (s.single) { o.id = 1; o.updated_at = new Date().toISOString(); }
+    else { if (!s.noreq && !o[s.title]) { $("m").textContent = "Title is required."; return; } if (row[pk]) o[pk] = row[pk]; }
+    const { error } = await sb.from(tb).upsert(o);
+    if (error) $("m").textContent = error.message; else if (s.single) $("m").textContent = "Saved."; else list();
+  };
+}
+boot();
+</script></body></html>
