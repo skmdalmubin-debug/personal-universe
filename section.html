@@ -1,19 +1,40 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Al Mubin</title><link rel="stylesheet" href="style.css">
+<title>Al Mubin</title><link rel="stylesheet" href="style.css?v=4">
 </head><body>
-<section id="s"><p class="empty">Loading…</p></section>
+<div id="s"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js"></script><script src="common.js"></script>
+<script src="config.js?v=4"></script><script src="common.js?v=4"></script>
 <script>
-const t = new URLSearchParams(location.search).get("t"), s = document.getElementById("s");
+const t = new URLSearchParams(location.search).get("t"), s = $("s");
+let rows = [], cat = "";
+function draw() {
+  const list = cat ? rows.filter(r => r.category === cat) : rows;
+  let body = "";
+  if (t === "journal") {
+    let y = "";
+    list.forEach(r => { const yr = r.written_on ? r.written_on.slice(0, 4) : ""; if (yr !== y) { y = yr; body += `${body ? "</div>" : ""}<div class="yr">${esc(y)}</div><div class="jlist">`; } body += entry(t, r); });
+    body = body ? body + "</div>" : "";
+  } else body = `<div class="${WRAP[t] || ""}">${list.map((r, i) => render(t, r, i, 0)).join("")}</div>`;
+  $("items").innerHTML = body;
+}
 (async () => {
-  await loadProfile();
-  if (!MAP[t]) { s.innerHTML = '<a class="back" href="index.html">‹ Back</a><p class="empty">Not found.</p>'; return; }
-  document.title = MAP[t].label;
+  const [p, sps] = await Promise.all([loadProfile(), loadSections()]);
+  if (!MAP[t]) { buildNav(p, false, sps); s.innerHTML = '<div class="dwrap"><p class="empty">Not found.</p></div>'; return; }
+  const sp = sps[t] || {}, cover = safeUrl(sp.cover_url), title = sp.title || MAP[t].label, ss = sp.styles || {};
+  buildNav(p, !!cover, sps);
+  document.title = title;
   const { data, error } = await query(t);
-  s.innerHTML = `<a class="back" href="index.html#${t}">‹ Home</a><h2>${MAP[t].label}</h2>` +
-    (error || !data.length ? '<p class="empty">Coming soon.</p>' : data.map((r, i) => mag(t, r, i, 0)).join(""));
+  rows = data || [];
+  const cats = t === "collections" ? [...new Set(rows.map(r => r.category).filter(Boolean))] : [];
+  s.innerHTML = coverHero(cover) + `<div class="dwrap${cover ? " afterhero" : ""}">` +
+    (cover ? `<div class="dintro"><h1 class="dt"${sty(ss.title)}>${esc(title)}</h1>${sp.description ? `<div class="dtext"${sty(ss.description)}>${esc(sp.description)}</div>` : ""}</div>` : `<h2${sty(ss.title)}>${esc(title)}</h2>${sp.description ? `<p class="dtext" style="margin:-24px 0 40px;max-width:760px"${""}>${esc(sp.description)}</p>` : ""}`) +
+    (cats.length > 1 ? `<div class="chips" id="chips"><button class="on" data-c="">All</button>${cats.map(c => `<button data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : "") +
+    `<div id="items"></div></div>`;
+  wireZoom(s, []);
+  if (error || !rows.length) { $("items").innerHTML = '<p class="empty">Coming soon.</p>'; return; }
+  $("chips")?.querySelectorAll("button").forEach(b => b.onclick = () => { cat = b.dataset.c; document.querySelectorAll("#chips button").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  draw();
 })();
 </script></body></html>

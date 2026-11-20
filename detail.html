@@ -1,31 +1,33 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Al Mubin</title><link rel="stylesheet" href="style.css">
+<title>Al Mubin</title><link rel="stylesheet" href="style.css?v=4">
 </head><body>
-<div class="dwrap" id="d"><p class="empty">Loading…</p></div>
-<div class="lb" id="lb"><img id="lbi" alt=""><p id="lbp"></p></div>
+<div id="d"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js"></script><script src="common.js"></script>
+<script src="config.js?v=4"></script><script src="common.js?v=4"></script>
 <script>
-const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("id"), d = document.getElementById("d");
-const lb = document.getElementById("lb"), lbi = document.getElementById("lbi"), lbp = document.getElementById("lbp");
-lb.onclick = () => lb.classList.remove("on");
-const open = (src, cap) => { lbi.src = src; lbp.textContent = cap || ""; lb.classList.add("on"); };
+const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("id"), d = $("d");
 (async () => {
-  await loadProfile();
-  const nf = '<a class="back" href="index.html">‹ Back</a><p class="empty">Not found.</p>';
-  if (!MAP[t] || !id) { d.innerHTML = nf; return; }
+  const [p, sps] = await Promise.all([loadProfile(), loadSections()]);
+  const nf = () => { buildNav(p, false, sps); d.innerHTML = '<div class="dwrap"><p class="empty">Not found.</p></div>'; };
+  if (!MAP[t] || !id) return nf();
   const { data: r } = await sb.from(t).select("*").eq("id", id).maybeSingle();
-  if (!r) { d.innerHTML = nf; return; }
-  const c = MAP[t], cover = r[c.cover], imgs = (r.images || []).filter(i => i && i.url);
+  if (!r) return nf();
+  const c = MAP[t], cover = safeUrl(r[c.cover]), imgs = (r.images || []).filter(i => i && i.url), label = (sps[t] && sps[t].title) || c.label;
   document.title = r.title;
-  d.innerHTML = `<a class="back" href="section.html?t=${t}">‹ ${esc(c.label)}</a>
-    <div class="meta">${esc(c.meta(r))}</div><h1 class="dt">${esc(r.title)}</h1>
-    ${cover ? `<img class="dcover" src="${esc(cover)}" alt="">` : ""}
-    <p class="dtext">${esc(r[c.text])}</p>
-    ${imgs.length ? `<div class="gal">${imgs.map((i, n) => `<figure><img data-n="${n}" src="${esc(i.url)}" alt="" loading="lazy">${i.caption ? `<figcaption>${esc(i.caption)}</figcaption>` : ""}</figure>`).join("")}</div>` : ""}`;
-  d.querySelector(".dcover")?.addEventListener("click", e => open(e.target.src, ""));
-  d.querySelectorAll(".gal img").forEach(i => i.onclick = () => open(i.src, imgs[+i.dataset.n].caption));
+  const back = `<a class="back" href="section.html?t=${t}">‹ ${esc(label)}</a>`, txt = r[c.text];
+  if (t === "journal") {
+    buildNav(p, false, sps);
+    d.innerHTML = `<div class="dwrap">${back}<article class="article"><div class="meta">${esc(c.meta(r))}</div><h1 class="dt"${st_(r, "title")}>${esc(r.title)}</h1><div class="by">${esc(fmt(r.written_on))} · ${readTime(r.body)}</div>
+      ${cover ? `<img class="dcover zoom" src="${esc(cover)}" alt="">` : ""}<div class="dtext"${st_(r, c.text)}>${esc(txt)}</div>
+      ${imgs.map((m, n) => `<figure><img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy">${m.caption ? `<figcaption${sty(m.style)}>${esc(m.caption)}</figcaption>` : ""}</figure>`).join("")}</article></div>`;
+  } else {
+    buildNav(p, !!cover, sps);
+    d.innerHTML = coverHero(cover) + `<div class="dwrap${cover ? " afterhero" : ""}">${back}
+      <div class="dintro"><div class="meta">${esc(c.meta(r))}</div><h1 class="dt"${st_(r, "title")}>${esc(r.title)}</h1>${txt ? `<div class="dtext"${st_(r, c.text)}>${esc(txt)}</div>` : ""}</div>
+      <div class="subs">${subs(imgs)}</div></div>`;
+  }
+  wireZoom(d, imgs);
 })();
 </script></body></html>
