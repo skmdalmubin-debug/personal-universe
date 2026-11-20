@@ -12,7 +12,7 @@ const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("i
   const [p, sps] = await Promise.all([loadProfile(), loadSections()]);
   const nf = () => { buildNav(p, false, sps); d.innerHTML = '<div class="dwrap"><p class="empty">Not found.</p></div>'; };
   if (!MAP[t] || !id) return nf();
-  const { data: r } = await sb.from(t).select("*").eq("id", id).maybeSingle();
+  const { data: r } = await sb.from(MAP[t].table || t).select("*").eq("id", id).maybeSingle();
   if (!r) return nf();
   const c = MAP[t], cover = safeUrl(r[c.cover]), imgs = (r.images || []).filter(i => i && i.url), label = (sps[t] && sps[t].title) || c.label;
   document.title = r.title;

@@ -90,12 +90,16 @@ async function loadProfile() {
   applyDesign(data || {});
   return data || {};
 }
+let REG = [];
 async function loadSections() {
-  const { data } = await sb.from("section_pages").select("*");
-  return Object.fromEntries((data || []).map(r => [r.key, r]));
+  const [a, b] = await Promise.all([sb.from("section_pages").select("*"), sb.from("sections").select("*").order("position")]);
+  REG = b.data || [];
+  REG.filter(r => r.type === "custom").forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
+  return Object.fromEntries((a.data || []).map(r => [r.key, r]));
 }
 function query(t) {
-  let q = sb.from(t).select("*").eq("published", true);
+  const m = MAP[t]; let q = sb.from(m.table || t).select("*").eq("published", true);
+  if (m.filter) q = q.eq("section_key", m.filter);
   MAP[t].order.forEach((k, i) => q = q.order(k, { ascending: t !== "journal" && i === 0, nullsFirst: false }));
   return q;
 }
@@ -106,7 +110,8 @@ function buildNav(p, overHero, sp) {
   const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
   const names = { about: "About", contact: "Contact" };
   const T = k => (sp && sp[k] && sp[k].title) || MAP[k].label;
-  const links = [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
+  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "contact"].includes(r.type)).map(r => [r.key, r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
+    : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
   document.body.prepend(nav);

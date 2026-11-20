@@ -148,6 +148,27 @@ label.chk{display:flex;gap:10px;align-items:center}label.chk input{width:auto}
 .hero>picture{position:absolute;inset:0;z-index:0;width:100%}.hero>picture img{width:100%;height:100%;object-fit:cover;max-width:none;display:block}
 .gi .mv{display:flex;flex-direction:column;gap:6px}.gi .mv div{width:30px;height:30px;border-radius:50%;background:var(--fg);color:var(--bg);text-align:center;line-height:30px;cursor:pointer;font-size:14px}
 .item .mvb{padding:5px 11px}
+.clist{grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr))}
+.book{--gbbg:#26221b;--gba:#c9ac7a;--gbp:#ede6d6;--gbi:#3b3124;background:var(--gbbg);color:var(--gba);border-radius:28px;padding:clamp(14px,3vw,28px);max-width:760px;margin:0 auto;text-align:center}
+.gbl{font-size:clamp(11px,1.6vw,14px);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:clamp(12px,2vw,20px)}
+.gbframe{border:1.5px solid var(--gba);border-radius:22px;padding:clamp(22px,5vw,48px) clamp(14px,3vw,30px);background:rgba(255,255,255,.06)}
+.gbframe svg{width:34px;height:34px;stroke:var(--gba);fill:none;stroke-width:1.8}
+.gbframe h3{font-size:clamp(28px,6vw,48px);font-weight:700;letter-spacing:-.02em;margin:12px 0 22px;color:#efe3c8}
+.gbframe hr{border:0;border-top:1px solid var(--gba);margin:0 0 22px}.gbframe p{font-size:clamp(12px,2vw,16px);letter-spacing:.08em;text-transform:uppercase}.gbframe small{display:block;margin-top:22px;font-size:12px;letter-spacing:.1em}
+.book button{font:inherit;font-weight:600;border:1px solid var(--gba);background:transparent;color:var(--gba);padding:12px 22px;border-radius:980px;cursor:pointer}
+.book .gbopen{width:100%;margin-top:16px;background:rgba(255,255,255,.14);border-color:transparent;color:#fff;padding:16px}
+.book button:disabled{opacity:.35;cursor:default}
+.gbpage{background:var(--gbp);color:var(--gbi);border-radius:20px;padding:clamp(18px,4vw,34px);text-align:left;min-height:clamp(300px,52vw,420px);animation:gbin .5s ease}
+@keyframes gbin{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+.gbtop{display:flex;justify-content:space-between;font-size:clamp(10px,1.6vw,13px);letter-spacing:.06em;text-transform:uppercase;opacity:.7;padding-bottom:14px;border-bottom:1px solid rgba(59,49,36,.35);margin-bottom:20px}
+.gbpage h4{font-size:clamp(22px,4vw,32px);font-weight:700}.gbpage .who{font-size:14px;opacity:.7;margin-top:6px}
+.gbmsg{font-size:clamp(16px,2.6vw,24px);line-height:1.5;margin:22px 0;white-space:pre-wrap}
+.gbfoot{border-top:1px solid rgba(59,49,36,.35);padding-top:14px;font-size:14px;opacity:.75}
+.gbpage input,.gbpage textarea{background:rgba(255,255,255,.5);border-color:rgba(59,49,36,.25);color:var(--gbi);margin-bottom:10px}
+.gbpage button{background:var(--gbi);color:var(--gbp);border-color:var(--gbi)}
+.gbnav{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-weight:600}
+.gbback{display:block;margin:14px auto 0;border:0!important}
+.vis{margin:-12px 0 24px;font-size:14px;display:flex;gap:8px;align-items:center;color:var(--mut)}.vis button{padding:6px 14px}.item .vb{padding:5px 12px}.msgbox .ok{padding:7px 16px}
 
 </style>
 </head><body><div class="wrap" id="app"></div>
@@ -245,12 +266,16 @@ async function loadProfile() {
   applyDesign(data || {});
   return data || {};
 }
+let REG = [];
 async function loadSections() {
-  const { data } = await sb.from("section_pages").select("*");
-  return Object.fromEntries((data || []).map(r => [r.key, r]));
+  const [a, b] = await Promise.all([sb.from("section_pages").select("*"), sb.from("sections").select("*").order("position")]);
+  REG = b.data || [];
+  REG.filter(r => r.type === "custom").forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
+  return Object.fromEntries((a.data || []).map(r => [r.key, r]));
 }
 function query(t) {
-  let q = sb.from(t).select("*").eq("published", true);
+  const m = MAP[t]; let q = sb.from(m.table || t).select("*").eq("published", true);
+  if (m.filter) q = q.eq("section_key", m.filter);
   MAP[t].order.forEach((k, i) => q = q.order(k, { ascending: t !== "journal" && i === 0, nullsFirst: false }));
   return q;
 }
@@ -261,7 +286,8 @@ function buildNav(p, overHero, sp) {
   const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
   const names = { about: "About", contact: "Contact" };
   const T = k => (sp && sp[k] && sp[k].title) || MAP[k].label;
-  const links = [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
+  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "contact"].includes(r.type)).map(r => [r.key, r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
+    : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
   document.body.prepend(nav);
@@ -377,13 +403,14 @@ function startStrip(el, speed) {
 
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v8 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v9 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Sub photos (as many as you like). Each has its own description and text style", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
 const TX = (k, l, extra) => F(k, l, "text", Object.assign({ sty: true }, extra));
 const AR = (k, l, extra) => F(k, l, "area", Object.assign({ sty: true }, extra));
 const S = {
+  create: { label: "＋ Create section", custom: "create" }, order: { label: "Sections order", custom: "order" },
   intro: { label: "Intro / Hero", table: "profile", single: true, fields: [
     TX("name", "Name", { sk: "hero.name" }), TX("tagline", "Tagline", { sk: "hero.tagline" }),
     AR("hero_cap1", "Caption 1", { sk: "hero.cap1" }), AR("hero_cap2", "Caption 2", { sk: "hero.cap2" }),
@@ -428,7 +455,7 @@ const S = {
     F("img_ratio", "Picture shape", "select", { opts: [["portrait", "Tall (4:5)"], ["square", "Square"], ["landscape", "Landscape (4:3)"], ["wide", "Wide (16:9)"]] }),
     F("scroll_speed", "Collection auto-scroll speed (1 slow to 10 fast)", "number"),
     F("side_mode", "Picture side in lists", "select", { opts: [["alternate", "Alternate left / right"], ["left", "Always left"], ["right", "Always right"]] })] },
-  messages: { label: "Messages", readonly: true }
+  guestbook: { label: "Guest Book", custom: "gb" }
 };
 let tab = "intro", gal = {}, stys = {};
 
@@ -437,7 +464,7 @@ async function boot() {
   if (!session) return loginView();
   const { data: a } = await sb.from("admins").select("user_id").maybeSingle();
   if (!a) { app.innerHTML = `<p>This account is not an admin.</p><div class="actions"><button id="lo">Sign out</button></div>`; $("lo").onclick = out; return; }
-  shell();
+  await loadReg(); shell();
 }
 async function out() { await sb.auth.signOut(); location.reload(); }
 function loginView() {
@@ -448,11 +475,75 @@ function loginView() {
 }
 function shell() {
   app.innerHTML = `<div class="bar"><b>Admin <small style="color:var(--mut);font-weight:400">${VERSION}</small></b><span><a href="index.html" style="font-size:14px;margin-right:14px">View site</a><button id="lo">Sign out</button></span></div>
-  <div class="tabs">${Object.entries(S).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${v.label}</button>`).join("")}</div><div id="main"></div>`;
+  <div class="tabs">${Object.entries(S).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc(v.label)}</button>`).join("")}</div>${visBar()}<div id="main"></div>`;
+  app.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => { await sb.from("sections").update({ visible: b.dataset.v === "1" }).eq("key", secKey()); await loadReg(); shell(); });
   $("lo").onclick = out;
   app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { tab = b.dataset.t; shell(); });
-  const s = S[tab]; s.readonly ? inbox() : s.single ? form(null) : list();
+  const s = S[tab]; s.custom ? CUS[s.custom]() : s.single ? form(null) : list();
 }
+const secKey = () => ({ contacts: "contact" })[tab] || tab;
+function visBar() {
+  const r = REG.find(x => x.key === secKey()); if (!r) return "";
+  return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button></div>`;
+}
+async function loadReg() {
+  const { data } = await sb.from("sections").select("*").order("position"); REG = data || [];
+  Object.keys(S).filter(k => S[k].cs).forEach(k => delete S[k]);
+  REG.filter(r => r.type === "custom").forEach(r => S[r.key] = { cs: 1, label: r.title || r.key, table: "custom_items", filter: r.key, title: "title", sub: "subtitle", styled: true,
+    fields: [TX("title", "Title"), F("subtitle", "Small line above the title (optional)", "text"), AR("description", "Description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, ...PUB] });
+}
+async function setOrder(keys) { await Promise.all(keys.map((k, n) => sb.from("sections").update({ position: (n + 1) * 10 }).eq("key", k))); }
+function createView() {
+  $("main").innerHTML = `<label>Section name (e.g. Gallery, Projects, Music)</label><input id="cn" maxlength="40"><label>Place it after</label><select id="ca">${REG.map(r => `<option value="${esc(r.key)}">${esc(r.title || r.key)}</option>`).join("")}</select>
+  <div class="hint">The new section works like Travel: entries with a cover photo, a description and sub photos, each on its own page.</div><div class="actions"><button class="pri" id="cb">Create section</button></div><p class="msg" id="m"></p>`;
+  const pre = REG.filter(r => r.type !== "contact").pop(); if (pre) $("ca").value = pre.key;
+  $("cb").onclick = async () => {
+    const name = $("cn").value.trim(); if (!name) { $("m").textContent = "Please write a name."; return; }
+    let key = "s-" + (name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || Date.now()); if (REG.some(r => r.key === key)) key += "-" + (Date.now() % 1000);
+    const order = REG.map(r => r.key); order.splice(order.indexOf($("ca").value) + 1, 0, key);
+    let { error } = await sb.from("sections").insert({ key, type: "custom", title: name, position: 0 });
+    if (!error) ({ error } = await sb.from("section_pages").insert({ key, title: name }));
+    if (error) { $("m").textContent = error.message; return; }
+    await setOrder(order); await loadReg(); tab = key; shell();
+  };
+}
+function orderView() {
+  const main = $("main"); main.innerHTML = '<div class="hint" style="margin-bottom:10px">Move sections up or down. A Private section is hidden from the website and the next one moves up. Make it Public again and it returns to this place.</div><div id="rows"></div>';
+  REG.forEach((r, i) => {
+    const d = document.createElement("div"); d.className = "item";
+    d.innerHTML = `<b>${esc(r.title || r.key)} <small>${r.type === "custom" ? "your section" : r.type}</small></b><button class="mvb" data-d="-1">↑</button><button class="mvb" data-d="1">↓</button><button class="vb">${r.visible ? "Public" : "Private"}</button>${r.type === "custom" ? '<button class="del">Delete</button>' : ""}`;
+    d.querySelectorAll(".mvb").forEach(b => b.onclick = async () => { const j = i + +b.dataset.d; if (j < 0 || j >= REG.length) return; const k = REG.map(x => x.key); [k[i], k[j]] = [k[j], k[i]]; await setOrder(k); await loadReg(); orderView(); });
+    d.querySelector(".vb").onclick = async () => { await sb.from("sections").update({ visible: !r.visible }).eq("key", r.key); await loadReg(); orderView(); };
+    const del = d.querySelector(".del"); if (del) del.onclick = async () => { if (!confirm("Delete this section and all its entries?")) return; await sb.from("custom_items").delete().eq("section_key", r.key); await sb.from("section_pages").delete().eq("key", r.key); await sb.from("sections").delete().eq("key", r.key); await loadReg(); orderView(); };
+    $("rows").appendChild(d);
+  });
+}
+let gbSub = "pending";
+async function gbAdmin() {
+  const main = $("main");
+  main.innerHTML = `<div class="tabs">${[["pending", "Pending approval"], ["approved", "Published pages"], ["design", "Cover design"]].map(([k, l]) => `<button data-g="${k}" class="${gbSub === k ? "on" : ""}">${l}</button>`).join("")}</div><div id="gbm"></div>`;
+  main.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { gbSub = b.dataset.g; gbAdmin(); });
+  const box = $("gbm");
+  if (gbSub === "design") {
+    const cfg = (REG.find(r => r.key === "guestbook") || {}).config || {};
+    const T = [["label", "Small title on top", "AL MUBIN'S PERSONAL ARCHIVE"], ["title", "Cover title", "The Guestbook"], ["subtitle", "Cover subtitle", "A collection of words & memories"], ["est", "Cover bottom line", "EST. 2026"], ["button", "Open button text", "Open the Book"], ["pagetitle", "Page header (top left of each page)", "Al Mubin's Guestbook"], ["dear", "Greeting on each page", "Dear Mubin,"]];
+    const C = [["bg", "Cover color", "#26221b"], ["accent", "Gold / line color", "#c9ac7a"], ["paper", "Page color", "#ede6d6"], ["ink", "Page text color", "#3b3124"]];
+    box.innerHTML = T.map(([k, l, d]) => `<label>${l}</label><input data-c="${k}" value="${esc(cfg[k] ?? d)}">`).join("") + C.map(([k, l, d]) => `<label>${l}</label><input type="color" data-c="${k}" value="${esc(cfg[k] || d)}">`).join("") + '<div class="actions"><button class="pri" id="gs">Save</button></div><p class="msg" id="m"></p>';
+    $("gs").onclick = async () => { const o = {}; box.querySelectorAll("[data-c]").forEach(e => o[e.dataset.c] = e.value); const { error } = await sb.from("sections").update({ config: o }).eq("key", "guestbook"); $("m").textContent = error ? error.message : "Saved."; await loadReg(); };
+    return;
+  }
+  const { data, error } = await sb.from("guestbook").select("*").eq("status", gbSub).order("created_at", { ascending: gbSub === "approved" });
+  if (error) { box.textContent = error.message; return; }
+  box.innerHTML = data.length ? "" : `<p class="msg">${gbSub === "pending" ? "No messages waiting." : "No published pages yet."}</p>`;
+  data.forEach(r => {
+    const d = document.createElement("div"); d.className = "msgbox";
+    d.innerHTML = `<b>${esc(r.name)}</b> <small>${esc(r.location || "")} · ${esc(new Date(r.created_at).toLocaleDateString())}</small><p>${esc(r.message)}</p><button class="pri ok">${gbSub === "pending" ? "Approve" : "Unpublish"}</button> <button class="del">Delete</button>`;
+    d.querySelector(".ok").onclick = async () => { await sb.from("guestbook").update({ status: gbSub === "pending" ? "approved" : "pending" }).eq("id", r.id); gbAdmin(); };
+    d.querySelector(".del").onclick = async () => { if (confirm("Delete this message?")) { await sb.from("guestbook").delete().eq("id", r.id); gbAdmin(); } };
+    box.appendChild(d);
+  });
+}
+const CUS = { create: createView, order: orderView, gb: gbAdmin };
 async function inbox() {
   const main = $("main"); main.textContent = "Loading…";
   const { data, error } = await sb.from("messages").select("*").order("created_at", { ascending: false });
@@ -469,7 +560,8 @@ async function list() {
   const s = S[tab], pk = s.pk || "id", main = $("main"), hasSort = s.fields.some(f => f.k === "sort_order"), ord = s.order || (hasSort ? ["sort_order", true] : ["created_at", false]);
   main.innerHTML = `${s.nonew ? "" : '<div class="actions" style="margin:0 0 12px"><button class="pri" id="new">+ New</button></div>'}<div id="rows">Loading…</div>`;
   if (!s.nonew) $("new").onclick = () => form({});
-  const { data, error } = await sb.from(s.table || tab).select("*").order(ord[0], { ascending: ord[1] });
+  let lq = sb.from(s.table || tab).select("*"); if (s.filter) lq = lq.eq("section_key", s.filter);
+  const { data, error } = await lq.order(ord[0], { ascending: ord[1] });
   const rows = $("rows");
   if (error) { rows.textContent = error.message; return; }
   rows.innerHTML = data.length ? "" : '<p class="msg">Nothing yet.</p>';
@@ -576,6 +668,7 @@ async function form(row) {
     s.fields.filter(f => f.t === "gallery").forEach(f => o[f.k] = gal[f.k].slice(0, MAXPICS));
     s.fields.filter(f => f.t === "number" && o[f.k] === null).forEach(f => delete o[f.k]);
     if (Object.keys(stys).length) o.styles = Object.assign({}, saved, stys);
+    if (s.filter) o.section_key = s.filter;
     if (s.single) { o.id = 1; o.updated_at = new Date().toISOString(); }
     else { if (!s.noreq && !o[s.title]) { $("m").textContent = "Title is required."; return; } if (row[pk]) o[pk] = row[pk]; }
     const { error } = await sb.from(tb).upsert(o);
