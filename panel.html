@@ -70,7 +70,9 @@ footer{padding:80px 24px;text-align:center;color:var(--mut);font-size:13px}
 .jrow.peek .jmain,.jrow.peek .jthumb{filter:blur(5px)}
 .yr{font-size:13px;letter-spacing:.1em;color:var(--mut);margin:56px 0 12px;font-weight:600}
 /* about */
-.ab{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,80px);align-items:center}
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,80px);align-items:stretch}
+.ab>div:not(.abpic){display:flex;flex-direction:column;justify-content:center}
+.bm{color:var(--blue);text-decoration:none;font-weight:500;white-space:nowrap}
 .ab.right .abpic{order:2}
 .abpic{height:var(--abh,60vh);border-radius:var(--abr,24px);overflow:hidden;background:var(--soft);align-self:var(--abv,center)}
 .abpic img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
@@ -135,6 +137,17 @@ label.chk{display:flex;gap:10px;align-items:center}label.chk input{width:auto}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin-bottom:6px}.sgrid label{margin:10px 0 4px}.sgrid input,.sgrid select{padding:9px 12px;font-size:15px}
 .sted .rs{font-size:12px;padding:5px 12px;margin-top:4px}
 .hp{position:absolute;left:-9999px}
+
+.rv{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+.hero>.clock{position:absolute;top:76px;right:clamp(16px,4vw,40px);width:auto;z-index:2;font-variant-numeric:tabular-nums;font-size:clamp(14px,2vw,20px);letter-spacing:.08em;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.hero.noimg>.clock{text-shadow:none}
+.strip{overflow:hidden}.track{display:flex;width:max-content;will-change:transform}
+.strip .ccard{flex:none;width:clamp(150px,26vw,280px);margin-right:clamp(14px,2.4vw,28px)}
+@supports (color:color-mix(in srgb,red,blue)){:root{--mut:color-mix(in srgb,var(--fg) 50%,var(--bg));--line:color-mix(in srgb,var(--fg) 12%,var(--bg))}.nav.solid{background:color-mix(in srgb,var(--bg) 86%,transparent)}.lb{background:color-mix(in srgb,var(--bg) 97%,transparent)}}
+.hero>picture{position:absolute;inset:0;z-index:0;width:100%}.hero>picture img{width:100%;height:100%;object-fit:cover;max-width:none;display:block}
+.gi .mv{display:flex;flex-direction:column;gap:6px}.gi .mv div{width:30px;height:30px;border-radius:50%;background:var(--fg);color:var(--bg);text-align:center;line-height:30px;cursor:pointer;font-size:14px}
+.item .mvb{padding:5px 11px}
 
 </style>
 </head><body><div class="wrap" id="app"></div>
@@ -224,6 +237,7 @@ function applyDesign(p) {
   DESIGN = p || {};
   const root = document.documentElement.style;
   root.setProperty("--r", Math.min(60, Math.max(0, Number.isFinite(+DESIGN.img_radius) && DESIGN.img_radius !== null ? +DESIGN.img_radius : 24)) + "px");
+  [["theme_bg", "--bg"], ["theme_fg", "--fg"], ["theme_accent", "--blue"], ["theme_soft", "--soft"]].forEach(([k, v]) => { if (/^#[0-9a-f]{6}$/i.test(DESIGN[k] || "")) root.setProperty(v, DESIGN[k]); });
   root.setProperty("--ratio", ({ portrait: "4/5", square: "1/1", landscape: "4/3", wide: "16/9" })[DESIGN.img_ratio] || "4/5");
 }
 async function loadProfile() {
@@ -246,9 +260,10 @@ function buildNav(p, overHero, sp) {
   const onIndex = !/(section|detail|admin)(\.html)?$/.test(location.pathname), pre = onIndex ? "" : "index.html";
   const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
   const names = { about: "About", contact: "Contact" };
-  const links = [["about", "About"], ...Object.keys(MAP).map(k => [k, (sp && sp[k] && sp[k].title) || MAP[k].label]), ["contact", "Contact"]];
+  const T = k => (sp && sp[k] && sp[k].title) || MAP[k].label;
+  const links = [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
-  nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
+  nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
   document.body.prepend(nav);
   nav.querySelector(".logo").onclick = e => { if (onIndex) { e.preventDefault(); history.replaceState(null, "", location.pathname); scrollTo({ top: 0, behavior: "smooth" }); } };
   if (overHero) { const f = () => nav.classList.toggle("solid", scrollY > 40); addEventListener("scroll", f, { passive: true }); f(); }
@@ -342,9 +357,27 @@ function contactCards(list) {
   }).join("");
 }
 
+/* scroll-in animation */
+function reveal(root = document) {
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .12 });
+  [...root.querySelectorAll(".mag,.ccard,.jrow,.sub,.ab,.docs,.cc,.seemore,section>h2,.dintro")].filter(e => !e.classList.contains("rv") && !e.closest(".strip")).forEach(e => { e.classList.add("rv"); io.observe(e); });
+}
+/* right-to-left auto-scroll strip (speed 1..10) */
+function startStrip(el, speed) {
+  const tr = el.firstElementChild; if (!tr || !tr.children.length) return;
+  const kids = [...tr.children], one = tr.scrollWidth, copies = Math.ceil(el.clientWidth / Math.max(one, 1)) + 1;
+  for (let i = 1; i < copies; i++) kids.forEach(k => tr.appendChild(k.cloneNode(true)));
+  const v = 12 + Math.min(10, Math.max(1, +speed || 5)) * 14; let x = 0, last = 0, hold = false;
+  el.addEventListener("mouseenter", () => hold = true); el.addEventListener("mouseleave", () => hold = false);
+  el.addEventListener("touchstart", () => hold = true, { passive: true }); el.addEventListener("touchend", () => setTimeout(() => hold = false, 1500));
+  const step = t => { if (last && !hold) { x -= v * Math.min(.05, (t - last) / 1000); if (x <= -one) x += one; tr.style.transform = `translateX(${x}px)`; } last = t; requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v5 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v8 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Sub photos (as many as you like). Each has its own description and text style", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -354,10 +387,20 @@ const S = {
   intro: { label: "Intro / Hero", table: "profile", single: true, fields: [
     TX("name", "Name", { sk: "hero.name" }), TX("tagline", "Tagline", { sk: "hero.tagline" }),
     AR("hero_cap1", "Caption 1", { sk: "hero.cap1" }), AR("hero_cap2", "Caption 2", { sk: "hero.cap2" }),
-    F("hero_url", "Header photo (full screen)", "image")] },
+    F("hero_url", "Header photo (full screen)", "image"),
+    F("hero_mobile_url", "Header photo for phones (optional, a tall photo works best)", "image"),
+    F("hero_fx", "Photo focus, left to right (0 = left, 50 = middle, 100 = right)", "number"),
+    F("hero_fy", "Photo focus, top to bottom (0 = top, 50 = middle, 100 = bottom)", "number"),
+    F("clock_show", "Show a live 24-hour clock on the hero photo (top right)", "bool"),
+    F("clock_tz", "Clock time zone", "select", { opts: [["local", "Visitor's own time"], ["Asia/Dhaka", "Bangladesh (Dhaka)"], ["UTC", "UTC"], ["Asia/Kolkata", "India"], ["Asia/Dubai", "Dubai"], ["Asia/Singapore", "Singapore"], ["Asia/Tokyo", "Tokyo"], ["Europe/London", "London"], ["America/New_York", "New York"]] })] },
   logo: { label: "Logo", table: "profile", single: true, fields: [
     F("logo_url", "Logo (top-left of the website; clicking it goes to the home hero)", "image"),
-    F("logo_h", "Logo height in px (16 to 120)", "number")] },
+    F("logo_h", "Logo height in px (16 to 120)", "number"),
+    F("logo_radius", "Logo corner roundness in px (0 = square, 60 = very round)", "number")] },
+  theme: { label: "Theme & footer", table: "profile", single: true, fields: [
+    F("theme_bg", "Background color", "color", { def: "#ffffff" }), F("theme_fg", "Text color", "color", { def: "#1d1d1f" }),
+    F("theme_accent", "Accent color (links and buttons)", "color", { def: "#0066cc" }), F("theme_soft", "Soft panel color (behind pictures and cards)", "color", { def: "#f5f5f7" }),
+    F("footer_text", "Footer text (e.g. © 2027 Al Mubin)", "text")] },
   about: { label: "About me", table: "profile", single: true, fields: [
     TX("about_title", "Small title above (e.g. About me)", { sk: "about.title" }),
     TX("about_headline", "Headline (one strong sentence)", { sk: "about.headline" }),
@@ -383,6 +426,7 @@ const S = {
   design: { label: "Pictures", table: "profile", single: true, fields: [
     F("img_radius", "Picture corner roundness (0 = square, 60 = very round)", "number"),
     F("img_ratio", "Picture shape", "select", { opts: [["portrait", "Tall (4:5)"], ["square", "Square"], ["landscape", "Landscape (4:3)"], ["wide", "Wide (16:9)"]] }),
+    F("scroll_speed", "Collection auto-scroll speed (1 slow to 10 fast)", "number"),
     F("side_mode", "Picture side in lists", "select", { opts: [["alternate", "Alternate left / right"], ["left", "Always left"], ["right", "Always right"]] })] },
   messages: { label: "Messages", readonly: true }
 };
@@ -422,17 +466,23 @@ async function inbox() {
   });
 }
 async function list() {
-  const s = S[tab], pk = s.pk || "id", main = $("main"), ord = s.order || ["created_at", false];
+  const s = S[tab], pk = s.pk || "id", main = $("main"), hasSort = s.fields.some(f => f.k === "sort_order"), ord = s.order || (hasSort ? ["sort_order", true] : ["created_at", false]);
   main.innerHTML = `${s.nonew ? "" : '<div class="actions" style="margin:0 0 12px"><button class="pri" id="new">+ New</button></div>'}<div id="rows">Loading…</div>`;
   if (!s.nonew) $("new").onclick = () => form({});
   const { data, error } = await sb.from(s.table || tab).select("*").order(ord[0], { ascending: ord[1] });
   const rows = $("rows");
   if (error) { rows.textContent = error.message; return; }
   rows.innerHTML = data.length ? "" : '<p class="msg">Nothing yet.</p>';
-  data.forEach(r => {
+  data.forEach((r, i) => {
     const d = document.createElement("div"); d.className = "item";
-    d.innerHTML = `<b>${esc(r[s.title] || r[pk])}${s.sub ? ` <small>${esc(r[s.sub])}</small>` : ""}</b>${r.published === false ? "<small>draft</small>" : ""}<button>Edit</button>${s.nodel ? "" : '<button class="del">Delete</button>'}`;
-    d.querySelector("button").onclick = () => form(r);
+    d.innerHTML = `<b>${esc(r[s.title] || r[pk])}${s.sub ? ` <small>${esc(r[s.sub])}</small>` : ""}</b>${r.published === false ? "<small>draft</small>" : ""}${hasSort ? '<button class="mvb" data-d="-1">↑</button><button class="mvb" data-d="1">↓</button>' : ""}<button class="ed">Edit</button>${s.nodel ? "" : '<button class="del">Delete</button>'}`;
+    d.querySelector(".ed").onclick = () => form(r);
+    d.querySelectorAll(".mvb").forEach(b => b.onclick = async () => {
+      const j = i + +b.dataset.d; if (j < 0 || j >= data.length) return;
+      const arr = data.slice(); [arr[i], arr[j]] = [arr[j], arr[i]];
+      await Promise.all(arr.map((r2, n) => sb.from(s.table || tab).update({ sort_order: n * 10 }).eq(pk, r2[pk])));
+      list();
+    });
     const del = d.querySelector(".del"); if (del) del.onclick = async () => { if (confirm("Delete this?")) { const { error } = await sb.from(s.table || tab).delete().eq(pk, r[pk]); if (error) alert(error.message); else list(); } };
     rows.appendChild(d);
   });
@@ -456,7 +506,9 @@ function drawGal(k) {
   const el = $("g-" + k); el.innerHTML = "";
   gal[k].forEach((it, i) => {
     const d = document.createElement("div"); d.className = "gi";
-    d.innerHTML = `<img src="${esc(it.url)}"><textarea placeholder="Description of this photo"></textarea><div class="x">×</div><div class="gs"></div>`;
+    d.innerHTML = `<img src="${esc(it.url)}"><textarea placeholder="Description of this photo"></textarea><div class="mv"><div class="u">↑</div><div class="d">↓</div><div class="x">×</div></div><div class="gs"></div>`;
+    d.querySelector(".u").onclick = () => { if (i > 0) { [gal[k][i - 1], gal[k][i]] = [gal[k][i], gal[k][i - 1]]; drawGal(k); } };
+    d.querySelector(".d").onclick = () => { if (i < gal[k].length - 1) { [gal[k][i + 1], gal[k][i]] = [gal[k][i], gal[k][i + 1]]; drawGal(k); } };
     const ta = d.querySelector("textarea"); ta.value = it.caption || ""; ta.oninput = () => it.caption = ta.value;
     d.querySelector(".x").onclick = () => { gal[k].splice(i, 1); drawGal(k); };
     d.querySelector(".gs").appendChild(styleEditor(it.style = it.style || {}));
@@ -483,6 +535,7 @@ async function upload(f0) {
   if (error) throw error;
   return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
 }
+const pvHtml = (k, v) => v ? `<img class="pv" src="${esc(v)}"> <button type="button" class="del" data-rm="${k}" style="margin-top:6px">Remove photo</button>` : "";
 async function form(row) {
   const s = S[tab], tb = s.table || tab, pk = s.pk || "id", main = $("main"); gal = {}; stys = {};
   if (row === null) { const { data } = await sb.from("profile").select("*").eq("id", 1).maybeSingle(); row = data || { id: 1 }; }
@@ -494,14 +547,15 @@ async function form(row) {
     if (t === "area") return `<label>${l}</label><textarea data-k="${k}">${esc(v)}</textarea>${hint}${stySlot}`;
     if (t === "bool") return `<label class="chk"><input type="checkbox" data-k="${k}" ${v === false ? "" : "checked"}> ${l}</label>`;
     if (t === "select") return `<label>${l}</label><select data-k="${k}">${f.opts.map(([o, n]) => `<option value="${esc(o)}" ${String(o) === String(v) ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>`;
-    if (t === "image") return `<label>${l}</label><input type="file" accept="image/*" data-up="${k}"><input type="hidden" data-k="${k}" value="${esc(v)}"><div id="pv-${k}">${v ? `<img class="pv" src="${esc(v)}"> <button type="button" class="del" data-rm="${k}" style="margin-top:6px">Remove photo</button>` : ""}</div>`;
+    if (t === "color") return `<label>${l}</label><input type="color" data-k="${k}" value="${/^#[0-9a-f]{6}$/i.test(v || "") ? v : (f.def || "#1d1d1f")}">`;
+    if (t === "image") return `<label>${l}</label><input type="file" accept="image/*" data-up="${k}"><input type="hidden" data-k="${k}" value="${esc(v)}"><div id="pv-${k}">${pvHtml(k, v)}</div>${k === "logo_url" ? '<div class="hint">No logo? Your name is shown as text in the top-left instead.</div>' : ""}`;
     if (t === "gallery") { gal[k] = Array.isArray(v) ? v.filter(i => i && i.url).map(i => ({ url: i.url, caption: i.caption || "", style: Object.assign({}, i.style) })) : []; return `<label>${l} <b id="gc-${k}"></b></label><input type="file" accept="image/*" multiple data-gup="${k}"><div id="g-${k}"></div>`; }
     return `<label>${l}</label><input data-k="${k}" type="${t}" value="${esc(v)}">${hint}${stySlot}`;
   }).join("") + `<div class="actions"><button class="pri" id="save">Save</button>${s.single ? "" : '<button id="cancel">Cancel</button>'}</div><p class="msg" id="m"></p>`;
   if (!s.single) $("cancel").onclick = list;
   main.querySelectorAll("[data-sty]").forEach(ph => { const sk = ph.dataset.sty; ph.appendChild(styleEditor(stys[sk] = Object.assign({}, saved[sk]))); });
   Object.keys(gal).forEach(drawGal);
-  main.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { const k = b.dataset.rm; main.querySelector(`[data-k="${k}"]`).value = ""; $("pv-" + k).innerHTML = ""; $("m").textContent = "Photo removed. Press Save."; });
+  main.onclick = e => { const b = e.target.closest("[data-rm]"); if (!b) return; const k = b.dataset.rm; main.querySelector(`[data-k="${k}"]`).value = ""; $("pv-" + k).innerHTML = ""; $("m").textContent = "Photo removed. Press Save."; };
   main.querySelectorAll("[data-gup]").forEach(inp => inp.onchange = async () => {
     const k = inp.dataset.gup, files = [...inp.files], room = Math.max(0, MAXPICS - gal[k].length);
     try { for (const f of files.slice(0, room)) { $("m").textContent = "Uploading " + f.name + "…"; gal[k].push({ url: await upload(f), caption: "", style: {} }); drawGal(k); } $("m").textContent = "Photos ready. Add descriptions, then press Save."; }
@@ -510,7 +564,7 @@ async function form(row) {
   });
   main.querySelectorAll("[data-up]").forEach(inp => inp.onchange = async () => {
     const f = inp.files[0]; if (!f) return; $("m").textContent = "Uploading…";
-    try { const u = await upload(f), k = inp.dataset.up; main.querySelector(`[data-k="${k}"]`).value = u; $("pv-" + k).innerHTML = `<img class="pv" src="${esc(u)}">`; $("m").textContent = "Photo ready. Press Save."; }
+    try { const u = await upload(f), k = inp.dataset.up; main.querySelector(`[data-k="${k}"]`).value = u; $("pv-" + k).innerHTML = pvHtml(k, u); $("m").textContent = "Photo ready. Press Save."; }
     catch (e) { $("m").textContent = e.message; }
   });
   $("save").onclick = async () => {

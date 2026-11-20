@@ -82,6 +82,7 @@ function applyDesign(p) {
   DESIGN = p || {};
   const root = document.documentElement.style;
   root.setProperty("--r", Math.min(60, Math.max(0, Number.isFinite(+DESIGN.img_radius) && DESIGN.img_radius !== null ? +DESIGN.img_radius : 24)) + "px");
+  [["theme_bg", "--bg"], ["theme_fg", "--fg"], ["theme_accent", "--blue"], ["theme_soft", "--soft"]].forEach(([k, v]) => { if (/^#[0-9a-f]{6}$/i.test(DESIGN[k] || "")) root.setProperty(v, DESIGN[k]); });
   root.setProperty("--ratio", ({ portrait: "4/5", square: "1/1", landscape: "4/3", wide: "16/9" })[DESIGN.img_ratio] || "4/5");
 }
 async function loadProfile() {
@@ -104,9 +105,10 @@ function buildNav(p, overHero, sp) {
   const onIndex = !/(section|detail|admin)(\.html)?$/.test(location.pathname), pre = onIndex ? "" : "index.html";
   const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
   const names = { about: "About", contact: "Contact" };
-  const links = [["about", "About"], ...Object.keys(MAP).map(k => [k, (sp && sp[k] && sp[k].title) || MAP[k].label]), ["contact", "Contact"]];
+  const T = k => (sp && sp[k] && sp[k].title) || MAP[k].label;
+  const links = [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
-  nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
+  nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
   document.body.prepend(nav);
   nav.querySelector(".logo").onclick = e => { if (onIndex) { e.preventDefault(); history.replaceState(null, "", location.pathname); scrollTo({ top: 0, behavior: "smooth" }); } };
   if (overHero) { const f = () => nav.classList.toggle("solid", scrollY > 40); addEventListener("scroll", f, { passive: true }); f(); }
@@ -198,4 +200,22 @@ function contactCards(list) {
     const inner = `<span class="ci" style="background:${bg}"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${svg}</svg></span><span class="cx"><b>${esc(c.title)}</b><small>${esc(c.value)}</small></span>`;
     return h ? `<a class="cc" href="${esc(h)}" target="_blank" rel="noopener">${inner}</a>` : `<div class="cc">${inner}</div>`;
   }).join("");
+}
+
+/* scroll-in animation */
+function reveal(root = document) {
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .12 });
+  [...root.querySelectorAll(".mag,.ccard,.jrow,.sub,.ab,.docs,.cc,.seemore,section>h2,.dintro")].filter(e => !e.classList.contains("rv") && !e.closest(".strip")).forEach(e => { e.classList.add("rv"); io.observe(e); });
+}
+/* right-to-left auto-scroll strip (speed 1..10) */
+function startStrip(el, speed) {
+  const tr = el.firstElementChild; if (!tr || !tr.children.length) return;
+  const kids = [...tr.children], one = tr.scrollWidth, copies = Math.ceil(el.clientWidth / Math.max(one, 1)) + 1;
+  for (let i = 1; i < copies; i++) kids.forEach(k => tr.appendChild(k.cloneNode(true)));
+  const v = 12 + Math.min(10, Math.max(1, +speed || 5)) * 14; let x = 0, last = 0, hold = false;
+  el.addEventListener("mouseenter", () => hold = true); el.addEventListener("mouseleave", () => hold = false);
+  el.addEventListener("touchstart", () => hold = true, { passive: true }); el.addEventListener("touchend", () => setTimeout(() => hold = false, 1500));
+  const step = t => { if (last && !hold) { x -= v * Math.min(.05, (t - last) / 1000); if (x <= -one) x += one; tr.style.transform = `translateX(${x}px)`; } last = t; requestAnimationFrame(step); };
+  requestAnimationFrame(step);
 }

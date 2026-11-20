@@ -11,6 +11,11 @@
 <script src="config.js?v=4"></script><script src="common.js?v=4"></script>
 <script>
 const main = $("main");
+function bioHtml(p, hs) {
+  const b = p.about_bio || ""; if (!b) return "";
+  const w = b.match(/\S+\s*/g) || [];
+  return `<div class="bio"${sty(hs["about.bio"])}>${w.length > 200 ? `<span class="bs">${esc(w.slice(0, 200).join("").trim())}…</span><span class="bf" hidden>${esc(b)}</span> <a href="#" class="bm">See more…</a>` : esc(b)}</div>`;
+}
 function aboutView(p) {
   const hs = p.styles || {}, docs = (p.about_docs || []).filter(d => d && d.url);
   if (!(p.about_pic || p.about_headline || p.about_bio || p.about_facts || docs.length)) return "";
@@ -21,7 +26,7 @@ function aboutView(p) {
     ${pic ? `<div class="abpic" style="--abh:${h}vh;--abr:${rad}px;--abv:${v}"><img class="zoom" src="${esc(pic)}" alt=""></div>` : ""}
     <div><div class="eyebrow"${sty(hs["about.title"])}>${esc(p.about_title || "About me")}</div>
       ${p.about_headline ? `<h3${sty(hs["about.headline"])}>${esc(p.about_headline)}</h3>` : ""}
-      ${p.about_bio ? `<div class="bio"${sty(hs["about.bio"])}>${esc(p.about_bio)}</div>` : ""}
+      ${bioHtml(p, hs)}
       ${facts.length ? `<dl class="facts"${sty(hs["about.facts"])}>${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}</div></div>
     ${docs.length ? `<div class="docs"><h3${sty(hs["about.docs_title"])}>${esc(p.about_docs_title || "Licenses & Credentials")}</h3><div class="dgrid">${docs.map((d, n) => `<figure><img data-n="${n}" src="${esc(d.url)}" alt="" loading="lazy">${d.caption ? `<figcaption${sty(d.style)}>${esc(d.caption)}</figcaption>` : ""}</figure>`).join("")}</div></div>` : ""}</section>`;
 }
@@ -47,13 +52,18 @@ function contactView(list) {
   document.title = name;
   buildNav(p, !!bg, sp);
   hero.className = "hero" + (bg ? "" : " noimg");
-  hero.innerHTML = `${bg ? `<img src="${esc(bg)}" alt="">` : ""}<h1${sty(hs["hero.name"])}>${esc(name)}</h1>
+  const pos = `object-position:${Math.min(100, Math.max(0, +p.hero_fx ?? 50))}% ${Math.min(100, Math.max(0, +p.hero_fy ?? 50))}%`, mob = safeUrl(p.hero_mobile_url);
+  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}<h1${sty(hs["hero.name"])}>${esc(name)}</h1>
     ${p.tagline ? `<p class="tag"${sty(hs["hero.tagline"])}>${esc(p.tagline)}</p>` : ""}
     ${p.hero_cap1 ? `<p class="cap"${sty(hs["hero.cap1"])}>${esc(p.hero_cap1)}</p>` : ""}
-    ${p.hero_cap2 ? `<p class="cap"${sty(hs["hero.cap2"])}>${esc(p.hero_cap2)}</p>` : ""}`;
-  $("foot").textContent = `© ${new Date().getFullYear()} ${name}`;
+    ${p.hero_cap2 ? `<p class="cap"${sty(hs["hero.cap2"])}>${esc(p.hero_cap2)}</p>` : ""}
+    ${p.clock_show === false ? "" : '<div class="clock" id="clk"></div>'}`;
+  const clk = $("clk"), tz = p.clock_tz && p.clock_tz !== "local" ? p.clock_tz : undefined;
+  if (clk) { const tick = () => { try { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: tz }); } catch (e) { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false }); } }; tick(); setInterval(tick, 1000); }
+  $("foot").textContent = p.footer_text || `© ${new Date().getFullYear()} ${name}`;
   main.innerHTML = aboutView(p);
-  const ab = $("about"); if (ab) { const docs = (p.about_docs || []).filter(d => d && d.url); ab.querySelectorAll(".abpic img").forEach(i => i.onclick = () => openLB(i.src, "")); ab.querySelectorAll(".dgrid img").forEach(i => i.onclick = () => openLB(i.src, (docs[+i.dataset.n] || {}).caption)); }
+  const ab = $("about"); if (ab) { const docs = (p.about_docs || []).filter(d => d && d.url); ab.querySelector(".bm")?.addEventListener("click", e => { e.preventDefault(); const f = ab.querySelector(".bf"), s = ab.querySelector(".bs"), open = f.hidden; f.hidden = !open; s.hidden = open; e.target.textContent = open ? "See less" : "See more…"; });
+    ab.querySelectorAll(".abpic img").forEach(i => i.onclick = () => openLB(i.src, "")); ab.querySelectorAll(".dgrid img").forEach(i => i.onclick = () => openLB(i.src, (docs[+i.dataset.n] || {}).caption)); }
   Object.entries(MAP).forEach(([t, c]) => main.insertAdjacentHTML("beforeend", `<section id="${t}"><h2>${esc((sp[t] && sp[t].title) || c.label)}</h2><div id="c-${t}" class="${WRAP[t] || ""}"></div></section>`));
   main.insertAdjacentHTML("beforeend", '<section id="contact"><h2>Contact</h2><div class="contact" id="contact-box"></div></section>');
   const { data: cts } = await sb.from("contacts").select("*").eq("published", true).order("sort_order").order("created_at");
@@ -63,11 +73,12 @@ function contactView(list) {
   for (const [t, c] of Object.entries(MAP)) {
     const el = $("c-" + t), o = off++ % 2;
     try {
-      const { data, error } = await query(t).limit(3);
+      const { data, error } = await query(t).limit(t === "collections" ? 30 : 3);
       if (error) throw error;
+      if (t === "collections" && data.length) { el.className = "strip"; el.innerHTML = `<div class="track">${data.map(r => card(t, r)).join("")}</div>`; el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">View all ›</a>`); startStrip(el, p.scroll_speed); continue; }
       el.innerHTML = data.length ? data.slice(0, 2).map((r, i) => render(t, r, i, o)).join("") + (data.length > 2 ? render(t, data[2], 2, o, true) : "") : '<p class="empty">Coming soon.</p>';
       if (data.length > 2) el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">See more ›</a>`);
-    } catch (e) { el.innerHTML = '<p class="empty">Coming soon.</p>'; }
+    } catch (e) { el.innerHTML = '<p class="empty">Coming soon.</p>'; } finally { reveal(); }
   }
   if (!IS_RELOAD && location.hash) $(location.hash.slice(1))?.scrollIntoView();
 })();

@@ -65,7 +65,9 @@ footer{padding:80px 24px;text-align:center;color:var(--mut);font-size:13px}
 .jrow.peek .jmain,.jrow.peek .jthumb{filter:blur(5px)}
 .yr{font-size:13px;letter-spacing:.1em;color:var(--mut);margin:56px 0 12px;font-weight:600}
 /* about */
-.ab{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,80px);align-items:center}
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,80px);align-items:stretch}
+.ab>div:not(.abpic){display:flex;flex-direction:column;justify-content:center}
+.bm{color:var(--blue);text-decoration:none;font-weight:500;white-space:nowrap}
 .ab.right .abpic{order:2}
 .abpic{height:var(--abh,60vh);border-radius:var(--abr,24px);overflow:hidden;background:var(--soft);align-self:var(--abv,center)}
 .abpic img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
@@ -130,3 +132,14 @@ label.chk{display:flex;gap:10px;align-items:center}label.chk input{width:auto}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin-bottom:6px}.sgrid label{margin:10px 0 4px}.sgrid input,.sgrid select{padding:9px 12px;font-size:15px}
 .sted .rs{font-size:12px;padding:5px 12px;margin-top:4px}
 .hp{position:absolute;left:-9999px}
+
+.rv{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+.hero>.clock{position:absolute;top:76px;right:clamp(16px,4vw,40px);width:auto;z-index:2;font-variant-numeric:tabular-nums;font-size:clamp(14px,2vw,20px);letter-spacing:.08em;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.hero.noimg>.clock{text-shadow:none}
+.strip{overflow:hidden}.track{display:flex;width:max-content;will-change:transform}
+.strip .ccard{flex:none;width:clamp(150px,26vw,280px);margin-right:clamp(14px,2.4vw,28px)}
+@supports (color:color-mix(in srgb,red,blue)){:root{--mut:color-mix(in srgb,var(--fg) 50%,var(--bg));--line:color-mix(in srgb,var(--fg) 12%,var(--bg))}.nav.solid{background:color-mix(in srgb,var(--bg) 86%,transparent)}.lb{background:color-mix(in srgb,var(--bg) 97%,transparent)}}
+.hero>picture{position:absolute;inset:0;z-index:0;width:100%}.hero>picture img{width:100%;height:100%;object-fit:cover;max-width:none;display:block}
+.gi .mv{display:flex;flex-direction:column;gap:6px}.gi .mv div{width:30px;height:30px;border-radius:50%;background:var(--fg);color:var(--bg);text-align:center;line-height:30px;cursor:pointer;font-size:14px}
+.item .mvb{padding:5px 11px}
