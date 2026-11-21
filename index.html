@@ -43,7 +43,7 @@ async function bookView(cfg) {
     ${p.tagline ? `<p class="tag ht">${esc(p.tagline)}</p>` : ""}
     ${p.hero_cap1 ? `<p class="cap hc1">${esc(p.hero_cap1)}</p>` : ""}
     ${p.hero_cap2 ? `<p class="cap hc2">${esc(p.hero_cap2)}</p>` : ""}
-    ${p.clock_show === false ? "" : '<div class="clock" id="clk"></div>'}`;
+    ${p.clock_show === false ? "" : `<div class="clock cp-${esc(p.clock_pos || "tr")}" id="clk"></div>`}`;
   const clk = $("clk"), tz = p.clock_tz && p.clock_tz !== "local" ? p.clock_tz : undefined;
   if (clk) { const tick = () => { try { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: tz }); } catch (e) { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false }); } }; tick(); setInterval(tick, 1000); }
   $("foot").textContent = p.footer_text || `© ${new Date().getFullYear()} ${name}`;
@@ -63,7 +63,7 @@ async function bookView(cfg) {
       if (rs.type === "capsule") { const { data: cp } = await sb.rpc("capsules", { k: t }); capsuleView(el, cp || [], t); continue; }
       if (rs.type === "timeline") { const { data: tr } = await query(t).limit(300); el.innerHTML = '<a class="seemore" href="#">See more…</a>'; el.firstChild.onclick = e => { e.preventDefault(); tlView(el, tr || [], rs.config || {}, t); }; continue; }
       if (rs.type === "favorites") { const { data: fr } = await query(t).limit(300); favView(el, fr || [], t); continue; }
-      const lay = (rs.config || {}).layout || ({ collections: "strip", journal: "list" })[rs.type] || "magazine";
+      const lay = (rs.config || {}).layout || ({ collections: "strip", journal: "list", achievements: "grid", memories: "grid" })[rs.type] || "magazine";
       if (rs.type === "travel") sb.from("travel").select("id,title,latlng").eq("published", true).not("latlng", "is", null).then(({ data: mp }) => { if (mp && mp.length) { el.insertAdjacentHTML("beforebegin", '<div class="tmapw"></div>'); mapView(el.previousElementSibling, mp, t); } });
       const { data, error } = await query(t).limit(lay === "strip" ? 30 : 3);
       if (error) throw error;

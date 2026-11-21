@@ -237,6 +237,46 @@ html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e
 .tmapw{margin-bottom:clamp(24px,5vw,48px)}.tmap{height:clamp(260px,50vw,460px);border-radius:var(--r);overflow:hidden;position:relative;z-index:0;isolation:isolate}.mcount{text-align:center;color:var(--mut);font-size:14px;margin-top:10px}
 .hero>video{position:absolute!important;inset:0;z-index:0!important;width:100%;height:100%;object-fit:cover;max-width:none}
 
+.pair{position:relative;aspect-ratio:1.25;margin-bottom:14px}
+.pair i{position:absolute;overflow:hidden;background:var(--soft);box-shadow:0 10px 26px rgba(0,0,0,.22)}.pair img{width:100%;height:100%;object-fit:cover;display:block}
+.pair.coin i{width:62%;aspect-ratio:1;border-radius:50%}.pair.coin i:nth-child(1){left:0;top:0;z-index:1}.pair.coin i:nth-child(2){right:0;bottom:0}
+.pair.note i{width:70%;aspect-ratio:2/1;border-radius:6px}.pair.note i:nth-child(1){left:0;top:4%;z-index:1}.pair.note i:nth-child(2){right:0;bottom:4%}
+.ccard.lock .cpic{flex-direction:column;gap:10px;color:#fff}.cd{font-size:13px;letter-spacing:.06em}.cd b{font-size:clamp(16px,2.6vw,22px);font-weight:500}
+.tlp:not(.act):not(.nb) .tli{animation-play-state:paused}.tlc{contain:layout paint}.tli{will-change:transform}.tli img{box-shadow:0 4px 12px rgba(0,0,0,.16)}
+.room{background:#050505;color:#e9e6df;border-radius:6px;padding:clamp(60px,12vw,140px) clamp(16px,5vw,60px);font-family:Georgia,"Times New Roman",serif}
+.rv1{text-align:center;transition:opacity 1.2s}.rv1.open{opacity:0}
+.rk{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.4em;text-transform:uppercase;opacity:.45}
+.slit{position:relative;width:1px;height:clamp(140px,28vh,260px);margin:44px auto;background:linear-gradient(transparent,#e9e6df 30%,#e9e6df 70%,transparent)}
+.slit i{position:absolute;left:50%;top:50%;width:9px;height:9px;border:1px solid #e9e6df;border-radius:50%;transform:translate(-50%,-50%);background:#050505;animation:rpulse 3.2s ease-in-out infinite}
+.rq{font-style:italic;font-size:clamp(15px,2.4vw,20px);opacity:.7;max-width:420px;margin:0 auto 28px;animation:none}
+.rbtn{background:none;border:0;border-bottom:1px solid #e9e6df66;color:#e9e6df;border-radius:0;padding:6px 2px;letter-spacing:.2em;font-size:12px;text-transform:uppercase;font-family:inherit;min-height:0}
+.rpw input{background:none;border:0;border-bottom:1px solid #e9e6df88;border-radius:0;color:#fff;text-align:center;letter-spacing:.5em;max-width:220px}
+.rv1.open .slit{animation:ropen 1.3s forwards}.rv1.no .slit{animation:rshake .4s}
+@keyframes rpulse{50%{box-shadow:0 0 22px 6px #e9e6df55}}@keyframes ropen{to{width:100vw;margin-left:calc(50% - 50vw);filter:brightness(3)}}
+.rch{display:grid;grid-template-columns:clamp(40px,9vw,80px) 1fr;gap:6px 20px;padding:clamp(34px,6vw,70px) 0;border-top:1px solid #e9e6df22}
+.rnum{font-size:clamp(26px,5vw,56px);font-weight:200;opacity:.5}
+.rbody h3{font-weight:400;font-size:clamp(24px,4.5vw,48px);letter-spacing:-.01em}.rbody p{opacity:.72;max-width:560px;margin-top:10px;white-space:pre-wrap;line-height:1.8}
+.rfig{grid-column:2;margin:22px 0 0}.rfig img{width:100%;display:block;filter:grayscale(.25) contrast(1.05)}.rfig figcaption{font-size:12px;opacity:.5;margin-top:6px;letter-spacing:.06em}.rfig.sm{max-width:60%}
+
+.hero>.clock.cp-tl{left:clamp(16px,4vw,40px);right:auto}.hero>.clock.cp-br{top:auto;bottom:24px}.hero>.clock.cp-bl{top:auto;bottom:24px;left:clamp(16px,4vw,40px);right:auto}
+.fmusic{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:14px}.fmusic iframe{width:100%;border:0;border-radius:12px}
+/* journal: paper and typewriter */
+#journal .jlist{background:#fbf7ee repeating-linear-gradient(transparent 0 31px,#eadfc8 31px 32px);color:#2b2418;border:0;border-radius:4px;padding:clamp(6px,2vw,22px) clamp(14px,3vw,40px);box-shadow:0 12px 40px rgba(0,0,0,.12)}
+#journal .jrow{border-bottom:1px dashed #cdbf9f}#journal .jdate{font-family:"Courier New",monospace;color:#8a7a58}#journal .jmain h3{font-family:Georgia,serif;font-weight:400}#journal .jmain p,#journal .jmeta{color:#6b5f46}#journal .jrow:hover h3{color:#a3522c}
+/* achievements: gold plaques */
+#achievements .ccard{background:linear-gradient(160deg,#16161a,#25222a);color:#f4ecd8;border:1px solid #c9a24d;border-radius:14px;padding:18px;text-align:center}
+#achievements .ccard .chip{color:#c9a24d;border-color:#c9a24d66}#achievements .ccard p{color:#cfc6b0}#achievements .cpic{border-radius:50%;width:68%;margin:0 auto 14px;aspect-ratio:1;border:2px solid #c9a24d}
+/* memories: polaroids */
+#memories .ccard{background:#fff;color:#222;padding:10px 10px 16px;box-shadow:0 10px 26px rgba(0,0,0,.18);transform:rotate(-1.8deg);transition:transform .3s}
+#memories .ccard:nth-child(even){transform:rotate(1.6deg)}#memories .ccard:hover{transform:rotate(0) scale(1.03)}#memories .cpic{border-radius:2px;aspect-ratio:1;margin-bottom:10px}#memories .ccard p{color:#666}#memories .chip{color:#777}
+/* guest book: a real, bound book */
+.book{background:linear-gradient(145deg,#33281c,#1d160e);box-shadow:0 22px 50px rgba(0,0,0,.35),inset 0 0 0 2px rgba(0,0,0,.4);position:relative}
+.book:before{content:"";position:absolute;left:0;top:0;bottom:0;width:14px;border-radius:28px 0 0 28px;background:repeating-linear-gradient(transparent 0 22px,rgba(0,0,0,.35) 22px 24px),linear-gradient(90deg,rgba(0,0,0,.5),transparent)}
+.gbpage{transform-origin:left center;animation:gbflip .75s cubic-bezier(.3,.7,.2,1);background-image:linear-gradient(transparent 94%,rgba(59,49,36,.07) 94%);background-size:100% 34px;box-shadow:inset 24px 0 26px -22px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3)}
+@keyframes gbflip{from{transform:perspective(1400px) rotateY(-64deg);opacity:.2}to{transform:none;opacity:1}}
+/* admin tab groups */
+.wrap .tabs{position:static;flex-direction:column;gap:8px}.tg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}.tg span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8e8e93;width:72px}
+
 .wrap{padding-top:max(40px,env(safe-area-inset-top));padding-bottom:max(120px,env(safe-area-inset-bottom))}html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:none}button{min-height:38px}
 </style>
 </head><body><div class="wrap" id="app"></div>
@@ -364,7 +404,7 @@ function buildNav(p, overHero, sp) {
     : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
-  nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option></select>');
+  nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option><option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="es">Español</option><option value="fr">Français</option><option value="pt">Português</option></select>');
   nav.insertAdjacentHTML("beforeend", '<button class="dm" aria-label="Dark mode">◐</button>');
   nav.querySelector(".dm").onclick = () => { const d = document.documentElement.dataset.theme === "dark"; localStorage.setItem("theme", d ? "" : "dark"); location.reload(); };
   const ls = nav.querySelector(".lang"); ls.value = LANG; ls.onchange = () => setLang(ls.value);
@@ -398,8 +438,8 @@ function mag(t, r, i, off, peek) {
 }
 function card(t, r, i, off, peek) {
   const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
-  return `<a class="ccard${peek ? " peek" : ""}" href="${link(t, r, peek)}"><div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
-    ${r.category ? `<span class="chip">${esc(r.category)}</span>` : ""}<h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}</a>`;
+  return `<a class="ccard${peek ? " peek" : ""}" href="${link(t, r, peek)}">${cpic(r, img)}
+    ${(r.category || c.meta(r)) ? `<span class="chip">${esc(r.category || c.meta(r))}</span>` : ""}<h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}</a>`;
 }
 function entry(t, r, i, off, peek) {
   const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
@@ -543,11 +583,15 @@ const rimg = r => r.cover_url || ((r.images || [])[0] || {}).url;
 function favView(el, rows, key) {
   el.className = "fgrid";
   el.innerHTML = rows.length ? rows.map((r, i) => `<a class="fcard f${i % 5}" href="detail.html?t=${key}&id=${r.id}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy">` : ""}<span class="fn">${i + 1}</span><div class="fi"><small>${esc(r.subtitle || "")}</small><h4${st_(r, "title")}>${esc(r.title)}</h4></div></a>`).join("") : '<p class="empty">Coming soon.</p>';
+  const mu = rows.map(r => { const m = String(r.description || "").match(/open\.spotify\.com\/(?:intl-\w+\/)?(track|album|playlist|artist)\/(\w+)/); return m && /music|song|album|spotify|playlist/i.test(r.subtitle || "") ? m : null; }).filter(Boolean);
+  if (mu.length) el.insertAdjacentHTML("beforeend", `<div class="fmusic">${mu.map(m => `<iframe src="https://open.spotify.com/embed/${m[1]}/${m[2]}" height="152" loading="lazy" allow="encrypted-media"></iframe>`).join("")}</div>`);
 }
 function capsuleView(el, rows, key) {
   el.className = "cgrid";
   el.innerHTML = rows.length ? rows.map(r => r.open ? `<a class="ccard" href="detail.html?t=${key}&id=${r.id}"><div class="cpic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><span class="chip">Opened</span><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p></a>`
-    : `<div class="ccard lock"><div class="cpic"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><span class="chip">Sealed</span><h3>${esc(r.title)}</h3><p>Opens on ${esc(fmt(r.open_on))}</p></div>`).join("") : '<p class="empty">Coming soon.</p>';
+    : `<div class="ccard lock"><div class="cpic"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><p class="cd" data-d="${esc(r.open_on)}"></p></div><span class="chip">Sealed</span><h3>${esc(r.title)}</h3><p>Opens on ${esc(fmt(r.open_on))}</p></div>`).join("") : '<p class="empty">Coming soon.</p>';
+  const tick = () => el.querySelectorAll(".cd").forEach(p => { const s = Math.floor((new Date(p.dataset.d + "T00:00:00") - Date.now()) / 1e3); p.innerHTML = s <= 0 ? "Opening…" : `<b>${Math.floor(s / 86400)}</b>d <b>${Math.floor(s % 86400 / 3600)}</b>h <b>${Math.floor(s % 3600 / 60)}</b>m <b>${s % 60}</b>s`; });
+  tick(); setInterval(tick, 1000);
 }
 function tlView(el, rows, cfg, key) {
   const spd = Math.min(10, Math.max(1, +cfg.speed || 5)), sec = 8 - spd * .6, first = cfg.dir === "down" ? 1 : 0, by = {};
@@ -555,36 +599,33 @@ function tlView(el, rows, cfg, key) {
   const years = Object.keys(by).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   el.className = "tl";
   el.innerHTML = `<div class="tlr">${years.map((y, i) => {
-    const imgs = by[y].flatMap(r => [r.cover_url ? { url: r.cover_url, caption: r.title } : null, ...(r.images || []).map(m => ({ url: m.url, type: m.type, caption: m.caption || r.title }))]).filter(m => m && m.url && m.type !== "video" && m.type !== "youtube");
-    const col = [...imgs, ...imgs].map((m, k) => `<figure style="--r:${(k % 3 - 1) * 2}deg"><img src="${esc(m.url)}" alt="" loading="lazy"><figcaption>${esc(m.caption || "")}</figcaption></figure>`).join("");
+    const imgs = by[y].flatMap(r => [r.cover_url ? { url: r.cover_url, caption: r.title } : null, ...(r.images || []).map(m => ({ url: m.url, type: m.type, caption: m.caption || r.title }))]).filter(m => m && m.url && m.type !== "video" && m.type !== "youtube").slice(0, 10);
+    const col = [...imgs, ...imgs].map((m, k) => `<figure style="--r:${(k % 3 - 1) * 2}deg"><img src="${esc(m.url)}" alt="" loading="lazy" decoding="async"><figcaption>${esc(m.caption || "")}</figcaption></figure>`).join("");
     return `<div class="tlp"><div class="tly">${esc(y)}</div><div class="tlc"><div class="tli ${(i + first) % 2 ? "dn" : "up"}" style="--d:${Math.max(8, Math.round(imgs.length * sec))}s">${col}</div></div><div class="tlt">${by[y].map(r => `<a href="detail.html?t=${key}&id=${r.id}">${esc(r.title)}</a>`).join("")}</div></div>`;
   }).join("")}</div>`;
   const rail = el.firstChild, ps = [...rail.children];
-  const upd = () => { const c = rail.scrollLeft + rail.clientWidth / 2; let b = 0, bd = 1e9; ps.forEach((p, i) => { const d = Math.abs(p.offsetLeft + p.offsetWidth / 2 - c); if (d < bd) { bd = d; b = i; } }); ps.forEach((p, i) => p.classList.toggle("act", i === b)); };
+  const upd = () => { const c = rail.scrollLeft + rail.clientWidth / 2; let b = 0, bd = 1e9; ps.forEach((p, i) => { const d = Math.abs(p.offsetLeft + p.offsetWidth / 2 - c); if (d < bd) { bd = d; b = i; } }); ps.forEach((p, i) => { p.classList.toggle("act", i === b); p.classList.toggle("nb", Math.abs(i - b) === 1); }); };
   rail.addEventListener("scroll", upd, { passive: true });
   ps.forEach(p => p.onclick = () => rail.scrollTo({ left: p.offsetLeft - (rail.clientWidth - p.offsetWidth) / 2, behavior: "smooth" }));
   setTimeout(upd, 60);
 }
 
-/* ---- Hidden Room ---- */
+/* ---- Hidden Room: a quiet, noir chamber ---- */
 function roomView(el, key) {
   el.className = "room";
-  el.innerHTML = `<div class="rtxt"><p>Some doors are not meant to be found.</p><p style="animation-delay:1.4s">You walked a long way to reach this one.</p></div>
-    <div class="door"><div class="leaf"><i class="knob"></i><svg class="padlock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>
-    <p class="rhint">Touch the door, if you know the word.</p>
-    <form class="rpw" hidden><input type="password" placeholder="Password" autocomplete="off"><button class="pri">Enter</button><p class="msg"></p></form><div class="rin" hidden></div>`;
-  const door = el.querySelector(".door"), f = el.querySelector(".rpw");
-  door.onclick = () => { f.hidden = false; f.querySelector("input").focus(); };
+  el.innerHTML = '<div class="rv1"><span class="rk">Chamber · Restricted</span><div class="slit"><i></i></div><p class="rq">Some rooms are only for the ones who were meant to find them.</p><button class="rbtn" type="button">Speak the word</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>';
+  const v = el.querySelector(".rv1"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn"), RN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  b.onclick = () => { b.hidden = true; f.hidden = false; f.querySelector("input").focus(); };
   f.onsubmit = async e => {
-    e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "…";
+    e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "";
     const { data } = await sb.rpc("room_open", { k: key, pw: f.querySelector("input").value });
-    if (!data) { m.textContent = "That is not the word."; door.classList.add("shake"); setTimeout(() => door.classList.remove("shake"), 600); return; }
-    door.classList.add("open"); f.hidden = true;
+    if (!data) { m.textContent = "Not quite."; v.classList.add("no"); setTimeout(() => v.classList.remove("no"), 500); return; }
+    v.classList.add("open");
     setTimeout(() => {
-      const rin = el.querySelector(".rin"); el.querySelector(".rtxt").hidden = door.hidden = true; el.querySelector(".rhint").hidden = true;
-      rin.innerHTML = data.map((r, i) => `<div class="sub${i % 2 ? " flip" : ""}"><div class="pic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><div class="txt"><h3${st_(r, "title")}>${esc(r.title)}</h3><p class="cap"${st_(r, "description")}>${esc(r.description)}</p></div></div>${subs((r.images || []).filter(x => x && x.url))}`).join("") || '<p class="empty">The room is empty… for now.</p>';
+      v.hidden = true; const rin = el.querySelector(".rin");
+      rin.innerHTML = data.map((r, i) => `<article class="rch"><div class="rnum">${RN[i] || i + 1}</div><div class="rbody"><h3${st_(r, "title")}>${esc(r.title)}</h3><p${st_(r, "description")}>${esc(r.description)}</p></div>${r.cover_url ? `<figure class="rfig"><img src="${esc(r.cover_url)}" alt="" loading="lazy"></figure>` : ""}${(r.images || []).filter(x => x && x.url).map(x => `<figure class="rfig sm"><img src="${esc(x.url)}" alt="" loading="lazy">${x.caption ? `<figcaption>${esc(x.caption)}</figcaption>` : ""}</figure>`).join("")}</article>`).join("") || '<p class="rq">Nothing here yet.</p>';
       rin.hidden = false; rin.classList.add("in");
-    }, 1500);
+    }, 1400);
   };
 }
 
@@ -608,9 +649,16 @@ async function mapView(el, rows, key) {
   pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : map.setView(pts[0].ll, 8);
 }
 
+/* coin (two overlapping circles) and banknote (two overlapping rectangles) slots for the Collection */
+function cpic(r, img) {
+  const k = /coin/i.test(r.category || "") ? "coin" : /note/i.test(r.category || "") ? "note" : "", im = [r.cover_url, ...(r.images || []).map(m => m && m.url)].filter(Boolean);
+  if (k && im.length) return `<div class="pair ${k}"><i><img src="${esc(im[0])}" alt="" loading="lazy" decoding="async"></i>${im[1] ? `<i><img src="${esc(im[1])}" alt="" loading="lazy" decoding="async"></i>` : ""}</div>`;
+  return `<div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>`;
+}
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v17 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v18 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Photos and videos (each with its own description and text style)", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -628,6 +676,7 @@ const S = {
     F("hero_fx", "Photo focus, left to right (0 = left, 50 = middle, 100 = right)", "number"),
     F("hero_fy", "Photo focus, top to bottom (0 = top, 50 = middle, 100 = bottom)", "number"),
     F("clock_show", "Show a live 24-hour clock on the hero photo (top right)", "bool"),
+    F("clock_pos", "Clock position", "select", { opts: [["tr", "Top right"], ["tl", "Top left"], ["br", "Bottom right"], ["bl", "Bottom left"]] }),
     F("clock_tz", "Clock time zone", "select", { opts: [["local", "Visitor's own time"], ["Asia/Dhaka", "Bangladesh (Dhaka)"], ["UTC", "UTC"], ["Asia/Kolkata", "India"], ["Asia/Dubai", "Dubai"], ["Asia/Singapore", "Singapore"], ["Asia/Tokyo", "Tokyo"], ["Europe/London", "London"], ["America/New_York", "New York"]] })] },
   logo: { label: "Logo & app icon", table: "profile", single: true, fields: [
     F("logo_url", "Logo (top-left of the website; clicking it goes to the home hero)", "image"),
@@ -684,9 +733,11 @@ function loginView() {
   <div class="actions"><button class="pri" id="go">Sign in</button></div><p class="msg" id="m"></p>`;
   $("go").onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: $("em").value.trim(), password: $("pw").value }); if (error) $("m").textContent = error.message; else boot(); };
 }
+const TG = { intro: "Site", logo: "Site", theme: "Site", design: "Site", pages: "Tools", create: "Tools", order: "Tools", stats: "Tools", backup: "Tools" };
+const tabsHtml = () => ["Site", "Sections", "Tools"].map(g => `<div class="tg"><span>${g}</span>${Object.keys(S).filter(k => (TG[k] || "Sections") === g).map(k => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc(S[k].label)}</button>`).join("")}</div>`).join("");
 function shell() {
   app.innerHTML = `<div class="bar"><b>Admin <small style="color:var(--mut);font-weight:400">${VERSION}</small></b><span><a href="index.html" style="font-size:14px;margin-right:14px">View site</a><button id="lo">Sign out</button></span></div>
-  <div class="tabs">${Object.entries(S).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc(v.label)}</button>`).join("")}</div>${visBar()}<div id="main"></div>`;
+  <div class="tabs">${tabsHtml()}</div>${visBar()}<div id="main"></div>`;
   $("lay") && ($("lay").onchange = async () => { const r = REG.find(x => x.key === secKey()), c = Object.assign({}, r.config); if ($("lay").value) c.layout = $("lay").value; else delete c.layout; await sb.from("sections").update({ config: c }).eq("key", r.key); await loadReg(); });
   $("rset") && ($("rset").onclick = async () => { const { error } = await sb.rpc("set_room_password", { k: secKey(), pw: $("rpw").value }); alert(error ? error.message : "Password saved."); $("rpw").value = ""; });
   ["tsp", "tdr"].forEach(id => $(id) && ($(id).onchange = async () => { const r = REG.find(x => x.key === secKey()); await sb.from("sections").update({ config: Object.assign({}, r.config, { speed: +$("tsp").value, dir: $("tdr").value }) }).eq("key", r.key); await loadReg(); }));
@@ -735,7 +786,7 @@ async function statsView() {
 }
 const fieldsFor = t => t === "hidden" ? [TX("title", "Title"), AR("description", "Description"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : t === "timeline" ? [TX("title", "Title of the moment"), F("subtitle", "Year (for example 2024)", "text"), AR("description", "Description"), F("cover_url", "Cover photo", "image"), GAL, ...PUB]
-  : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category (Movies, Books, Food, Places, Quotes, Music…)", "text"), AR("description", "Why you love it"), F("cover_url", "Photo", "image"), GAL, ...PUB]
+  : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category (Movies, Books, Food, Places, Quotes, Music…)", "text"), AR("description", "Why you love it (for music: set the category to Music and paste the Spotify link of the song, album or playlist here)"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : t === "capsule" ? [TX("title", "Title"), F("open_on", "Opens on (locked until this date)", "date"), AR("description", "Message or memory"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : [TX("title", "Title"), F("subtitle", "Small line above the title (optional)", "text"), AR("description", "Description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB];
 async function loadReg() {

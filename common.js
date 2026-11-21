@@ -155,7 +155,7 @@ function mag(t, r, i, off, peek) {
 function card(t, r, i, off, peek) {
   const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
   return `<a class="ccard${peek ? " peek" : ""}" href="${link(t, r, peek)}">${cpic(r, img)}
-    ${r.category ? `<span class="chip">${esc(r.category)}</span>` : ""}<h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}</a>`;
+    ${(r.category || c.meta(r)) ? `<span class="chip">${esc(r.category || c.meta(r))}</span>` : ""}<h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}</a>`;
 }
 function entry(t, r, i, off, peek) {
   const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
@@ -299,6 +299,8 @@ const rimg = r => r.cover_url || ((r.images || [])[0] || {}).url;
 function favView(el, rows, key) {
   el.className = "fgrid";
   el.innerHTML = rows.length ? rows.map((r, i) => `<a class="fcard f${i % 5}" href="detail.html?t=${key}&id=${r.id}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy">` : ""}<span class="fn">${i + 1}</span><div class="fi"><small>${esc(r.subtitle || "")}</small><h4${st_(r, "title")}>${esc(r.title)}</h4></div></a>`).join("") : '<p class="empty">Coming soon.</p>';
+  const mu = rows.map(r => { const m = String(r.description || "").match(/open\.spotify\.com\/(?:intl-\w+\/)?(track|album|playlist|artist)\/(\w+)/); return m && /music|song|album|spotify|playlist/i.test(r.subtitle || "") ? m : null; }).filter(Boolean);
+  if (mu.length) el.insertAdjacentHTML("beforeend", `<div class="fmusic">${mu.map(m => `<iframe src="https://open.spotify.com/embed/${m[1]}/${m[2]}" height="152" loading="lazy" allow="encrypted-media"></iframe>`).join("")}</div>`);
 }
 function capsuleView(el, rows, key) {
   el.className = "cgrid";
