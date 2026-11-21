@@ -123,6 +123,7 @@ function buildNav(p, overHero, sp) {
   nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option><option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="es">Español</option><option value="fr">Français</option><option value="pt">Português</option></select>');
   nav.insertAdjacentHTML("beforeend", '<button class="dm" aria-label="Dark mode">◐</button>');
   nav.querySelector(".dm").onclick = () => { const d = document.documentElement.dataset.theme === "dark"; localStorage.setItem("theme", d ? "" : "dark"); location.reload(); };
+  if (!onIndex) { nav.insertAdjacentHTML("afterbegin", '<button class="nb2" type="button" aria-label="Back">‹</button>'); nav.querySelector(".nb2").onclick = () => history.length > 1 ? history.back() : (location.href = "index.html"); }
   const ls = nav.querySelector(".lang"); ls.value = LANG; ls.onchange = () => setLang(ls.value);
   document.body.prepend(nav);
   const pg = new URLSearchParams(location.search).get("t") || (/about/.test(location.pathname) ? "about" : null);
@@ -296,29 +297,41 @@ function loadTranslate() {
 
 /* ---- new section styles: favorites, timeline, time capsule ---- */
 const rimg = r => r.cover_url || ((r.images || [])[0] || {}).url;
+const AUD = new Audio(); AUD.loop = true;
+function playTrack(b) {
+  let mp = $("mp");
+  if (!mp) { mp = document.createElement("div"); mp.id = "mp"; mp.innerHTML = '<i class="mpd"></i><span></span><button type="button">❚❚</button>'; document.body.appendChild(mp); mp.querySelector("button").onclick = () => AUD.paused ? AUD.play() : AUD.pause(); AUD.onplay = () => document.body.classList.add("playing"); AUD.onpause = () => document.body.classList.remove("playing"); }
+  document.querySelectorAll(".disc").forEach(d => d.classList.toggle("cur", d === b));
+  if (AUD._u === b.dataset.a) { AUD.paused ? AUD.play() : AUD.pause(); return; }
+  AUD._u = b.dataset.a; AUD.src = b.dataset.a; AUD.play();
+  mp.querySelector("span").textContent = b.dataset.t; mp.querySelector(".mpd").style.backgroundImage = b.dataset.c ? `url('${b.dataset.c}')` : ""; mp.classList.add("on");
+}
 function favView(el, rows, key) {
   el.className = "fav";
   if (!rows.length) { el.innerHTML = '<p class="empty">Coming soon.</p>'; return; }
   const by = {}; rows.forEach(r => (by[r.subtitle || "Favorites"] = by[r.subtitle || "Favorites"] || []).push(r));
   el.innerHTML = Object.entries(by).map(([cat, list]) => {
-    const quote = /quote|line|word/i.test(cat), tall = /movie|film|book|series|album|music|song/i.test(cat);
+    const quote = /quote|line|word/i.test(cat), tall = /movie|film|book|series/i.test(cat), music = /music|song|album|playlist|artist/i.test(cat);
     return `<div class="fshelf"><h4 class="fcat">${esc(cat)} <small>${list.length}</small></h4><div class="frow">${list.map((r, i) => {
       const href = `detail.html?t=${key}&id=${r.id}`, m = String(r.description || "").match(/open\.spotify\.com\/(?:intl-\w+\/)?(track|album|playlist|artist)\/(\w+)/);
       if (m) return `<div class="fmu"><iframe src="https://open.spotify.com/embed/${m[1]}/${m[2]}" height="152" loading="lazy" allow="encrypted-media"></iframe></div>`;
+      if (music || r.audio_url) return `<button class="disc" type="button" data-a="${esc(r.audio_url || "")}" data-t="${esc(r.title)}" data-c="${esc(rimg(r) || "")}"><i style="background-image:url('${esc(rimg(r) || "")}')"></i><span>${esc(r.title)}</span></button>`;
       if (quote) return `<a class="fq" href="${href}"><span>“</span><p dir="auto">${esc(r.title)}</p><small>${esc((r.description || "").slice(0, 60))}</small></a>`;
       return `<a class="fp${tall ? " tall" : ""}" href="${href}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy" decoding="async">` : ""}<b>${i + 1}</b><span>${esc(r.title)}</span></a>`;
     }).join("")}</div></div>`;
   }).join("");
+  el.querySelectorAll(".disc").forEach(b => b.onclick = () => b.dataset.a ? playTrack(b) : alert("Add an audio file to this entry in the panel to play it here."));
 }
 function capsuleView(el, rows, key) {
-  el.className = "cgrid";
-  el.innerHTML = rows.length ? rows.map(r => r.open ? `<a class="ccard" href="detail.html?t=${key}&id=${r.id}"><div class="cpic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><span class="chip">Opened</span><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p></a>`
-    : `<div class="ccard lock"><div class="cpic"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><div class="cd" data-d="${esc(r.open_on)}"></div></div><span class="chip">Sealed</span><h3>${esc(r.title)}</h3><p>Opens on ${esc(fmt(r.open_on))}</p></div>`).join("") : '<p class="empty">Coming soon.</p>';
+  useFont("caveat"); el.className = "caps";
+  el.innerHTML = rows.length ? rows.map((r, i) => { const rot = `style="--rot:${(i % 3 - 1) * 1.6}deg"`; return r.open
+    ? `<a class="env open" ${rot} href="detail.html?t=${key}&id=${r.id}"><small>Opened</small><h3 dir="auto">${esc(r.title)}</h3><p dir="auto">${esc((r.description || "").slice(0, 150))}</p></a>`
+    : `<div class="env" ${rot}><i class="flap"></i><span class="seal"><svg viewBox="0 0 24 24" fill="none" stroke="#f6d4d4" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><div class="to">To: <b dir="auto">${esc(r.title)}</b></div><div class="cd" data-d="${esc(r.open_on)}"></div><small>Sealed until ${esc(fmt(r.open_on))}</small></div>`; }).join("") : '<p class="empty">Coming soon.</p>';
   const tick = () => el.querySelectorAll(".cd").forEach(p => { const s = Math.floor((new Date(p.dataset.d + "T00:00:00") - Date.now()) / 1e3); p.innerHTML = s <= 0 ? "Opening…" : `<div class="cdg">${[[Math.floor(s / 86400), "days"], [Math.floor(s % 86400 / 3600), "hrs"], [Math.floor(s % 3600 / 60), "min"], [s % 60, "sec"]].map(([v, l]) => `<div><b>${String(v).padStart(2, "0")}</b><small>${l}</small></div>`).join("")}</div>`; });
   tick(); setInterval(tick, 1000);
 }
 function tlView(el, rows, cfg, key) {
-  const spd = Math.min(10, Math.max(1, +cfg.speed || 5)), sec = 8 - spd * .6, first = cfg.dir === "down" ? 1 : 0, by = {};
+  useFont("caveat"); const spd = Math.min(10, Math.max(1, +cfg.speed || 5)), sec = 8 - spd * .6, first = cfg.dir === "down" ? 1 : 0, by = {};
   rows.forEach(r => (by[r.subtitle || "—"] = by[r.subtitle || "—"] || []).push(r));
   const years = Object.keys(by).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   const panels = years.map((y, i) => {
@@ -336,12 +349,12 @@ function tlView(el, rows, cfg, key) {
   el.querySelector(".tprev").onclick = () => go(cur - 1); el.querySelector(".tnext").onclick = () => go(cur + 1);
   setTimeout(upd, 60);
 }
-/* ---- Hidden Room: a dark chamber explored with a torch ---- */
+/* ---- Hidden Room: a private night sky, each memory is a star ---- */
 function roomView(el, key, cfg) {
   cfg = cfg || {}; const hexv = (v, d) => /^#[0-9a-f]{6}$/i.test(v || "") ? v : d;
   el.className = "room"; el.style.cssText = `--ra:${hexv(cfg.accent, "#e9e6df")};--rb:${hexv(cfg.bg, "#050505")}`;
-  el.innerHTML = `<div class="rv1"><span class="rk">${esc(cfg.label || "Chamber · Restricted")}</span><div class="slit"><i></i></div><p class="rq">${esc(cfg.quote || "Some rooms are only for the ones who were meant to find them.")}</p><button class="rbtn" type="button">${esc(cfg.button || "Speak the word")}</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>`;
-  const v = el.querySelector(".rv1"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn"), RN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  el.innerHTML = `<div class="rv1"><span class="rk">${esc(cfg.label || "Not for everyone")}</span><div class="slit"><i></i></div><p class="rq">${esc(cfg.quote || "There is a sky here that is not on any map.")}</p><button class="rbtn" type="button">${esc(cfg.button || "Speak the word")}</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>`;
+  const v = el.querySelector(".rv1"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn"), RN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
   b.onclick = () => { b.hidden = true; f.hidden = false; f.querySelector("input").focus(); };
   f.onsubmit = async e => {
     e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "";
@@ -349,15 +362,18 @@ function roomView(el, key, cfg) {
     if (!data) { m.textContent = "Not quite."; v.classList.add("no"); setTimeout(() => v.classList.remove("no"), 500); return; }
     v.classList.add("open");
     setTimeout(() => {
-      v.hidden = true; const rin = el.querySelector(".rin"), n = data.length; let cur = 0;
-      rin.innerHTML = n ? `<div class="rsl">${data.map((r, i) => `<div class="rs${i ? "" : " on"}">${r.cover_url ? `<div class="rbg" style="background-image:url('${esc(r.cover_url)}')"></div>` : ""}<div class="rtx"><small>${RN[i] || i + 1}</small><h3${st_(r, "title")}>${esc(r.title)}</h3><p dir="auto"${st_(r, "description")}>${esc(r.description)}</p>${(r.images || []).filter(x => x && x.url).slice(0, 3).map(x => `<img class="rth" src="${esc(x.url)}" alt="" loading="lazy">`).join("")}</div></div>`).join("")}</div><div class="rnv"><button class="rp" type="button">‹</button><span>1 / ${n}</span><button class="rn" type="button">›</button></div>${cfg.torch === false ? "" : '<div class="rtorch"></div>'}` : '<p class="rq">Nothing here yet.</p>';
+      v.hidden = true; const rin = el.querySelector(".rin"), pos = data.map((_, i) => [10 + (i * 37 + 11) % 78, 14 + (i * 53 + 7) % 64]);
+      rin.innerHTML = data.length ? `<svg class="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${pos.map(p => p.join(",")).join(" ")}"/></svg>${data.map((r, i) => `<button class="star" type="button" data-i="${i}" style="left:${pos[i][0]}%;top:${pos[i][1]}%"><i></i><span>${esc(r.title)}</span></button>`).join("")}<p class="rhin">Touch a star.</p><div class="rcard" hidden></div>` : '<p class="rq" style="padding:40px">The sky is empty… for now.</p>';
       rin.hidden = false; rin.classList.add("in");
-      if (!n) return;
-      const ss = [...rin.querySelectorAll(".rs")], lab = rin.querySelector(".rnv span"), show = k => { cur = (k + n) % n; ss.forEach((s, i) => s.classList.toggle("on", i === cur)); lab.textContent = `${cur + 1} / ${n}`; };
-      rin.querySelector(".rp").onclick = () => show(cur - 1); rin.querySelector(".rn").onclick = () => show(cur + 1);
-      let sx = 0; rin.addEventListener("touchstart", e => sx = e.touches[0].clientX, { passive: true }); rin.addEventListener("touchend", e => { const d = e.changedTouches[0].clientX - sx; if (Math.abs(d) > 50) show(cur + (d < 0 ? 1 : -1)); });
-      const mv = e => { const r = rin.getBoundingClientRect(), p = e.touches ? e.touches[0] : e; rin.style.setProperty("--x", p.clientX - r.left + "px"); rin.style.setProperty("--y", p.clientY - r.top + "px"); };
-      rin.addEventListener("pointermove", mv); rin.addEventListener("touchmove", mv, { passive: true });
+      const card = rin.querySelector(".rcard");
+      rin.querySelectorAll(".star").forEach(s => s.onclick = () => {
+        const r = data[+s.dataset.i], t = r.description || "";
+        card.innerHTML = `<button class="rx" type="button">×</button><small>${RN[+s.dataset.i] || +s.dataset.i + 1}</small><h3${st_(r, "title")}>${esc(r.title)}</h3><p dir="auto"${st_(r, "description")}></p><div class="rims">${[r.cover_url, ...(r.images || []).map(x => x && x.url)].filter(Boolean).slice(0, 4).map(u => `<img src="${esc(u)}" alt="" loading="lazy">`).join("")}</div>`;
+        card.hidden = false; const p = card.querySelector("p"); let k = 0; clearInterval(card._t);
+        card._t = setInterval(() => { p.textContent = t.slice(0, k += 2); if (k >= t.length) clearInterval(card._t); }, 24);
+        card.querySelector(".rx").onclick = () => { card.hidden = true; clearInterval(card._t); };
+      });
+      const hin = rin.querySelector(".rhin"); hin && setTimeout(() => hin.style.opacity = 0, 5000);
     }, 1400);
   };
 }
@@ -384,7 +400,7 @@ async function mapView(el, rows, key) {
 
 /* coin (two overlapping circles) and banknote (two overlapping rectangles) slots for the Collection */
 function cpic(r, img) {
-  const k = r.shape === "normal" ? "" : r.shape === "coin" || r.shape === "note" ? r.shape : /coin/i.test(r.category || "") ? "coin" : /note/i.test(r.category || "") ? "note" : "", im = [r.cover_url, ...(r.images || []).map(m => m && m.url)].filter(Boolean);
+  const k = r.shape === "normal" ? "" : r.shape === "coin" || r.shape === "note" ? r.shape : /coin/i.test(r.category || "") ? "coin" : /note/i.test(r.category || "") ? "note" : "", im = [r.cover_url, r.image2_url, ...(r.images || []).map(m => m && m.url)].filter(Boolean);
   if (k && im.length) return `<div class="pair ${k}"><i><img src="${esc(im[0])}" alt="" loading="lazy" decoding="async"></i>${im[1] ? `<i><img src="${esc(im[1])}" alt="" loading="lazy" decoding="async"></i>` : ""}</div>`;
   return `<div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>`;
 }

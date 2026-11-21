@@ -299,3 +299,49 @@ html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e
 .rtx{position:relative;z-index:2;padding:clamp(20px,5vw,56px);max-width:620px;text-align:left}.rtx small{letter-spacing:.4em;opacity:.6;font-size:12px}.rtx h3{font-weight:400;font-size:clamp(28px,6vw,60px);line-height:1.05;margin:10px 0}.rtx p{opacity:.85;line-height:1.8;white-space:pre-wrap}.rth{height:64px;margin:14px 8px 0 0;border:1px solid #ffffff44}
 .rtorch{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle clamp(110px,22vw,190px) at var(--x,50%) var(--y,40%),transparent 0,rgba(0,0,0,.86) 100%)}
 .rnv{position:absolute;right:16px;top:14px;z-index:3;display:flex;gap:10px;align-items:center;font-size:12px;letter-spacing:.2em}.rnv button{background:none;border:1px solid #ffffff55;color:inherit;width:34px;height:34px;border-radius:50%;padding:0;min-height:0}
+
+.nb2{flex:none;background:transparent;color:inherit;border:1px solid currentColor;border-radius:50%;width:32px;height:32px;padding:0;min-height:0;font-size:20px;line-height:1;margin-right:-6px}
+/* achievements / memories: no blur, own mood */
+#achievements .ccard.peek,#memories .ccard.peek{filter:none;-webkit-mask-image:none;mask-image:none;max-height:none}
+/* collection overlap */
+.pair i{box-shadow:0 12px 26px rgba(0,0,0,.28)}
+/* timeline: nostalgic film prints */
+.tl{background:radial-gradient(ellipse at 50% 30%,rgba(250,240,215,.55),transparent 70%)}
+.tli figure{margin:0 0 18px;background:#f6efdc;padding:8px 8px 6px;box-shadow:0 6px 16px rgba(60,40,10,.28);transform:rotate(var(--r));position:relative;border-radius:2px}
+.tli figure:before{content:"";position:absolute;top:-8px;left:50%;width:54px;height:16px;margin-left:-27px;background:rgba(232,214,160,.8);transform:rotate(-3deg)}
+.tli img{border-radius:0;box-shadow:none;filter:sepia(.32) contrast(.96) saturate(.9)}
+.tli figcaption{position:static;background:none;width:auto;max-width:none;margin:6px 2px 2px;color:#5a4a2a;font:17px/1.2 "Caveat",cursive;padding:0}
+/* music discs + mini player */
+.disc{flex:none;width:clamp(120px,20vw,160px);background:none;border:0;padding:0;color:inherit;text-align:center;cursor:pointer;min-height:0}
+.disc i{display:block;width:100%;aspect-ratio:1;border-radius:50%;background-size:cover;background-position:center;background-color:#222;box-shadow:0 0 0 7px #111,0 12px 26px rgba(0,0,0,.35);position:relative}
+.disc i:after{content:"";position:absolute;left:50%;top:50%;width:17%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:#111;box-shadow:0 0 0 3px #444}
+.disc span{display:block;margin-top:16px;font-size:13px;font-weight:600}
+body.playing .disc.cur i,body.playing .mpd{animation:spin 6s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+#mp{position:fixed;left:14px;bottom:14px;z-index:40;display:none;align-items:center;gap:10px;background:#111;color:#fff;padding:8px 14px 8px 8px;border-radius:980px;box-shadow:0 8px 26px rgba(0,0,0,.4);max-width:78vw}#mp.on{display:flex}
+.mpd{width:36px;height:36px;border-radius:50%;background:#333 center/cover;box-shadow:0 0 0 3px #000;flex:none}#mp span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mp button{background:none;border:0;color:#fff;min-height:0;padding:4px 6px}
+/* time capsule: sealed envelopes and opened letters */
+.caps{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:34px 24px}
+.env{position:relative;display:block;background:linear-gradient(160deg,#e9dcc0,#d6c59c);border-radius:6px;padding:clamp(26px,5vw,34px) 18px 18px;box-shadow:0 14px 34px rgba(60,40,10,.25);transform:rotate(var(--rot,0));color:#3a2b14;text-align:center;overflow:hidden;text-decoration:none}
+.flap{position:absolute;left:0;right:0;top:0;height:48%;background:linear-gradient(160deg,#dccca6,#c8b78d);clip-path:polygon(0 0,100% 0,50% 100%)}
+.seal{position:relative;z-index:2;display:flex;width:54px;height:54px;margin:2px auto 14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e04a4a,#8e1c1c);box-shadow:0 4px 10px rgba(0,0,0,.4);align-items:center;justify-content:center}.seal svg{width:24px}
+.to{font:24px/1.2 "Caveat",cursive;margin-top:34px}.to b{font-weight:700}.env .cd{margin:12px 0 8px;display:flex;justify-content:center}.env .cdg div{background:#3a2b14;border-color:#3a2b14;color:#f3e7c9;box-shadow:none}.env small{opacity:.7;font-size:12px;letter-spacing:.06em}
+.env.open{background:#fffdf6 repeating-linear-gradient(transparent 0 27px,#e6dcc3 27px 28px);text-align:left;cursor:pointer;padding-top:22px}.env.open h3{font:700 26px/1.15 "Caveat",cursive;margin:6px 0}.env.open p{font:19px/1.4 "Caveat",cursive;color:#5a4a2a}
+.ty-capsule .dintro{background:#fffdf6 repeating-linear-gradient(transparent 0 33px,#e6dcc3 33px 34px);padding:28px;box-shadow:0 14px 34px rgba(60,40,10,.2);color:#3a2b14}.ty-capsule .dt,.ty-capsule .dtext{font-family:"Caveat",cursive;color:#3a2b14}.ty-capsule .dtext{font-size:clamp(20px,3vw,26px);line-height:1.4}
+/* hidden room: private night sky */
+.rin{background:radial-gradient(ellipse at 30% 20%,rgba(120,140,255,.12),transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(255,160,120,.08),transparent 55%)}
+.rsvg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.rsvg polyline{fill:none;stroke:var(--ra);stroke-opacity:.22;stroke-width:.25;vector-effect:non-scaling-stroke;stroke-width:1;stroke-dasharray:3 6}
+.star{position:absolute;transform:translate(-50%,-50%);background:none;border:0;color:var(--ra);min-height:0;padding:10px;text-align:center}.star i{display:block;width:10px;height:10px;margin:0 auto 6px;border-radius:50%;background:var(--ra);box-shadow:0 0 14px 4px var(--ra);animation:twk 3.4s ease-in-out infinite}.star:nth-child(odd) i{animation-delay:1.2s}.star span{font:italic 12px Georgia,serif;opacity:.7;display:block;max-width:110px}
+@keyframes twk{50%{opacity:.35;transform:scale(.7)}}
+.rhin{position:absolute;bottom:18px;left:0;right:0;text-align:center;font:italic 14px Georgia,serif;opacity:.6;transition:opacity 2s}
+.rcard{position:absolute;inset:auto 0 0 0;z-index:5;background:rgba(5,5,8,.92);backdrop-filter:blur(8px);border-top:1px solid #ffffff33;padding:clamp(20px,4vw,40px);max-height:78%;overflow:auto;text-align:left}.rcard small{letter-spacing:.4em;opacity:.55}.rcard h3{font-weight:400;font-size:clamp(26px,5vw,48px);margin:8px 0 12px;line-height:1.1}.rcard p{opacity:.85;line-height:1.8;white-space:pre-wrap;min-height:1.8em}.rims{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.rims img{height:90px;border:1px solid #ffffff33}.rx{position:absolute;right:12px;top:10px;background:none;border:0;color:inherit;font-size:26px;min-height:0}
+.rin{min-height:min(78vh,640px)}
+/* guest book: premium bound book */
+.book{background:radial-gradient(circle at 20% 15%,#4a3826,transparent 55%),repeating-radial-gradient(circle at 50% 50%,rgba(255,255,255,.015) 0 2px,transparent 2px 4px),linear-gradient(145deg,#2f2318,#17100a);border:1px solid #000;padding-left:clamp(26px,5vw,40px)}
+.gbframe h3{background:linear-gradient(180deg,#f7e3ad,#b98a3c 55%,#f0d58c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;letter-spacing:.02em}
+.gbpage{position:relative;box-shadow:3px 3px 0 #e6dcc6,6px 6px 0 #d5c9ae,9px 9px 0 #c3b698,0 16px 30px rgba(0,0,0,.45),inset 24px 0 26px -22px rgba(0,0,0,.4)}
+.gbpage:after{content:"";position:absolute;right:26px;top:-6px;width:16px;height:70px;background:linear-gradient(#b32a2a,#8a1818);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);box-shadow:0 4px 8px rgba(0,0,0,.3)}
+/* panel: 10/10 */
+.wrap .bar{background:linear-gradient(135deg,#fff,#f4f7ff);border:1px solid #e8ecf6}.wrap .bar b{font-size:17px;letter-spacing:-.01em}
+.ph{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:6px 0 14px}.wrap #rf{padding:7px 12px;font-size:16px}
+.wrap .tabs{background:transparent}.wrap .tg span{padding-left:4px}
+@media(min-width:1000px){.wrap{max-width:1180px;display:grid;grid-template-columns:250px 1fr;gap:0 26px;align-items:start}.wrap>.bar{grid-column:1/-1}.wrap>.tabs{grid-column:1;grid-row:2/6;position:sticky;top:16px;background:#fff;border-radius:22px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}.wrap .tg{flex-direction:column;align-items:stretch;margin-bottom:12px}.wrap .tg span{width:auto;padding:6px 10px}.wrap .tabs button{text-align:left;border-radius:12px;box-shadow:none;background:transparent;font-size:14px;padding:9px 12px}.wrap .tabs button.on{background:#0071e3;color:#fff}.wrap>.ph,.wrap>.vis,.wrap>#main{grid-column:2}}
