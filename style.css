@@ -209,3 +209,20 @@ body:has(.wrap){background:#f2f2f7}
 .tli figcaption{position:relative;font-size:11px;color:var(--mut);padding:3px 8px;background:var(--bg);width:max-content;max-width:90%;margin:-14px 0 0 8px;border-radius:4px}
 @keyframes tlup{to{transform:translateY(-50%)}}@keyframes tldn{from{transform:translateY(-50%)}to{transform:none}}
 .tlt{display:none;text-align:center}.tlp.act .tlt{display:flex;flex-direction:column;gap:4px;margin-top:14px;font-size:14px}.tlt a{color:var(--blue);text-decoration:none}
+
+html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e;--mut:#9a9aa1;--line:#2a2a2e}
+.dm{flex:none;background:transparent;color:inherit;border:1px solid currentColor;border-radius:50%;width:28px;height:28px;padding:0;min-height:0;font-size:14px}
+.room{background:radial-gradient(ellipse at 50% 0,#2b1f3d,#09090d 72%);color:#eee;border-radius:28px;padding:clamp(40px,10vw,110px) clamp(14px,4vw,40px);text-align:center;overflow:hidden}
+.rtxt p{font-family:Georgia,serif;font-style:italic;font-size:clamp(16px,3vw,24px);opacity:0;animation:rfade 2s ease forwards;margin:6px 0}
+@keyframes rfade{to{opacity:.85}}
+.door{width:clamp(150px,34vw,230px);height:clamp(250px,56vw,380px);margin:36px auto 14px;position:relative;perspective:900px;cursor:pointer}
+.door:before{content:"";position:absolute;inset:6px;border-radius:110px 110px 0 0;background:radial-gradient(ellipse at 50% 60%,#fff1c2,#ff9d3c 45%,transparent 72%);opacity:.3;animation:rglow 3s ease-in-out infinite}
+.leaf{position:absolute;inset:0;background:linear-gradient(90deg,#3a2616,#5e3d24 50%,#3a2616);border:6px solid #1a110a;border-radius:110px 110px 6px 6px;transform-origin:left;transition:transform 1.4s cubic-bezier(.6,0,.2,1);box-shadow:inset 0 0 40px rgba(0,0,0,.65),0 0 60px rgba(255,170,60,.18)}
+.knob{position:absolute;right:14%;top:58%;width:12px;height:12px;border-radius:50%;background:#e8c675}
+.padlock{position:absolute;left:50%;top:44%;width:44px;transform:translate(-50%,-50%);stroke:#e8c675;fill:none;stroke-width:1.6;stroke-linecap:round;animation:rsway 2.6s ease-in-out infinite}
+.door.open .leaf{transform:rotateY(-108deg)}.door.open:before{opacity:1;animation:none}.door.open .padlock{display:none}
+.door.shake{animation:rshake .5s}
+@keyframes rglow{50%{opacity:.6}}@keyframes rsway{50%{transform:translate(-50%,-50%) rotate(7deg)}}@keyframes rshake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.rhint{opacity:.6;font-size:14px;letter-spacing:.08em}
+.rpw{max-width:300px;margin:18px auto 0}.rpw input{margin-bottom:10px;background:#15121c;border-color:#3a3050;color:#fff;text-align:center}.rpw .msg{color:#e8c675}
+.rin{text-align:left;color:#eee;margin-top:20px}.rin .cap{color:#ddd}.rin h3{font-size:clamp(20px,4vw,40px);margin-bottom:8px}.rin.in{animation:rfade 1.2s ease}

@@ -57,7 +57,11 @@ async function bookView(cfg) {
   let off = 0;
   for (const t of vis.filter(s => MAP[s.key]).map(s => s.key)) {
     const el = $("c-" + t), o = off++ % 2;
+    const rs = vis.find(s => s.key === t);
     try {
+      if (rs.type === "hidden") { roomView(el, t); continue; }
+      if (rs.type === "capsule") { const { data: cp } = await sb.rpc("capsules", { k: t }); capsuleView(el, cp || [], t); continue; }
+      if (rs.type === "timeline" || rs.type === "favorites") { const { data: tr } = await query(t).limit(300); rs.type === "timeline" ? tlView(el, tr || [], rs.config || {}, t) : favView(el, tr || [], t); continue; }
       const { data, error } = await query(t).limit(t === "collections" ? 30 : 3);
       if (error) throw error;
       if (t === "collections" && data.length) { el.className = "strip"; el.innerHTML = `<div class="track">${data.map(r => card(t, r)).join("")}</div>`; el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">View all ›</a>`); startStrip(el, p.scroll_speed); continue; }

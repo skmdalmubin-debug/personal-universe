@@ -12,6 +12,7 @@ if (IS_RELOAD) {
   scrollTo(0, 0);
 }
 
+if (!/panel|admin/.test(location.pathname) && localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
 const MAP = {
   travel:       { label: "Travel",       text: "description", cover: "cover_url", order: ["sort_order", "visited_on"],  meta: r => [[r.location, r.country].filter(Boolean).join(", "), fmt(r.visited_on)].filter(Boolean).join(" · ") },
   collections:  { label: "Collection",   text: "description", cover: "image_url", order: ["sort_order", "created_at"], meta: r => r.category || "" },
@@ -87,7 +88,7 @@ function applyDesign(p) {
   DESIGN = p || {};
   const root = document.documentElement.style;
   root.setProperty("--r", Math.min(60, Math.max(0, Number.isFinite(+DESIGN.img_radius) && DESIGN.img_radius !== null ? +DESIGN.img_radius : 24)) + "px");
-  [["theme_bg", "--bg"], ["theme_fg", "--fg"], ["theme_accent", "--blue"], ["theme_soft", "--soft"]].forEach(([k, v]) => { if (/^#[0-9a-f]{6}$/i.test(DESIGN[k] || "")) root.setProperty(v, DESIGN[k]); });
+  [["theme_bg", "--bg"], ["theme_fg", "--fg"], ["theme_accent", "--blue"], ["theme_soft", "--soft"]].forEach(([k, v]) => { if (document.documentElement.dataset.theme !== "dark" && /^#[0-9a-f]{6}$/i.test(DESIGN[k] || "")) root.setProperty(v, DESIGN[k]); });
   root.setProperty("--ratio", ({ portrait: "4/5", square: "1/1", landscape: "4/3", wide: "16/9" })[DESIGN.img_ratio] || "4/5");
 }
 async function loadProfile() {
@@ -99,7 +100,7 @@ let REG = [];
 async function loadSections() {
   const [a, b] = await Promise.all([sb.from("section_pages").select("*"), sb.from("sections").select("*").order("position")]);
   REG = b.data || [];
-  REG.filter(r => ["custom", "favorites", "timeline", "capsule"].includes(r.type)).forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
+  REG.filter(r => ["custom", "favorites", "timeline", "capsule", "hidden"].includes(r.type)).forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
   return Object.fromEntries((a.data || []).map(r => [r.key, r]));
 }
 function query(t) {
@@ -120,6 +121,8 @@ function buildNav(p, overHero, sp) {
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
   nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option></select>');
+  nav.insertAdjacentHTML("beforeend", '<button class="dm" aria-label="Dark mode">◐</button>');
+  nav.querySelector(".dm").onclick = () => { const d = document.documentElement.dataset.theme === "dark"; localStorage.setItem("theme", d ? "" : "dark"); location.reload(); };
   const ls = nav.querySelector(".lang"); ls.value = LANG; ls.onchange = () => setLang(ls.value);
   document.body.prepend(nav);
   const pg = new URLSearchParams(location.search).get("t") || (/about/.test(location.pathname) ? "about" : null);
@@ -317,4 +320,26 @@ function tlView(el, rows, cfg, key) {
   rail.addEventListener("scroll", upd, { passive: true });
   ps.forEach(p => p.onclick = () => rail.scrollTo({ left: p.offsetLeft - (rail.clientWidth - p.offsetWidth) / 2, behavior: "smooth" }));
   setTimeout(upd, 60);
+}
+
+/* ---- Hidden Room ---- */
+function roomView(el, key) {
+  el.className = "room";
+  el.innerHTML = `<div class="rtxt"><p>Some doors are not meant to be found.</p><p style="animation-delay:1.4s">You walked a long way to reach this one.</p></div>
+    <div class="door"><div class="leaf"><i class="knob"></i><svg class="padlock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>
+    <p class="rhint">Touch the door, if you know the word.</p>
+    <form class="rpw" hidden><input type="password" placeholder="Password" autocomplete="off"><button class="pri">Enter</button><p class="msg"></p></form><div class="rin" hidden></div>`;
+  const door = el.querySelector(".door"), f = el.querySelector(".rpw");
+  door.onclick = () => { f.hidden = false; f.querySelector("input").focus(); };
+  f.onsubmit = async e => {
+    e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "…";
+    const { data } = await sb.rpc("room_open", { k: key, pw: f.querySelector("input").value });
+    if (!data) { m.textContent = "That is not the word."; door.classList.add("shake"); setTimeout(() => door.classList.remove("shake"), 600); return; }
+    door.classList.add("open"); f.hidden = true;
+    setTimeout(() => {
+      const rin = el.querySelector(".rin"); el.querySelector(".rtxt").hidden = door.hidden = true; el.querySelector(".rhint").hidden = true;
+      rin.innerHTML = data.map((r, i) => `<div class="sub${i % 2 ? " flip" : ""}"><div class="pic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><div class="txt"><h3${st_(r, "title")}>${esc(r.title)}</h3><p class="cap"${st_(r, "description")}>${esc(r.description)}</p></div></div>${subs((r.images || []).filter(x => x && x.url))}`).join("") || '<p class="empty">The room is empty… for now.</p>';
+      rin.hidden = false; rin.classList.add("in");
+    }, 1500);
+  };
 }
