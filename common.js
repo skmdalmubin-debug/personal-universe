@@ -59,7 +59,7 @@ function useFont(k) {
   document.head.appendChild(l);
 }
 /* one text's saved style -> inline style attribute (sizes shrink gracefully on phones) */
-function sty(st) {
+function styDecl(st, exact) {
   if (!st || typeof st !== "object") return "";
   const o = [], f = FONTS[st.font];
   if (f) { o.push("font-family:" + f.c); useFont(st.font); }
@@ -67,14 +67,15 @@ function sty(st) {
   const sz = +st.size;
   if (sz >= 8 && sz <= 300) {
     const lo = sz >= 48 ? Math.round(sz * .4) : sz >= 28 ? Math.round(sz * .55) : Math.min(sz, Math.max(13, Math.round(sz * .75)));
-    o.push(`font-size:clamp(${lo}px,${(sz / 10).toFixed(2)}vw,${sz}px)`);
+    o.push(exact ? `font-size:${sz}px` : `font-size:clamp(${lo}px,${(sz / 10).toFixed(2)}vw,${sz}px)`);
   }
   if (["left", "center", "right"].includes(st.align)) o.push("text-align:" + st.align);
   [["pad", "padding"], ["mt", "margin-top"], ["mb", "margin-bottom"]].forEach(([k, p]) => {
     if (st[k] !== undefined && st[k] !== "" && Number.isFinite(+st[k])) o.push(`${p}:${Math.max(-200, Math.min(400, +st[k]))}px`);
   });
-  return o.length ? ` style="${esc(o.join(";"))}"` : "";
+  return o.join(";");
 }
+function sty(st) { const d = styDecl(st); return d ? ` style="${esc(d)}"` : ""; }
 
 /* ---------- design + data ---------- */
 let DESIGN = {};
@@ -154,9 +155,19 @@ const WRAP = { collections: "cgrid", journal: "jlist" };
 const render = (t, r, i, off, peek) => (t === "collections" ? card : t === "journal" ? entry : mag)(t, r, i, off, peek);
 
 /* sub pictures: zig-zag, each with its own description */
-function subs(imgs) {
-  return imgs.map((m, n) => `<div class="sub${n % 2 ? " flip" : ""}"><div class="pic"><img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy"></div>
-    <div class="txt">${m.caption ? `<p class="cap"${sty(m.style)}>${esc(m.caption)}</p>` : ""}</div></div>`).join("");
+const ytId = u => (String(u || "").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/) || [])[1];
+function media(m, n) {
+  const y = ytId(m.url);
+  if (y) return `<iframe src="https://www.youtube.com/embed/${y}" allowfullscreen loading="lazy" allow="encrypted-media;picture-in-picture"></iframe>`;
+  if (m.type === "video") return `<video src="${esc(m.url)}" controls playsinline preload="metadata"></video>`;
+  return `<img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy">`;
+}
+function subs(imgs, reg) {
+  return imgs.map((m, k) => { const n = reg ? reg.push(m) - 1 : k; return `<div class="sub${k % 2 ? " flip" : ""}"><div class="pic">${media(m, n)}</div>
+    <div class="txt">${m.caption ? `<p class="cap"${sty(m.style)}>${esc(m.caption)}</p>` : ""}</div></div>`; }).join("");
+}
+function subSections(list, reg) {
+  return (list || []).filter(s => s && (s.title || (s.images || []).length)).map(s => `<div class="subsec">${s.title ? `<h2 class="sst"${sty(s.tstyle)}>${esc(s.title)}</h2>` : ""}${s.description ? `<div class="dtext"${sty(s.dstyle)}>${esc(s.description)}</div>` : ""}${subs((s.images || []).filter(m => m && m.url), reg)}</div>`).join("");
 }
 const coverHero = u => u ? `<div class="chero"><img class="zoom" src="${esc(u)}" alt=""></div>` : "";
 function wireZoom(root, imgs) {

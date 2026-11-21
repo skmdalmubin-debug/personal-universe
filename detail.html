@@ -14,20 +14,22 @@ const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("i
   if (!MAP[t] || !id) return nf();
   const { data: r } = await sb.from(MAP[t].table || t).select("*").eq("id", id).maybeSingle();
   if (!r) return nf();
+  const reg = [];
   const c = MAP[t], cover = safeUrl(r[c.cover]), imgs = (r.images || []).filter(i => i && i.url), label = (sps[t] && sps[t].title) || c.label;
   document.title = r.title;
   const back = `<a class="back" href="section.html?t=${t}">‹ ${esc(label)}</a>`, txt = r[c.text];
   if (t === "journal") {
+    reg.push(...imgs);
     buildNav(p, false, sps);
     d.innerHTML = `<div class="dwrap">${back}<article class="article"><div class="meta">${esc(c.meta(r))}</div><h1 class="dt"${st_(r, "title")}>${esc(r.title)}</h1><div class="by">${esc(fmt(r.written_on))} · ${readTime(r.body)}</div>
       ${cover ? `<img class="dcover zoom" src="${esc(cover)}" alt="">` : ""}<div class="dtext"${st_(r, c.text)}>${esc(txt)}</div>
-      ${imgs.map((m, n) => `<figure><img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy">${m.caption ? `<figcaption${sty(m.style)}>${esc(m.caption)}</figcaption>` : ""}</figure>`).join("")}</article></div>`;
+      ${imgs.map((m, n) => `<figure>${m.type === "video" || ytId(m.url) ? `<div class="pic" style="aspect-ratio:16/9">${media(m, n)}</div>` : `<img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy">`}${m.caption ? `<figcaption${sty(m.style)}>${esc(m.caption)}</figcaption>` : ""}</figure>`).join("")}${subSections(r.subs, reg)}</article></div>`;
   } else {
     buildNav(p, !!cover, sps);
     d.innerHTML = coverHero(cover) + `<div class="dwrap${cover ? " afterhero" : ""}">${back}
       <div class="dintro"><div class="meta">${esc(c.meta(r))}</div><h1 class="dt"${st_(r, "title")}>${esc(r.title)}</h1>${txt ? `<div class="dtext"${st_(r, c.text)}>${esc(txt)}</div>` : ""}</div>
-      <div class="subs">${subs(imgs)}</div></div>`;
+      <div class="subs">${subs(imgs, reg)}</div>${subSections(r.subs, reg)}</div>`;
   }
-  wireZoom(d, imgs);
+  wireZoom(d, reg);
 })();
 </script></body></html>

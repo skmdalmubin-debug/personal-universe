@@ -36,11 +36,13 @@ async function bookView(cfg) {
   document.title = name;
   buildNav(p, !!bg, sp);
   hero.className = "hero" + (bg ? "" : " noimg");
+  const rules = [["hn", "hero.name"], ["ht", "hero.tagline"], ["hc1", "hero.cap1"], ["hc2", "hero.cap2"]].map(([k, key]) => { const dsk = styDecl(hs[key]), ph = styDecl(hs["m." + key], true); return (dsk ? `.hero .${k}{${dsk}}` : "") + (ph ? `@media(max-width:700px){.hero .${k}{${ph}}}` : ""); }).join("");
+  document.head.insertAdjacentHTML("beforeend", `<style>${rules}</style>`);
   const pos = `object-position:${Math.min(100, Math.max(0, +p.hero_fx ?? 50))}% ${Math.min(100, Math.max(0, +p.hero_fy ?? 50))}%`, mob = safeUrl(p.hero_mobile_url);
-  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}<h1${sty(hs["hero.name"])}>${esc(name)}</h1>
-    ${p.tagline ? `<p class="tag"${sty(hs["hero.tagline"])}>${esc(p.tagline)}</p>` : ""}
-    ${p.hero_cap1 ? `<p class="cap"${sty(hs["hero.cap1"])}>${esc(p.hero_cap1)}</p>` : ""}
-    ${p.hero_cap2 ? `<p class="cap"${sty(hs["hero.cap2"])}>${esc(p.hero_cap2)}</p>` : ""}
+  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}<h1 class="hn">${esc(name)}</h1>
+    ${p.tagline ? `<p class="tag ht">${esc(p.tagline)}</p>` : ""}
+    ${p.hero_cap1 ? `<p class="cap hc1">${esc(p.hero_cap1)}</p>` : ""}
+    ${p.hero_cap2 ? `<p class="cap hc2">${esc(p.hero_cap2)}</p>` : ""}
     ${p.clock_show === false ? "" : '<div class="clock" id="clk"></div>'}`;
   const clk = $("clk"), tz = p.clock_tz && p.clock_tz !== "local" ? p.clock_tz : undefined;
   if (clk) { const tick = () => { try { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: tz }); } catch (e) { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false }); } }; tick(); setInterval(tick, 1000); }
