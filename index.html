@@ -32,14 +32,14 @@ async function bookView(cfg) {
 }
 (async () => {
   const [p, sp] = await Promise.all([loadProfile(), loadSections()]), hs = p.styles || {};
-  const name = p.name || "Al Mubin", bg = safeUrl(p.hero_url) || safeUrl(p.photo_url), hero = $("hero");
+  const name = p.name || "Al Mubin", bg = safeUrl(p.hero_url) || safeUrl(p.photo_url), vidU = safeUrl(p.hero_video_url), hero = $("hero");
   document.title = name;
-  buildNav(p, !!bg, sp);
-  hero.className = "hero" + (bg ? "" : " noimg");
+  buildNav(p, !!(bg || vidU), sp);
+  hero.className = "hero" + (bg || vidU ? "" : " noimg");
   const rules = [["hn", "hero.name"], ["ht", "hero.tagline"], ["hc1", "hero.cap1"], ["hc2", "hero.cap2"]].map(([k, key]) => { const dsk = styDecl(hs[key]), ph = styDecl(hs["m." + key], true); return (dsk ? `.hero .${k}{${dsk}}` : "") + (ph ? `@media(max-width:700px){.hero .${k}{${ph}}}` : ""); }).join("");
   document.head.insertAdjacentHTML("beforeend", `<style>${rules}</style>`);
   const pos = `object-position:${Math.min(100, Math.max(0, +p.hero_fx ?? 50))}% ${Math.min(100, Math.max(0, +p.hero_fy ?? 50))}%`, mob = safeUrl(p.hero_mobile_url);
-  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}<h1 class="hn">${esc(name)}</h1>
+  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}${vidU ? `<video src="${esc(vidU)}" autoplay muted loop playsinline ${bg ? `poster="${esc(bg)}"` : ""}></video>` : ""}<h1 class="hn">${esc(name)}</h1>
     ${p.tagline ? `<p class="tag ht">${esc(p.tagline)}</p>` : ""}
     ${p.hero_cap1 ? `<p class="cap hc1">${esc(p.hero_cap1)}</p>` : ""}
     ${p.hero_cap2 ? `<p class="cap hc2">${esc(p.hero_cap2)}</p>` : ""}
@@ -62,10 +62,13 @@ async function bookView(cfg) {
       if (rs.type === "hidden") { roomView(el, t); continue; }
       if (rs.type === "capsule") { const { data: cp } = await sb.rpc("capsules", { k: t }); capsuleView(el, cp || [], t); continue; }
       if (rs.type === "timeline" || rs.type === "favorites") { const { data: tr } = await query(t).limit(300); rs.type === "timeline" ? tlView(el, tr || [], rs.config || {}, t) : favView(el, tr || [], t); continue; }
-      const { data, error } = await query(t).limit(t === "collections" ? 30 : 3);
+      const lay = (rs.config || {}).layout || ({ collections: "strip", journal: "list" })[rs.type] || "magazine";
+      if (rs.type === "travel") sb.from("travel").select("id,title,latlng").eq("published", true).not("latlng", "is", null).then(({ data: mp }) => { if (mp && mp.length) { el.insertAdjacentHTML("beforebegin", '<div class="tmapw"></div>'); mapView(el.previousElementSibling, mp, t); } });
+      const { data, error } = await query(t).limit(lay === "strip" ? 30 : 3);
       if (error) throw error;
-      if (t === "collections" && data.length) { el.className = "strip"; el.innerHTML = `<div class="track">${data.map(r => card(t, r)).join("")}</div>`; el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">View all ›</a>`); startStrip(el, p.scroll_speed); continue; }
-      el.innerHTML = data.length ? data.slice(0, 2).map((r, i) => render(t, r, i, o)).join("") + (data.length > 2 ? render(t, data[2], 2, o, true) : "") : '<p class="empty">Coming soon.</p>';
+      if (lay === "strip" && data.length) { el.className = "strip"; el.innerHTML = `<div class="track">${data.map(r => card(t, r)).join("")}</div>`; el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">View all ›</a>`); startStrip(el, p.scroll_speed); continue; }
+      el.className = { grid: "cgrid", list: "jlist" }[lay] || "";
+      el.innerHTML = data.length ? data.slice(0, 2).map((r, i) => LAY[lay](t, r, i, o)).join("") + (data.length > 2 ? LAY[lay](t, data[2], 2, o, true) : "") : '<p class="empty">Coming soon.</p>';
       if (data.length > 2) el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">See more ›</a>`);
     } catch (e) { el.innerHTML = '<p class="empty">Coming soon.</p>'; } finally { reveal(); }
   }

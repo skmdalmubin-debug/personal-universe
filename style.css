@@ -226,3 +226,5 @@ html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e
 .rhint{opacity:.6;font-size:14px;letter-spacing:.08em}
 .rpw{max-width:300px;margin:18px auto 0}.rpw input{margin-bottom:10px;background:#15121c;border-color:#3a3050;color:#fff;text-align:center}.rpw .msg{color:#e8c675}
 .rin{text-align:left;color:#eee;margin-top:20px}.rin .cap{color:#ddd}.rin h3{font-size:clamp(20px,4vw,40px);margin-bottom:8px}.rin.in{animation:rfade 1.2s ease}
+.tmapw{margin-bottom:clamp(24px,5vw,48px)}.tmap{height:clamp(260px,50vw,460px);border-radius:var(--r);overflow:hidden;position:relative;z-index:0;isolation:isolate}.mcount{text-align:center;color:var(--mut);font-size:14px;margin-top:10px}
+.hero>video{position:absolute!important;inset:0;z-index:0!important;width:100%;height:100%;object-fit:cover;max-width:none}

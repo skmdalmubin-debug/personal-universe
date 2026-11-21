@@ -343,3 +343,23 @@ function roomView(el, key) {
     }, 1500);
   };
 }
+
+const LAY = { magazine: mag, grid: card, list: entry };
+/* ---- travel map (Leaflet + OpenStreetMap) ---- */
+function loadLeaflet() {
+  return new Promise(ok => {
+    if (window.L) return ok();
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(l);
+    const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; s.onload = ok; document.head.appendChild(s);
+  });
+}
+async function mapView(el, rows, key) {
+  const pts = rows.map(r => { const m = String(r.latlng || "").match(/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/); return m ? { r, ll: [+m[1], +m[2]] } : null; }).filter(Boolean);
+  if (!pts.length) return;
+  el.innerHTML = `<div class="tmap"></div><p class="mcount">${pts.length} place${pts.length > 1 ? "s" : ""} explored so far</p>`;
+  await loadLeaflet();
+  const map = L.map(el.firstChild, { scrollWheelZoom: false }).setView(pts[0].ll, 3);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
+  pts.forEach(p => L.marker(p.ll).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
+  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : map.setView(pts[0].ll, 8);
+}

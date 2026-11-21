@@ -234,6 +234,8 @@ html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e
 .rhint{opacity:.6;font-size:14px;letter-spacing:.08em}
 .rpw{max-width:300px;margin:18px auto 0}.rpw input{margin-bottom:10px;background:#15121c;border-color:#3a3050;color:#fff;text-align:center}.rpw .msg{color:#e8c675}
 .rin{text-align:left;color:#eee;margin-top:20px}.rin .cap{color:#ddd}.rin h3{font-size:clamp(20px,4vw,40px);margin-bottom:8px}.rin.in{animation:rfade 1.2s ease}
+.tmapw{margin-bottom:clamp(24px,5vw,48px)}.tmap{height:clamp(260px,50vw,460px);border-radius:var(--r);overflow:hidden;position:relative;z-index:0;isolation:isolate}.mcount{text-align:center;color:var(--mut);font-size:14px;margin-top:10px}
+.hero>video{position:absolute!important;inset:0;z-index:0!important;width:100%;height:100%;object-fit:cover;max-width:none}
 
 .wrap{padding-top:max(40px,env(safe-area-inset-top));padding-bottom:max(120px,env(safe-area-inset-bottom))}html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:none}button{min-height:38px}
 </style>
@@ -586,9 +588,29 @@ function roomView(el, key) {
   };
 }
 
+const LAY = { magazine: mag, grid: card, list: entry };
+/* ---- travel map (Leaflet + OpenStreetMap) ---- */
+function loadLeaflet() {
+  return new Promise(ok => {
+    if (window.L) return ok();
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(l);
+    const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; s.onload = ok; document.head.appendChild(s);
+  });
+}
+async function mapView(el, rows, key) {
+  const pts = rows.map(r => { const m = String(r.latlng || "").match(/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/); return m ? { r, ll: [+m[1], +m[2]] } : null; }).filter(Boolean);
+  if (!pts.length) return;
+  el.innerHTML = `<div class="tmap"></div><p class="mcount">${pts.length} place${pts.length > 1 ? "s" : ""} explored so far</p>`;
+  await loadLeaflet();
+  const map = L.map(el.firstChild, { scrollWheelZoom: false }).setView(pts[0].ll, 3);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
+  pts.forEach(p => L.marker(p.ll).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
+  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : map.setView(pts[0].ll, 8);
+}
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v16 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v17 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Photos and videos (each with its own description and text style)", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -601,6 +623,7 @@ const S = {
     TX("name", "Name", { sk: "hero.name", ms: true }), TX("tagline", "Tagline", { sk: "hero.tagline", ms: true }),
     AR("hero_cap1", "Caption 1", { sk: "hero.cap1", ms: true }), AR("hero_cap2", "Caption 2", { sk: "hero.cap2", ms: true }),
     F("hero_url", "Header photo (full screen)", "image"),
+    F("hero_video_url", "Header video (optional; plays silently in a loop, under 50 MB; it covers the header photo)", "image", { accept: "video/*" }),
     F("hero_mobile_url", "Header photo for phones (optional, a tall photo works best)", "image"),
     F("hero_fx", "Photo focus, left to right (0 = left, 50 = middle, 100 = right)", "number"),
     F("hero_fy", "Photo focus, top to bottom (0 = top, 50 = middle, 100 = bottom)", "number"),
@@ -630,7 +653,7 @@ const S = {
   contacts: { label: "Contact", title: "title", sub: "value", order: ["sort_order", true], fields: [
     F("title", "Title (e.g. YouTube)", "text"), F("value", "Link, email, phone or address", "text", { hint: "A link opens as a link. An email or phone number is clickable. Anything else is shown as text." }),
     F("icon", "App icon", "select", { opts: Object.entries(ICON_NAMES) }), ...PUB] },
-  travel: { label: "Travel", title: "title", fields: [TX("title", "Cover title"), F("location", "Place", "text"), F("country", "Country", "text"), F("visited_on", "Date", "date"), AR("description", "Cover description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB], styled: true },
+  travel: { label: "Travel", title: "title", fields: [TX("title", "Cover title"), F("location", "Place", "text"), F("country", "Country", "text"), F("latlng", "Map position: in Google Maps press and hold the place, copy the two numbers, paste here (e.g. 21.4272, 92.0058)", "text"), F("visited_on", "Date", "date"), AR("description", "Cover description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB], styled: true },
   collections: { label: "Collection", title: "title", fields: [TX("title", "Group title (e.g. Watches)"), F("category", "Category label", "text"), AR("description", "Group description"), F("image_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB], styled: true },
   journal: { label: "Journal", title: "title", fields: [TX("title", "Title"), F("written_on", "Date", "date"), AR("body", "Entry"), F("cover_url", "Cover photo", "image"), GAL, SUBS, { k: "published", l: "Published", t: "bool" }], styled: true },
   achievements: { label: "Achievements", title: "title", fields: [TX("title", "Cover title"), F("achieved_on", "Date", "date"), AR("description", "Cover description"), F("image_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB], styled: true },
@@ -664,6 +687,7 @@ function loginView() {
 function shell() {
   app.innerHTML = `<div class="bar"><b>Admin <small style="color:var(--mut);font-weight:400">${VERSION}</small></b><span><a href="index.html" style="font-size:14px;margin-right:14px">View site</a><button id="lo">Sign out</button></span></div>
   <div class="tabs">${Object.entries(S).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc(v.label)}</button>`).join("")}</div>${visBar()}<div id="main"></div>`;
+  $("lay") && ($("lay").onchange = async () => { const r = REG.find(x => x.key === secKey()), c = Object.assign({}, r.config); if ($("lay").value) c.layout = $("lay").value; else delete c.layout; await sb.from("sections").update({ config: c }).eq("key", r.key); await loadReg(); });
   $("rset") && ($("rset").onclick = async () => { const { error } = await sb.rpc("set_room_password", { k: secKey(), pw: $("rpw").value }); alert(error ? error.message : "Password saved."); $("rpw").value = ""; });
   ["tsp", "tdr"].forEach(id => $(id) && ($(id).onchange = async () => { const r = REG.find(x => x.key === secKey()); await sb.from("sections").update({ config: Object.assign({}, r.config, { speed: +$("tsp").value, dir: $("tdr").value }) }).eq("key", r.key); await loadReg(); }));
   app.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => { await sb.from("sections").update({ visible: b.dataset.v === "1" }).eq("key", secKey()); await loadReg(); shell(); });
@@ -674,7 +698,7 @@ function shell() {
 const secKey = () => ({ contacts: "contact" })[tab] || tab;
 function visBar() {
   const r = REG.find(x => x.key === secKey()); if (!r) return "";
-  return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button>${r.type === "hidden" ? `<span><input id="rpw" type="password" placeholder="Set room password" style="width:170px;padding:7px"> <button id="rset">Set password</button></span>` : ""}${r.type === "timeline" ? `<span>Speed <input type="range" id="tsp" min="1" max="10" value="${(r.config || {}).speed || 5}" style="width:110px"></span><select id="tdr" style="width:auto;padding:6px"><option value="up">First year scrolls up</option><option value="down" ${(r.config || {}).dir === "down" ? "selected" : ""}>First year scrolls down</option></select>` : ""}</div>`;
+  return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button>${["travel", "collections", "journal", "achievements", "memories", "custom"].includes(r.type) ? `<select id="lay" style="width:auto;padding:6px">${[["", "Layout: default"], ["magazine", "Layout: magazine"], ["grid", "Layout: cards"], ["list", "Layout: list"], ["strip", "Layout: auto-scroll strip"]].map(([v, n]) => `<option value="${v}" ${(r.config || {}).layout === v || (!(r.config || {}).layout && !v) ? "selected" : ""}>${n}</option>`).join("")}</select>` : ""}${r.type === "hidden" ? `<span><input id="rpw" type="password" placeholder="Set room password" style="width:170px;padding:7px"> <button id="rset">Set password</button></span>` : ""}${r.type === "timeline" ? `<span>Speed <input type="range" id="tsp" min="1" max="10" value="${(r.config || {}).speed || 5}" style="width:110px"></span><select id="tdr" style="width:auto;padding:6px"><option value="up">First year scrolls up</option><option value="down" ${(r.config || {}).dir === "down" ? "selected" : ""}>First year scrolls down</option></select>` : ""}</div>`;
 }
 async function applyAppIcon() {
   try {
@@ -897,7 +921,7 @@ async function upload(f0) {
   if (error) throw error;
   return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
 }
-const pvHtml = (k, v) => v ? `<img class="pv" src="${esc(v)}"> <button type="button" class="del" data-rm="${k}" style="margin-top:6px">Remove photo</button>` : "";
+const pvHtml = (k, v) => v ? `${k === "hero_video_url" ? `<video class="pv" src="${esc(v)}" muted></video>` : `<img class="pv" src="${esc(v)}">`} <button type="button" class="del" data-rm="${k}" style="margin-top:6px">Remove photo</button>` : "";
 async function form(row) {
   const s = S[tab], tb = s.table || tab, pk = s.pk || "id", main = $("main"); gal = {}; stys = {}; subsS = {};
   if (row === null) { const { data } = await sb.from("profile").select("*").eq("id", 1).maybeSingle(); row = data || { id: 1 }; }
@@ -910,7 +934,7 @@ async function form(row) {
     if (t === "bool") return `<label class="chk"><input type="checkbox" data-k="${k}" ${v === false ? "" : "checked"}> ${l}</label>`;
     if (t === "select") return `<label>${l}</label><select data-k="${k}">${f.opts.map(([o, n]) => `<option value="${esc(o)}" ${String(o) === String(v) ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>`;
     if (t === "color") return `<label>${l}</label><input type="color" data-k="${k}" value="${/^#[0-9a-f]{6}$/i.test(v || "") ? v : (f.def || "#1d1d1f")}">`;
-    if (t === "image") return `<label>${l}</label><input type="file" accept="image/*" data-up="${k}"><input type="hidden" data-k="${k}" value="${esc(v)}"><div id="pv-${k}">${pvHtml(k, v)}</div>${k === "logo_url" ? '<div class="hint">No logo? Your name is shown as text in the top-left instead.</div>' : ""}`;
+    if (t === "image") return `<label>${l}</label><input type="file" accept="${f.accept || "image/*"}" data-up="${k}"><input type="hidden" data-k="${k}" value="${esc(v)}"><div id="pv-${k}">${pvHtml(k, v)}</div>${k === "logo_url" ? '<div class="hint">No logo? Your name is shown as text in the top-left instead.</div>' : ""}`;
     if (t === "subs") { subsS[k] = Array.isArray(v) ? v.map(x => Object.assign({}, x)) : []; return `<label>${l}</label><div data-subs="${k}"></div>`; }
     if (t === "gallery") { gal[k] = Array.isArray(v) ? v.filter(i => i && i.url).map(i => ({ url: i.url, caption: i.caption || "", style: Object.assign({}, i.style) })) : []; return `<label>${l}</label><div data-gal="${k}"></div>`; }
     return `<label>${l}</label><input data-k="${k}" type="${t}" value="${esc(v)}">${hint}${stySlot}`;
