@@ -21,12 +21,12 @@ const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("i
   if (t === "journal") {
     reg.push(...imgs);
     buildNav(p, false, sps);
-    d.innerHTML = `<div class="dwrap">${back}<article class="article"><div class="meta">${esc(c.meta(r))}</div><h1 class="dt"${st_(r, "title")}>${esc(r.title)}</h1><div class="by">${esc(fmt(r.written_on))} · ${readTime(r.body)}</div>
+    d.innerHTML = `<div class="dwrap th-${t}">${back}<article class="article"><div class="meta">${esc(c.meta(r))}</div><h1 class="dt"${st_(r, "title")}>${esc(r.title)}</h1><div class="by">${esc(fmt(r.written_on))} · ${readTime(r.body)}</div>
       ${cover ? `<img class="dcover zoom" src="${esc(cover)}" alt="">` : ""}<div class="dtext"${st_(r, c.text)}>${esc(txt)}</div>
       ${imgs.map((m, n) => `<figure>${m.type === "video" || ytId(m.url) ? `<div class="pic" style="aspect-ratio:16/9">${media(m, n)}</div>` : `<img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy">`}${m.caption ? `<figcaption${sty(m.style)}>${esc(m.caption)}</figcaption>` : ""}</figure>`).join("")}${subSections(r.subs, reg)}</article></div>`;
   } else {
     buildNav(p, !!cover, sps);
-    d.innerHTML = coverHero(cover) + `<div class="dwrap${cover ? " afterhero" : ""}">${back}
+    d.innerHTML = coverHero(cover) + `<div class="dwrap th-${t}${cover ? " afterhero" : ""}">${back}
       <div class="dintro"><div class="meta">${esc(c.meta(r))}</div><h1 class="dt"${st_(r, "title")}>${esc(r.title)}</h1>${txt ? `<div class="dtext"${st_(r, c.text)}>${esc(txt)}</div>` : ""}</div>
       <div class="subs">${subs(imgs, reg)}</div>${subSections(r.subs, reg)}</div>`;
   }

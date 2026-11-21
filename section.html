@@ -8,7 +8,7 @@
 <script src="config.js?v=4"></script><script src="common.js?v=4"></script>
 <script>
 const t = new URLSearchParams(location.search).get("t"), s = $("s");
-let rows = [], cat = "";
+let rows = [], cat = "", IT;
 function draw() {
   const list = cat ? rows.filter(r => r.category === cat) : rows;
   let body = "";
@@ -16,8 +16,8 @@ function draw() {
     let y = "";
     list.forEach(r => { const yr = r.written_on ? r.written_on.slice(0, 4) : ""; if (yr !== y) { y = yr; body += `${body ? "</div>" : ""}<div class="yr">${esc(y)}</div><div class="jlist">`; } body += entry(t, r); });
     body = body ? body + "</div>" : "";
-  } else body = `<div class="${WRAP[t] || ""}">${list.map((r, i) => render(t, r, i, 0)).join("")}</div>`;
-  $("items").innerHTML = body;
+  } else { const lay = ((REG.find(r => r.key === t) || {}).config || {}).layout || ({ collections: "grid", achievements: "grid", memories: "grid" })[(REG.find(r => r.key === t) || {}).type] || "magazine"; body = `<div class="${{ grid: "cgrid", list: "jlist" }[lay] || ""}">${list.map((r, i) => (LAY[lay] || mag)(t, r, i, 0)).join("")}</div>`; }
+  IT.innerHTML = body;
 }
 (async () => {
   const [p, sps] = await Promise.all([loadProfile(), loadSections()]);
@@ -32,8 +32,9 @@ function draw() {
     (cover ? `<div class="dintro"><h1 class="dt"${sty(ss.title)}>${esc(title)}</h1>${sp.description ? `<div class="dtext"${sty(ss.description)}>${esc(sp.description)}</div>` : ""}</div>` : `<h2${sty(ss.title)}>${esc(title)}</h2>${sp.description ? `<p class="dtext" style="margin:-24px 0 40px;max-width:760px"${""}>${esc(sp.description)}</p>` : ""}`) +
     (cats.length > 1 ? `<div class="chips" id="chips"><button class="on" data-c="">All</button>${cats.map(c => `<button data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : "") +
     `<div id="items"></div></div>`;
+  IT = $("items"); IT.id = t;
   wireZoom(s, []);
-  if (error || !rows.length) { $("items").innerHTML = '<p class="empty">Coming soon.</p>'; return; }
+  if (error || !rows.length) { IT.innerHTML = '<p class="empty">Coming soon.</p>'; return; }
   $("chips")?.querySelectorAll("button").forEach(b => b.onclick = () => { cat = b.dataset.c; document.querySelectorAll("#chips button").forEach(x => x.classList.toggle("on", x === b)); draw(); });
   draw();
 })();
