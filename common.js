@@ -115,7 +115,12 @@ function buildNav(p, overHero, sp) {
     : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
+  nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option></select>');
+  const ls = nav.querySelector(".lang"); ls.value = LANG; ls.onchange = () => setLang(ls.value);
   document.body.prepend(nav);
+  const pg = new URLSearchParams(location.search).get("t") || (/about/.test(location.pathname) ? "about" : null);
+  if (pg) track("page", pg); else if (onIndex) track("visit", "home");
+  loadTranslate();
   nav.querySelector(".logo").onclick = e => { if (onIndex) { e.preventDefault(); history.replaceState(null, "", location.pathname); scrollTo({ top: 0, behavior: "smooth" }); } };
   if (overHero) { const f = () => nav.classList.toggle("solid", scrollY > 40); addEventListener("scroll", f, { passive: true }); f(); }
 }
@@ -259,3 +264,25 @@ function aboutView(p, full) {
     ${full && docs.length ? `<div class="docs"><h3${sty(hs["about.docs_title"])}>${esc(p.about_docs_title || "Licenses & Credentials")}</h3><div class="dgrid">${docs.map((d, n) => `<figure><img data-n="${n}" src="${esc(d.url)}" alt="" loading="lazy">${d.caption ? `<figcaption${sty(d.style)}>${esc(d.caption)}</figcaption>` : ""}</figure>`).join("")}</div></div>` : ""}</section>`;
 }
 
+
+/* privacy-friendly visit counting (no cookies, no IPs, once per browser session) */
+function track(kind, key) {
+  try {
+    if (Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k))) return;
+    const sk = "t:" + kind + ":" + key; if (sessionStorage.getItem(sk)) return; sessionStorage.setItem(sk, 1);
+    sb.from("analytics_events").insert({ kind, key: String(key).slice(0, 40) }).then(() => {});
+  } catch (e) {}
+}
+/* language switch (machine translation by Google Translate, only loaded when chosen) */
+const LANG = ((document.cookie.match(/googtrans=\/[^/;]+\/(\w+)/) || [])[1]) || "";
+function setLang(v) {
+  const h = location.hostname, val = v ? "/auto/" + v : "", ex = v ? "" : "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  ["", "; domain=" + h, "; domain=." + h].forEach(d => document.cookie = "googtrans=" + val + "; path=/" + ex + d);
+  location.reload();
+}
+function loadTranslate() {
+  if (!LANG) return;
+  window.googleTranslateElementInit = () => new google.translate.TranslateElement({ autoDisplay: false }, "gt");
+  const d = document.createElement("div"); d.id = "gt"; d.style.display = "none"; document.body.appendChild(d);
+  const s = document.createElement("script"); s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"; document.head.appendChild(s);
+}

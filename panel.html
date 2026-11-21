@@ -176,6 +176,11 @@ label.chk{display:flex;gap:10px;align-items:center}label.chk input{width:auto}
 .subsec{margin-top:clamp(56px,9vw,110px)}.subsec .sst{font-size:clamp(24px,4.4vw,44px);font-weight:600;letter-spacing:-.03em;line-height:1.1;margin:0 0 16px;max-width:760px}
 .subcard{border:1px solid var(--line);border-radius:16px;padding:14px;margin:14px 0}.subhead{display:flex;justify-content:space-between;align-items:center}.lnk{display:flex;gap:8px;margin-top:8px}.lnk input{flex:1}
 .gi video{width:72px;height:54px;object-fit:cover;border-radius:10px}.gi .thumb{width:72px;height:54px;border-radius:10px;overflow:hidden;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--mut)}.gi .thumb img{width:72px;height:54px;object-fit:cover}
+.lang{flex:none;font:inherit;font-size:12px;background:transparent;color:inherit;border:1px solid currentColor;border-radius:980px;padding:3px 8px;width:auto;opacity:.85}.lang option{color:#000}
+.goog-te-banner-frame,.skiptranslate>iframe,#goog-gt-tt,.goog-te-balloon-frame{display:none!important}body{top:0!important}.goog-text-highlight{background:none!important;box-shadow:none!important}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stats div{border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}.stats b{display:block;font-size:30px;font-weight:600}.stats small{color:var(--mut)}
+.spark{display:flex;align-items:flex-end;gap:4px;height:80px}.spark i{flex:1;background:var(--fg);border-radius:3px 3px 0 0;opacity:.85}
+.sbar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:14px}.sbar span{width:110px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sbar i{height:8px;background:var(--fg);border-radius:4px;opacity:.8;display:block}.sbar b{font-weight:500;color:var(--mut)}
 
 .wrap{padding-top:max(40px,env(safe-area-inset-top));padding-bottom:max(120px,env(safe-area-inset-bottom))}html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:none}button{min-height:38px}
 </style>
@@ -299,7 +304,12 @@ function buildNav(p, overHero, sp) {
     : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
+  nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option></select>');
+  const ls = nav.querySelector(".lang"); ls.value = LANG; ls.onchange = () => setLang(ls.value);
   document.body.prepend(nav);
+  const pg = new URLSearchParams(location.search).get("t") || (/about/.test(location.pathname) ? "about" : null);
+  if (pg) track("page", pg); else if (onIndex) track("visit", "home");
+  loadTranslate();
   nav.querySelector(".logo").onclick = e => { if (onIndex) { e.preventDefault(); history.replaceState(null, "", location.pathname); scrollTo({ top: 0, behavior: "smooth" }); } };
   if (overHero) { const f = () => nav.classList.toggle("solid", scrollY > 40); addEventListener("scroll", f, { passive: true }); f(); }
 }
@@ -444,9 +454,31 @@ function aboutView(p, full) {
 }
 
 
+/* privacy-friendly visit counting (no cookies, no IPs, once per browser session) */
+function track(kind, key) {
+  try {
+    if (Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k))) return;
+    const sk = "t:" + kind + ":" + key; if (sessionStorage.getItem(sk)) return; sessionStorage.setItem(sk, 1);
+    sb.from("analytics_events").insert({ kind, key: String(key).slice(0, 40) }).then(() => {});
+  } catch (e) {}
+}
+/* language switch (machine translation by Google Translate, only loaded when chosen) */
+const LANG = ((document.cookie.match(/googtrans=\/[^/;]+\/(\w+)/) || [])[1]) || "";
+function setLang(v) {
+  const h = location.hostname, val = v ? "/auto/" + v : "", ex = v ? "" : "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  ["", "; domain=" + h, "; domain=." + h].forEach(d => document.cookie = "googtrans=" + val + "; path=/" + ex + d);
+  location.reload();
+}
+function loadTranslate() {
+  if (!LANG) return;
+  window.googleTranslateElementInit = () => new google.translate.TranslateElement({ autoDisplay: false }, "gt");
+  const d = document.createElement("div"); d.id = "gt"; d.style.display = "none"; document.body.appendChild(d);
+  const s = document.createElement("script"); s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"; document.head.appendChild(s);
+}
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v12 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v13 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Photos and videos (each with its own description and text style)", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -464,10 +496,11 @@ const S = {
     F("hero_fy", "Photo focus, top to bottom (0 = top, 50 = middle, 100 = bottom)", "number"),
     F("clock_show", "Show a live 24-hour clock on the hero photo (top right)", "bool"),
     F("clock_tz", "Clock time zone", "select", { opts: [["local", "Visitor's own time"], ["Asia/Dhaka", "Bangladesh (Dhaka)"], ["UTC", "UTC"], ["Asia/Kolkata", "India"], ["Asia/Dubai", "Dubai"], ["Asia/Singapore", "Singapore"], ["Asia/Tokyo", "Tokyo"], ["Europe/London", "London"], ["America/New_York", "New York"]] })] },
-  logo: { label: "Logo", table: "profile", single: true, fields: [
+  logo: { label: "Logo & app icon", table: "profile", single: true, fields: [
     F("logo_url", "Logo (top-left of the website; clicking it goes to the home hero)", "image"),
     F("logo_h", "Logo height in px (16 to 120)", "number"),
-    F("logo_radius", "Logo corner roundness in px (0 = square, 60 = very round)", "number")] },
+    F("logo_radius", "Logo corner roundness in px (0 = square, 60 = very round)", "number"),
+    F("app_icon_url", "Admin app icon (square, at least 512 px; used on the phone home screen. After changing it, remove the old home-screen app and add it again)", "image")] },
   theme: { label: "Theme & footer", table: "profile", single: true, fields: [
     F("theme_bg", "Background color", "color", { def: "#ffffff" }), F("theme_fg", "Text color", "color", { def: "#1d1d1f" }),
     F("theme_accent", "Accent color (links and buttons)", "color", { def: "#0066cc" }), F("theme_soft", "Soft panel color (behind pictures and cards)", "color", { def: "#f5f5f7" }),
@@ -499,11 +532,12 @@ const S = {
     F("img_ratio", "Picture shape", "select", { opts: [["portrait", "Tall (4:5)"], ["square", "Square"], ["landscape", "Landscape (4:3)"], ["wide", "Wide (16:9)"]] }),
     F("scroll_speed", "Collection auto-scroll speed (1 slow to 10 fast)", "number"),
     F("side_mode", "Picture side in lists", "select", { opts: [["alternate", "Alternate left / right"], ["left", "Always left"], ["right", "Always right"]] })] },
-  guestbook: { label: "Guest Book", custom: "gb" }
+  stats: { label: "Visitors", custom: "stats" }, guestbook: { label: "Guest Book", custom: "gb" }
 };
 let tab = "intro", gal = {}, stys = {}, subsS = {};
 
 async function boot() {
+  applyAppIcon();
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return loginView();
   const { data: a } = await sb.from("admins").select("user_id").maybeSingle();
@@ -529,6 +563,31 @@ const secKey = () => ({ contacts: "contact" })[tab] || tab;
 function visBar() {
   const r = REG.find(x => x.key === secKey()); if (!r) return "";
   return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button></div>`;
+}
+async function applyAppIcon() {
+  try {
+    const { data } = await sb.from("profile").select("app_icon_url").eq("id", 1).maybeSingle(), u = data && data.app_icon_url; if (!u) return;
+    const img = new Image(); img.crossOrigin = "anonymous"; img.src = u; await img.decode();
+    const mk = n => { const c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, n, n); const r = Math.min(n * .76 / img.width, n * .76 / img.height), w = img.width * r, h = img.height * r; x.drawImage(img, (n - w) / 2, (n - h) / 2, w, h); return c.toDataURL("image/png"); };
+    let l = document.querySelector('link[rel="apple-touch-icon"]'); if (!l) { l = document.createElement("link"); l.rel = "apple-touch-icon"; document.head.appendChild(l); } l.href = mk(180);
+    const man = { name: "Mubin Admin", short_name: "Mubin Admin", start_url: location.origin + location.pathname, scope: location.origin + "/", display: "standalone", background_color: "#ffffff", theme_color: "#ffffff", icons: [{ src: mk(192), sizes: "192x192", type: "image/png", purpose: "any" }, { src: mk(512), sizes: "512x512", type: "image/png", purpose: "any" }] };
+    const m = document.querySelector('link[rel="manifest"]'); if (m) m.href = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: "application/manifest+json" }));
+  } catch (e) {}
+}
+async function statsView() {
+  const main = $("main"); main.textContent = "Loading…";
+  const day = o => new Date(Date.now() - o * 864e5).toISOString().slice(0, 10);
+  const { data, error } = await sb.from("analytics_events").select("kind,key,day").gte("day", day(30)).limit(50000);
+  if (error) { main.textContent = error.message; return; }
+  const v = data.filter(e => e.kind === "visit"), n = f => v.filter(f).length;
+  const by = k => Object.entries(data.filter(e => e.kind === k).reduce((a, e) => (a[e.key] = (a[e.key] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1]);
+  const days = [...Array(14)].map((_, i) => day(13 - i)), per = days.map(d => v.filter(e => e.day === d).length), mx = Math.max(1, ...per);
+  const bars = rows => rows.length ? rows.map(([k, c]) => `<div class="sbar"><span>${esc(k)}</span><i style="width:${Math.max(4, Math.round(c / rows[0][1] * 60))}%"></i><b>${c}</b></div>`).join("") : '<p class="msg">No data yet.</p>';
+  main.innerHTML = `<div class="stats"><div><b>${n(e => e.day === day(0))}</b><small>Visits today</small></div><div><b>${n(e => e.day >= day(6))}</b><small>Last 7 days</small></div><div><b>${v.length}</b><small>Last 30 days</small></div></div>
+    <label>Visits per day (last 14 days)</label><div class="spark">${per.map((c, i) => `<i title="${days[i]}: ${c}" style="height:${Math.max(4, c / mx * 100)}%"></i>`).join("")}</div>
+    <label>Sections people scrolled to on the home page (30 days)</label>${bars(by("section"))}
+    <label>Pages people opened (30 days)</label>${bars(by("page"))}
+    <div class="hint" style="margin-top:20px">Private by design: no names, IP addresses or cookies are stored. A visit counts once per browser session, and your own visits while signed in are not counted.</div>`;
 }
 async function loadReg() {
   const { data } = await sb.from("sections").select("*").order("position"); REG = data || [];
@@ -568,15 +627,21 @@ async function gbAdmin() {
   const { data: all, error: e0 } = await sb.from("guestbook").select("*").order("created_at");
   if (e0) { main.textContent = e0.message; return; }
   const cnt = s => all.filter(r => r.status === s).length;
-  main.innerHTML = `<div class="tabs">${[["pending", `Pending (${cnt("pending")})`], ["approved", `Published (${cnt("approved")})`], ["design", "Cover design"]].map(([k, l]) => `<button data-g="${k}" class="${gbSub === k ? "on" : ""}">${l}</button>`).join("")}</div><div id="gbm"></div>`;
+  main.innerHTML = `<div class="tabs">${[["pending", `Pending (${cnt("pending")})`], ["approved", `Published (${cnt("approved")})`], ["design", "Cover design"], ["notify", "Notifications"]].map(([k, l]) => `<button data-g="${k}" class="${gbSub === k ? "on" : ""}">${l}</button>`).join("")}</div><div id="gbm"></div>`;
   main.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { gbSub = b.dataset.g; gbAdmin(); });
   const box = $("gbm");
+  if (gbSub === "notify") {
+    const cfg = (REG.find(r => r.key === "guestbook") || {}).config || {};
+    box.innerHTML = `<p class="hint" style="font-size:14px;line-height:1.7">Get a push on your phone whenever someone writes in the Guest Book.<br>1. Install the free <b>ntfy</b> app (Play Store or App Store).<br>2. Tap <b>+</b> and subscribe to the topic below (keep the server as ntfy.sh).<br>Only the guest's name is sent, never the message. Anyone who knows the topic could read these alerts, so keep it private.</p><label>Topic name</label><input id="nt" value="${esc(cfg.ntfy || "")}"><div class="hint">Clear it to turn notifications off.</div><div class="actions"><button class="pri" id="ns">Save</button></div><p class="msg" id="m"></p>`;
+    $("ns").onclick = async () => { const { error } = await sb.from("sections").update({ config: Object.assign({}, cfg, { ntfy: $("nt").value.trim().replace(/[^\w-]/g, "") }) }).eq("key", "guestbook"); $("m").textContent = error ? error.message : "Saved."; await loadReg(); };
+    return;
+  }
   if (gbSub === "design") {
     const cfg = (REG.find(r => r.key === "guestbook") || {}).config || {};
     const T = [["label", "Small title on top", "AL MUBIN'S PERSONAL ARCHIVE"], ["title", "Cover title", "The Guestbook"], ["subtitle", "Cover subtitle", "A collection of words & memories"], ["est", "Cover bottom line", "EST. 2026"], ["button", "Open button text", "Open the Book"], ["pagetitle", "Page header (top left of each page)", "Al Mubin's Guestbook"], ["dear", "Greeting on each page", "Dear Mubin,"]];
     const C = [["bg", "Cover color", "#26221b"], ["accent", "Gold / line color", "#c9ac7a"], ["paper", "Page color", "#ede6d6"], ["ink", "Page text color", "#3b3124"]];
     box.innerHTML = T.map(([k, l, d]) => `<label>${l}</label><input data-c="${k}" value="${esc(cfg[k] ?? d)}">`).join("") + C.map(([k, l, d]) => `<label>${l}</label><input type="color" data-c="${k}" value="${esc(cfg[k] || d)}">`).join("") + '<div class="actions"><button class="pri" id="gs">Save</button></div><p class="msg" id="m"></p>';
-    $("gs").onclick = async () => { const o = {}; box.querySelectorAll("[data-c]").forEach(e => o[e.dataset.c] = e.value); const { error } = await sb.from("sections").update({ config: o }).eq("key", "guestbook"); $("m").textContent = error ? error.message : "Saved."; await loadReg(); };
+    $("gs").onclick = async () => { const o = {}; box.querySelectorAll("[data-c]").forEach(e => o[e.dataset.c] = e.value); const { error } = await sb.from("sections").update({ config: Object.assign({}, cfg, o) }).eq("key", "guestbook"); $("m").textContent = error ? error.message : "Saved."; await loadReg(); };
     return;
   }
   const rows = all.filter(r => r.status === gbSub).reverse();
@@ -589,7 +654,7 @@ async function gbAdmin() {
     box.appendChild(d);
   });
 }
-const CUS = { create: createView, order: orderView, gb: gbAdmin };
+const CUS = { create: createView, order: orderView, gb: gbAdmin, stats: statsView };
 async function inbox() {
   const main = $("main"); main.textContent = "Loading…";
   const { data, error } = await sb.from("messages").select("*").order("created_at", { ascending: false });
