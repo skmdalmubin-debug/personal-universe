@@ -446,13 +446,13 @@ function aboutView(p, full) {
 
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v11 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v12 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Photos and videos (each with its own description and text style)", t: "gallery" };
-const SUBS = F("subs", "Sub sections (for example Beach, Hotel, Food). Each has its own title, description, photos and videos", "subs");
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
 const TX = (k, l, extra) => F(k, l, "text", Object.assign({ sty: true }, extra));
 const AR = (k, l, extra) => F(k, l, "area", Object.assign({ sty: true }, extra));
+const SUBS = F("subs", "Sub sections (for example Beach, Hotel, Food). Each has its own title, description, photos and videos", "subs");
 const S = {
   create: { label: "＋ Create section", custom: "create" }, order: { label: "Sections order", custom: "order" },
   intro: { label: "Intro / Hero", table: "profile", single: true, fields: [
