@@ -61,7 +61,8 @@ async function bookView(cfg) {
     try {
       if (rs.type === "hidden") { roomView(el, t); continue; }
       if (rs.type === "capsule") { const { data: cp } = await sb.rpc("capsules", { k: t }); capsuleView(el, cp || [], t); continue; }
-      if (rs.type === "timeline" || rs.type === "favorites") { const { data: tr } = await query(t).limit(300); rs.type === "timeline" ? tlView(el, tr || [], rs.config || {}, t) : favView(el, tr || [], t); continue; }
+      if (rs.type === "timeline") { const { data: tr } = await query(t).limit(300); el.innerHTML = '<a class="seemore" href="#">See more…</a>'; el.firstChild.onclick = e => { e.preventDefault(); tlView(el, tr || [], rs.config || {}, t); }; continue; }
+      if (rs.type === "favorites") { const { data: fr } = await query(t).limit(300); favView(el, fr || [], t); continue; }
       const lay = (rs.config || {}).layout || ({ collections: "strip", journal: "list" })[rs.type] || "magazine";
       if (rs.type === "travel") sb.from("travel").select("id,title,latlng").eq("published", true).not("latlng", "is", null).then(({ data: mp }) => { if (mp && mp.length) { el.insertAdjacentHTML("beforebegin", '<div class="tmapw"></div>'); mapView(el.previousElementSibling, mp, t); } });
       const { data, error } = await query(t).limit(lay === "strip" ? 30 : 3);

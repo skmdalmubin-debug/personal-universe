@@ -120,7 +120,7 @@ function buildNav(p, overHero, sp) {
     : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
-  nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option></select>');
+  nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option><option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="es">Español</option><option value="fr">Français</option><option value="pt">Português</option></select>');
   nav.insertAdjacentHTML("beforeend", '<button class="dm" aria-label="Dark mode">◐</button>');
   nav.querySelector(".dm").onclick = () => { const d = document.documentElement.dataset.theme === "dark"; localStorage.setItem("theme", d ? "" : "dark"); location.reload(); };
   const ls = nav.querySelector(".lang"); ls.value = LANG; ls.onchange = () => setLang(ls.value);
@@ -154,7 +154,7 @@ function mag(t, r, i, off, peek) {
 }
 function card(t, r, i, off, peek) {
   const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
-  return `<a class="ccard${peek ? " peek" : ""}" href="${link(t, r, peek)}"><div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
+  return `<a class="ccard${peek ? " peek" : ""}" href="${link(t, r, peek)}">${cpic(r, img)}
     ${r.category ? `<span class="chip">${esc(r.category)}</span>` : ""}<h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}</a>`;
 }
 function entry(t, r, i, off, peek) {
@@ -303,7 +303,9 @@ function favView(el, rows, key) {
 function capsuleView(el, rows, key) {
   el.className = "cgrid";
   el.innerHTML = rows.length ? rows.map(r => r.open ? `<a class="ccard" href="detail.html?t=${key}&id=${r.id}"><div class="cpic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><span class="chip">Opened</span><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p></a>`
-    : `<div class="ccard lock"><div class="cpic"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><span class="chip">Sealed</span><h3>${esc(r.title)}</h3><p>Opens on ${esc(fmt(r.open_on))}</p></div>`).join("") : '<p class="empty">Coming soon.</p>';
+    : `<div class="ccard lock"><div class="cpic"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><p class="cd" data-d="${esc(r.open_on)}"></p></div><span class="chip">Sealed</span><h3>${esc(r.title)}</h3><p>Opens on ${esc(fmt(r.open_on))}</p></div>`).join("") : '<p class="empty">Coming soon.</p>';
+  const tick = () => el.querySelectorAll(".cd").forEach(p => { const s = Math.floor((new Date(p.dataset.d + "T00:00:00") - Date.now()) / 1e3); p.innerHTML = s <= 0 ? "Opening…" : `<b>${Math.floor(s / 86400)}</b>d <b>${Math.floor(s % 86400 / 3600)}</b>h <b>${Math.floor(s % 3600 / 60)}</b>m <b>${s % 60}</b>s`; });
+  tick(); setInterval(tick, 1000);
 }
 function tlView(el, rows, cfg, key) {
   const spd = Math.min(10, Math.max(1, +cfg.speed || 5)), sec = 8 - spd * .6, first = cfg.dir === "down" ? 1 : 0, by = {};
@@ -311,36 +313,33 @@ function tlView(el, rows, cfg, key) {
   const years = Object.keys(by).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   el.className = "tl";
   el.innerHTML = `<div class="tlr">${years.map((y, i) => {
-    const imgs = by[y].flatMap(r => [r.cover_url ? { url: r.cover_url, caption: r.title } : null, ...(r.images || []).map(m => ({ url: m.url, type: m.type, caption: m.caption || r.title }))]).filter(m => m && m.url && m.type !== "video" && m.type !== "youtube");
-    const col = [...imgs, ...imgs].map((m, k) => `<figure style="--r:${(k % 3 - 1) * 2}deg"><img src="${esc(m.url)}" alt="" loading="lazy"><figcaption>${esc(m.caption || "")}</figcaption></figure>`).join("");
+    const imgs = by[y].flatMap(r => [r.cover_url ? { url: r.cover_url, caption: r.title } : null, ...(r.images || []).map(m => ({ url: m.url, type: m.type, caption: m.caption || r.title }))]).filter(m => m && m.url && m.type !== "video" && m.type !== "youtube").slice(0, 10);
+    const col = [...imgs, ...imgs].map((m, k) => `<figure style="--r:${(k % 3 - 1) * 2}deg"><img src="${esc(m.url)}" alt="" loading="lazy" decoding="async"><figcaption>${esc(m.caption || "")}</figcaption></figure>`).join("");
     return `<div class="tlp"><div class="tly">${esc(y)}</div><div class="tlc"><div class="tli ${(i + first) % 2 ? "dn" : "up"}" style="--d:${Math.max(8, Math.round(imgs.length * sec))}s">${col}</div></div><div class="tlt">${by[y].map(r => `<a href="detail.html?t=${key}&id=${r.id}">${esc(r.title)}</a>`).join("")}</div></div>`;
   }).join("")}</div>`;
   const rail = el.firstChild, ps = [...rail.children];
-  const upd = () => { const c = rail.scrollLeft + rail.clientWidth / 2; let b = 0, bd = 1e9; ps.forEach((p, i) => { const d = Math.abs(p.offsetLeft + p.offsetWidth / 2 - c); if (d < bd) { bd = d; b = i; } }); ps.forEach((p, i) => p.classList.toggle("act", i === b)); };
+  const upd = () => { const c = rail.scrollLeft + rail.clientWidth / 2; let b = 0, bd = 1e9; ps.forEach((p, i) => { const d = Math.abs(p.offsetLeft + p.offsetWidth / 2 - c); if (d < bd) { bd = d; b = i; } }); ps.forEach((p, i) => { p.classList.toggle("act", i === b); p.classList.toggle("nb", Math.abs(i - b) === 1); }); };
   rail.addEventListener("scroll", upd, { passive: true });
   ps.forEach(p => p.onclick = () => rail.scrollTo({ left: p.offsetLeft - (rail.clientWidth - p.offsetWidth) / 2, behavior: "smooth" }));
   setTimeout(upd, 60);
 }
 
-/* ---- Hidden Room ---- */
+/* ---- Hidden Room: a quiet, noir chamber ---- */
 function roomView(el, key) {
   el.className = "room";
-  el.innerHTML = `<div class="rtxt"><p>Some doors are not meant to be found.</p><p style="animation-delay:1.4s">You walked a long way to reach this one.</p></div>
-    <div class="door"><div class="leaf"><i class="knob"></i><svg class="padlock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>
-    <p class="rhint">Touch the door, if you know the word.</p>
-    <form class="rpw" hidden><input type="password" placeholder="Password" autocomplete="off"><button class="pri">Enter</button><p class="msg"></p></form><div class="rin" hidden></div>`;
-  const door = el.querySelector(".door"), f = el.querySelector(".rpw");
-  door.onclick = () => { f.hidden = false; f.querySelector("input").focus(); };
+  el.innerHTML = '<div class="rv1"><span class="rk">Chamber · Restricted</span><div class="slit"><i></i></div><p class="rq">Some rooms are only for the ones who were meant to find them.</p><button class="rbtn" type="button">Speak the word</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>';
+  const v = el.querySelector(".rv1"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn"), RN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  b.onclick = () => { b.hidden = true; f.hidden = false; f.querySelector("input").focus(); };
   f.onsubmit = async e => {
-    e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "…";
+    e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "";
     const { data } = await sb.rpc("room_open", { k: key, pw: f.querySelector("input").value });
-    if (!data) { m.textContent = "That is not the word."; door.classList.add("shake"); setTimeout(() => door.classList.remove("shake"), 600); return; }
-    door.classList.add("open"); f.hidden = true;
+    if (!data) { m.textContent = "Not quite."; v.classList.add("no"); setTimeout(() => v.classList.remove("no"), 500); return; }
+    v.classList.add("open");
     setTimeout(() => {
-      const rin = el.querySelector(".rin"); el.querySelector(".rtxt").hidden = door.hidden = true; el.querySelector(".rhint").hidden = true;
-      rin.innerHTML = data.map((r, i) => `<div class="sub${i % 2 ? " flip" : ""}"><div class="pic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><div class="txt"><h3${st_(r, "title")}>${esc(r.title)}</h3><p class="cap"${st_(r, "description")}>${esc(r.description)}</p></div></div>${subs((r.images || []).filter(x => x && x.url))}`).join("") || '<p class="empty">The room is empty… for now.</p>';
+      v.hidden = true; const rin = el.querySelector(".rin");
+      rin.innerHTML = data.map((r, i) => `<article class="rch"><div class="rnum">${RN[i] || i + 1}</div><div class="rbody"><h3${st_(r, "title")}>${esc(r.title)}</h3><p${st_(r, "description")}>${esc(r.description)}</p></div>${r.cover_url ? `<figure class="rfig"><img src="${esc(r.cover_url)}" alt="" loading="lazy"></figure>` : ""}${(r.images || []).filter(x => x && x.url).map(x => `<figure class="rfig sm"><img src="${esc(x.url)}" alt="" loading="lazy">${x.caption ? `<figcaption>${esc(x.caption)}</figcaption>` : ""}</figure>`).join("")}</article>`).join("") || '<p class="rq">Nothing here yet.</p>';
       rin.hidden = false; rin.classList.add("in");
-    }, 1500);
+    }, 1400);
   };
 }
 
@@ -362,4 +361,11 @@ async function mapView(el, rows, key) {
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
   pts.forEach(p => L.marker(p.ll).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
   pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : map.setView(pts[0].ll, 8);
+}
+
+/* coin (two overlapping circles) and banknote (two overlapping rectangles) slots for the Collection */
+function cpic(r, img) {
+  const k = /coin/i.test(r.category || "") ? "coin" : /note/i.test(r.category || "") ? "note" : "", im = [r.cover_url, ...(r.images || []).map(m => m && m.url)].filter(Boolean);
+  if (k && im.length) return `<div class="pair ${k}"><i><img src="${esc(im[0])}" alt="" loading="lazy" decoding="async"></i>${im[1] ? `<i><img src="${esc(im[1])}" alt="" loading="lazy" decoding="async"></i>` : ""}</div>`;
+  return `<div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>`;
 }
