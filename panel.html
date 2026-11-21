@@ -218,6 +218,23 @@ body:has(.wrap){background:#f2f2f7}
 @keyframes tlup{to{transform:translateY(-50%)}}@keyframes tldn{from{transform:translateY(-50%)}to{transform:none}}
 .tlt{display:none;text-align:center}.tlp.act .tlt{display:flex;flex-direction:column;gap:4px;margin-top:14px;font-size:14px}.tlt a{color:var(--blue);text-decoration:none}
 
+html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e;--mut:#9a9aa1;--line:#2a2a2e}
+.dm{flex:none;background:transparent;color:inherit;border:1px solid currentColor;border-radius:50%;width:28px;height:28px;padding:0;min-height:0;font-size:14px}
+.room{background:radial-gradient(ellipse at 50% 0,#2b1f3d,#09090d 72%);color:#eee;border-radius:28px;padding:clamp(40px,10vw,110px) clamp(14px,4vw,40px);text-align:center;overflow:hidden}
+.rtxt p{font-family:Georgia,serif;font-style:italic;font-size:clamp(16px,3vw,24px);opacity:0;animation:rfade 2s ease forwards;margin:6px 0}
+@keyframes rfade{to{opacity:.85}}
+.door{width:clamp(150px,34vw,230px);height:clamp(250px,56vw,380px);margin:36px auto 14px;position:relative;perspective:900px;cursor:pointer}
+.door:before{content:"";position:absolute;inset:6px;border-radius:110px 110px 0 0;background:radial-gradient(ellipse at 50% 60%,#fff1c2,#ff9d3c 45%,transparent 72%);opacity:.3;animation:rglow 3s ease-in-out infinite}
+.leaf{position:absolute;inset:0;background:linear-gradient(90deg,#3a2616,#5e3d24 50%,#3a2616);border:6px solid #1a110a;border-radius:110px 110px 6px 6px;transform-origin:left;transition:transform 1.4s cubic-bezier(.6,0,.2,1);box-shadow:inset 0 0 40px rgba(0,0,0,.65),0 0 60px rgba(255,170,60,.18)}
+.knob{position:absolute;right:14%;top:58%;width:12px;height:12px;border-radius:50%;background:#e8c675}
+.padlock{position:absolute;left:50%;top:44%;width:44px;transform:translate(-50%,-50%);stroke:#e8c675;fill:none;stroke-width:1.6;stroke-linecap:round;animation:rsway 2.6s ease-in-out infinite}
+.door.open .leaf{transform:rotateY(-108deg)}.door.open:before{opacity:1;animation:none}.door.open .padlock{display:none}
+.door.shake{animation:rshake .5s}
+@keyframes rglow{50%{opacity:.6}}@keyframes rsway{50%{transform:translate(-50%,-50%) rotate(7deg)}}@keyframes rshake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.rhint{opacity:.6;font-size:14px;letter-spacing:.08em}
+.rpw{max-width:300px;margin:18px auto 0}.rpw input{margin-bottom:10px;background:#15121c;border-color:#3a3050;color:#fff;text-align:center}.rpw .msg{color:#e8c675}
+.rin{text-align:left;color:#eee;margin-top:20px}.rin .cap{color:#ddd}.rin h3{font-size:clamp(20px,4vw,40px);margin-bottom:8px}.rin.in{animation:rfade 1.2s ease}
+
 .wrap{padding-top:max(40px,env(safe-area-inset-top));padding-bottom:max(120px,env(safe-area-inset-bottom))}html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:none}button{min-height:38px}
 </style>
 </head><body><div class="wrap" id="app"></div>
@@ -237,6 +254,7 @@ if (IS_RELOAD) {
   scrollTo(0, 0);
 }
 
+if (!/panel|admin/.test(location.pathname) && localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
 const MAP = {
   travel:       { label: "Travel",       text: "description", cover: "cover_url", order: ["sort_order", "visited_on"],  meta: r => [[r.location, r.country].filter(Boolean).join(", "), fmt(r.visited_on)].filter(Boolean).join(" · ") },
   collections:  { label: "Collection",   text: "description", cover: "image_url", order: ["sort_order", "created_at"], meta: r => r.category || "" },
@@ -312,7 +330,7 @@ function applyDesign(p) {
   DESIGN = p || {};
   const root = document.documentElement.style;
   root.setProperty("--r", Math.min(60, Math.max(0, Number.isFinite(+DESIGN.img_radius) && DESIGN.img_radius !== null ? +DESIGN.img_radius : 24)) + "px");
-  [["theme_bg", "--bg"], ["theme_fg", "--fg"], ["theme_accent", "--blue"], ["theme_soft", "--soft"]].forEach(([k, v]) => { if (/^#[0-9a-f]{6}$/i.test(DESIGN[k] || "")) root.setProperty(v, DESIGN[k]); });
+  [["theme_bg", "--bg"], ["theme_fg", "--fg"], ["theme_accent", "--blue"], ["theme_soft", "--soft"]].forEach(([k, v]) => { if (document.documentElement.dataset.theme !== "dark" && /^#[0-9a-f]{6}$/i.test(DESIGN[k] || "")) root.setProperty(v, DESIGN[k]); });
   root.setProperty("--ratio", ({ portrait: "4/5", square: "1/1", landscape: "4/3", wide: "16/9" })[DESIGN.img_ratio] || "4/5");
 }
 async function loadProfile() {
@@ -324,7 +342,7 @@ let REG = [];
 async function loadSections() {
   const [a, b] = await Promise.all([sb.from("section_pages").select("*"), sb.from("sections").select("*").order("position")]);
   REG = b.data || [];
-  REG.filter(r => ["custom", "favorites", "timeline", "capsule"].includes(r.type)).forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
+  REG.filter(r => ["custom", "favorites", "timeline", "capsule", "hidden"].includes(r.type)).forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
   return Object.fromEntries((a.data || []).map(r => [r.key, r]));
 }
 function query(t) {
@@ -345,6 +363,8 @@ function buildNav(p, overHero, sp) {
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
   nav.insertAdjacentHTML("beforeend", '<select class="lang" aria-label="Language"><option value="">Original</option><option value="bn">বাংলা</option><option value="en">English</option></select>');
+  nav.insertAdjacentHTML("beforeend", '<button class="dm" aria-label="Dark mode">◐</button>');
+  nav.querySelector(".dm").onclick = () => { const d = document.documentElement.dataset.theme === "dark"; localStorage.setItem("theme", d ? "" : "dark"); location.reload(); };
   const ls = nav.querySelector(".lang"); ls.value = LANG; ls.onchange = () => setLang(ls.value);
   document.body.prepend(nav);
   const pg = new URLSearchParams(location.search).get("t") || (/about/.test(location.pathname) ? "about" : null);
@@ -544,9 +564,31 @@ function tlView(el, rows, cfg, key) {
   setTimeout(upd, 60);
 }
 
+/* ---- Hidden Room ---- */
+function roomView(el, key) {
+  el.className = "room";
+  el.innerHTML = `<div class="rtxt"><p>Some doors are not meant to be found.</p><p style="animation-delay:1.4s">You walked a long way to reach this one.</p></div>
+    <div class="door"><div class="leaf"><i class="knob"></i><svg class="padlock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>
+    <p class="rhint">Touch the door, if you know the word.</p>
+    <form class="rpw" hidden><input type="password" placeholder="Password" autocomplete="off"><button class="pri">Enter</button><p class="msg"></p></form><div class="rin" hidden></div>`;
+  const door = el.querySelector(".door"), f = el.querySelector(".rpw");
+  door.onclick = () => { f.hidden = false; f.querySelector("input").focus(); };
+  f.onsubmit = async e => {
+    e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "…";
+    const { data } = await sb.rpc("room_open", { k: key, pw: f.querySelector("input").value });
+    if (!data) { m.textContent = "That is not the word."; door.classList.add("shake"); setTimeout(() => door.classList.remove("shake"), 600); return; }
+    door.classList.add("open"); f.hidden = true;
+    setTimeout(() => {
+      const rin = el.querySelector(".rin"); el.querySelector(".rtxt").hidden = door.hidden = true; el.querySelector(".rhint").hidden = true;
+      rin.innerHTML = data.map((r, i) => `<div class="sub${i % 2 ? " flip" : ""}"><div class="pic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><div class="txt"><h3${st_(r, "title")}>${esc(r.title)}</h3><p class="cap"${st_(r, "description")}>${esc(r.description)}</p></div></div>${subs((r.images || []).filter(x => x && x.url))}`).join("") || '<p class="empty">The room is empty… for now.</p>';
+      rin.hidden = false; rin.classList.add("in");
+    }, 1500);
+  };
+}
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v15 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v16 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Photos and videos (each with its own description and text style)", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -622,6 +664,7 @@ function loginView() {
 function shell() {
   app.innerHTML = `<div class="bar"><b>Admin <small style="color:var(--mut);font-weight:400">${VERSION}</small></b><span><a href="index.html" style="font-size:14px;margin-right:14px">View site</a><button id="lo">Sign out</button></span></div>
   <div class="tabs">${Object.entries(S).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc(v.label)}</button>`).join("")}</div>${visBar()}<div id="main"></div>`;
+  $("rset") && ($("rset").onclick = async () => { const { error } = await sb.rpc("set_room_password", { k: secKey(), pw: $("rpw").value }); alert(error ? error.message : "Password saved."); $("rpw").value = ""; });
   ["tsp", "tdr"].forEach(id => $(id) && ($(id).onchange = async () => { const r = REG.find(x => x.key === secKey()); await sb.from("sections").update({ config: Object.assign({}, r.config, { speed: +$("tsp").value, dir: $("tdr").value }) }).eq("key", r.key); await loadReg(); }));
   app.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => { await sb.from("sections").update({ visible: b.dataset.v === "1" }).eq("key", secKey()); await loadReg(); shell(); });
   $("lo").onclick = out;
@@ -631,7 +674,7 @@ function shell() {
 const secKey = () => ({ contacts: "contact" })[tab] || tab;
 function visBar() {
   const r = REG.find(x => x.key === secKey()); if (!r) return "";
-  return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button>${r.type === "timeline" ? `<span>Speed <input type="range" id="tsp" min="1" max="10" value="${(r.config || {}).speed || 5}" style="width:110px"></span><select id="tdr" style="width:auto;padding:6px"><option value="up">First year scrolls up</option><option value="down" ${(r.config || {}).dir === "down" ? "selected" : ""}>First year scrolls down</option></select>` : ""}</div>`;
+  return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button>${r.type === "hidden" ? `<span><input id="rpw" type="password" placeholder="Set room password" style="width:170px;padding:7px"> <button id="rset">Set password</button></span>` : ""}${r.type === "timeline" ? `<span>Speed <input type="range" id="tsp" min="1" max="10" value="${(r.config || {}).speed || 5}" style="width:110px"></span><select id="tdr" style="width:auto;padding:6px"><option value="up">First year scrolls up</option><option value="down" ${(r.config || {}).dir === "down" ? "selected" : ""}>First year scrolls down</option></select>` : ""}</div>`;
 }
 async function applyAppIcon() {
   try {
@@ -666,18 +709,19 @@ async function statsView() {
     <label>Pages people opened (30 days)</label>${bars(by("page"))}
     <div class="hint" style="margin-top:20px">Private by design: no names, IP addresses or cookies are stored. A visit counts once per browser session, and your own visits while signed in are not counted.</div>`;
 }
-const fieldsFor = t => t === "timeline" ? [TX("title", "Title of the moment"), F("subtitle", "Year (for example 2024)", "text"), AR("description", "Description"), F("cover_url", "Cover photo", "image"), GAL, ...PUB]
+const fieldsFor = t => t === "hidden" ? [TX("title", "Title"), AR("description", "Description"), F("cover_url", "Photo", "image"), GAL, ...PUB]
+  : t === "timeline" ? [TX("title", "Title of the moment"), F("subtitle", "Year (for example 2024)", "text"), AR("description", "Description"), F("cover_url", "Cover photo", "image"), GAL, ...PUB]
   : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category (Movies, Books, Food, Places, Quotes, Music…)", "text"), AR("description", "Why you love it"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : t === "capsule" ? [TX("title", "Title"), F("open_on", "Opens on (locked until this date)", "date"), AR("description", "Message or memory"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : [TX("title", "Title"), F("subtitle", "Small line above the title (optional)", "text"), AR("description", "Description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB];
 async function loadReg() {
   const { data } = await sb.from("sections").select("*").order("position"); REG = data || [];
   Object.keys(S).filter(k => S[k].cs).forEach(k => delete S[k]);
-  REG.filter(r => ["custom", "favorites", "timeline", "capsule"].includes(r.type)).forEach(r => S[r.key] = { cs: 1, label: r.title || r.key, table: "custom_items", filter: r.key, title: "title", sub: r.type === "capsule" ? "open_on" : "subtitle", styled: true, fields: fieldsFor(r.type) });
+  REG.filter(r => ["custom", "favorites", "timeline", "capsule", "hidden"].includes(r.type)).forEach(r => S[r.key] = { cs: 1, label: r.title || r.key, table: "custom_items", filter: r.key, title: "title", sub: r.type === "capsule" ? "open_on" : "subtitle", styled: true, fields: fieldsFor(r.type) });
 }
 async function setOrder(keys) { await Promise.all(keys.map((k, n) => sb.from("sections").update({ position: (n + 1) * 10 }).eq("key", k))); }
 function createView() {
-  $("main").innerHTML = `<label>Section name (e.g. Gallery, Projects, Music)</label><input id="cn" maxlength="40"><label>Section style</label><select id="cs"><option value="custom">Magazine (like Travel)</option><option value="favorites">My Favorites (collage of things you love)</option><option value="timeline">Timeline (years with auto-scrolling photos)</option><option value="capsule">Time Capsule (locked until a date)</option></select><label>Place it after</label><select id="ca">${REG.map(r => `<option value="${esc(r.key)}">${esc(r.title || r.key)}</option>`).join("")}</select>
+  $("main").innerHTML = `<label>Section name (e.g. Gallery, Projects, Music)</label><input id="cn" maxlength="40"><label>Section style</label><select id="cs"><option value="custom">Magazine (like Travel)</option><option value="favorites">My Favorites (collage of things you love)</option><option value="timeline">Timeline (years with auto-scrolling photos)</option><option value="capsule">Time Capsule (locked until a date)</option><option value="hidden">Hidden Room (password protected)</option></select><label>Place it after</label><select id="ca">${REG.map(r => `<option value="${esc(r.key)}">${esc(r.title || r.key)}</option>`).join("")}</select>
   <div class="hint">The new section works like Travel: entries with a cover photo, a description and sub photos, each on its own page.</div><div class="actions"><button class="pri" id="cb">Create section</button></div><p class="msg" id="m"></p>`;
   const pre = REG.filter(r => r.type !== "contact").pop(); if (pre) $("ca").value = pre.key;
   $("cb").onclick = async () => {
