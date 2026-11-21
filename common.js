@@ -73,6 +73,10 @@ function styDecl(st, exact) {
   [["pad", "padding"], ["mt", "margin-top"], ["mb", "margin-bottom"]].forEach(([k, p]) => {
     if (st[k] !== undefined && st[k] !== "" && Number.isFinite(+st[k])) o.push(`${p}:${Math.max(-200, Math.min(400, +st[k]))}px`);
   });
+  const n = k => st[k] !== undefined && st[k] !== "" && Number.isFinite(+st[k]) ? +st[k] : null;
+  if (n("py") !== null || n("px") !== null) o.push(`padding:${n("py") || 0}px ${n("px") || 0}px`);
+  if (n("my") !== null) o.push(`margin-top:${n("my")}px;margin-bottom:${n("my")}px`);
+  if (n("mx") !== null) o.push(`margin-left:${n("mx")}px;margin-right:${n("mx")}px`);
   return o.join(";");
 }
 function sty(st) { const d = styDecl(st); return d ? ` style="${esc(d)}"` : ""; }
@@ -95,7 +99,7 @@ let REG = [];
 async function loadSections() {
   const [a, b] = await Promise.all([sb.from("section_pages").select("*"), sb.from("sections").select("*").order("position")]);
   REG = b.data || [];
-  REG.filter(r => r.type === "custom").forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
+  REG.filter(r => ["custom", "favorites", "timeline", "capsule"].includes(r.type)).forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
   return Object.fromEntries((a.data || []).map(r => [r.key, r]));
 }
 function query(t) {
@@ -111,7 +115,7 @@ function buildNav(p, overHero, sp) {
   const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
   const names = { about: "About", contact: "Contact" };
   const T = k => (sp && sp[k] && sp[k].title) || MAP[k].label;
-  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "contact"].includes(r.type)).map(r => [r.key, r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
+  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "favorites", "timeline", "capsule", "contact"].includes(r.type)).map(r => [r.key, r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
     : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
@@ -285,4 +289,32 @@ function loadTranslate() {
   window.googleTranslateElementInit = () => new google.translate.TranslateElement({ autoDisplay: false }, "gt");
   const d = document.createElement("div"); d.id = "gt"; d.style.display = "none"; document.body.appendChild(d);
   const s = document.createElement("script"); s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"; document.head.appendChild(s);
+}
+
+/* ---- new section styles: favorites, timeline, time capsule ---- */
+const rimg = r => r.cover_url || ((r.images || [])[0] || {}).url;
+function favView(el, rows, key) {
+  el.className = "fgrid";
+  el.innerHTML = rows.length ? rows.map((r, i) => `<a class="fcard f${i % 5}" href="detail.html?t=${key}&id=${r.id}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy">` : ""}<span class="fn">${i + 1}</span><div class="fi"><small>${esc(r.subtitle || "")}</small><h4${st_(r, "title")}>${esc(r.title)}</h4></div></a>`).join("") : '<p class="empty">Coming soon.</p>';
+}
+function capsuleView(el, rows, key) {
+  el.className = "cgrid";
+  el.innerHTML = rows.length ? rows.map(r => r.open ? `<a class="ccard" href="detail.html?t=${key}&id=${r.id}"><div class="cpic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><span class="chip">Opened</span><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p></a>`
+    : `<div class="ccard lock"><div class="cpic"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><span class="chip">Sealed</span><h3>${esc(r.title)}</h3><p>Opens on ${esc(fmt(r.open_on))}</p></div>`).join("") : '<p class="empty">Coming soon.</p>';
+}
+function tlView(el, rows, cfg, key) {
+  const spd = Math.min(10, Math.max(1, +cfg.speed || 5)), sec = 8 - spd * .6, first = cfg.dir === "down" ? 1 : 0, by = {};
+  rows.forEach(r => (by[r.subtitle || "—"] = by[r.subtitle || "—"] || []).push(r));
+  const years = Object.keys(by).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  el.className = "tl";
+  el.innerHTML = `<div class="tlr">${years.map((y, i) => {
+    const imgs = by[y].flatMap(r => [r.cover_url ? { url: r.cover_url, caption: r.title } : null, ...(r.images || []).map(m => ({ url: m.url, type: m.type, caption: m.caption || r.title }))]).filter(m => m && m.url && m.type !== "video" && m.type !== "youtube");
+    const col = [...imgs, ...imgs].map((m, k) => `<figure style="--r:${(k % 3 - 1) * 2}deg"><img src="${esc(m.url)}" alt="" loading="lazy"><figcaption>${esc(m.caption || "")}</figcaption></figure>`).join("");
+    return `<div class="tlp"><div class="tly">${esc(y)}</div><div class="tlc"><div class="tli ${(i + first) % 2 ? "dn" : "up"}" style="--d:${Math.max(8, Math.round(imgs.length * sec))}s">${col}</div></div><div class="tlt">${by[y].map(r => `<a href="detail.html?t=${key}&id=${r.id}">${esc(r.title)}</a>`).join("")}</div></div>`;
+  }).join("")}</div>`;
+  const rail = el.firstChild, ps = [...rail.children];
+  const upd = () => { const c = rail.scrollLeft + rail.clientWidth / 2; let b = 0, bd = 1e9; ps.forEach((p, i) => { const d = Math.abs(p.offsetLeft + p.offsetWidth / 2 - c); if (d < bd) { bd = d; b = i; } }); ps.forEach((p, i) => p.classList.toggle("act", i === b)); };
+  rail.addEventListener("scroll", upd, { passive: true });
+  ps.forEach(p => p.onclick = () => rail.scrollTo({ left: p.offsetLeft - (rail.clientWidth - p.offsetWidth) / 2, behavior: "smooth" }));
+  setTimeout(upd, 60);
 }

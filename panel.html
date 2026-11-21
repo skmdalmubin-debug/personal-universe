@@ -182,6 +182,42 @@ label.chk{display:flex;gap:10px;align-items:center}label.chk input{width:auto}
 .spark{display:flex;align-items:flex-end;gap:4px;height:80px}.spark i{flex:1;background:var(--fg);border-radius:3px 3px 0 0;opacity:.85}
 .sbar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:14px}.sbar span{width:110px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sbar i{height:8px;background:var(--fg);border-radius:4px;opacity:.8;display:block}.sbar b{font-weight:500;color:var(--mut)}
 
+/* admin look */
+body:has(.wrap){background:#f2f2f7}
+.wrap{max-width:860px}
+.wrap .bar{background:#fff;border-radius:18px;padding:14px 18px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.wrap .tabs{gap:6px;position:sticky;top:0;background:#f2f2f7;padding:10px 0;z-index:5}
+.wrap .tabs button{background:#fff;border-color:transparent;box-shadow:0 1px 2px rgba(0,0,0,.06);font-size:13px;padding:8px 14px}
+.wrap .tabs button.on{background:#1d1d1f;color:#fff}
+#main{background:#fff;border-radius:22px;padding:clamp(16px,3vw,28px);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.wrap label{font-size:12px;font-weight:600;letter-spacing:.03em;color:#6e6e73;margin:20px 0 6px}
+.wrap input,.wrap textarea,.wrap select{background:#f7f7fa;border:1px solid #e5e5ea;border-radius:12px}
+.wrap input:focus,.wrap textarea:focus,.wrap select:focus{outline:none;border-color:#0071e3;box-shadow:0 0 0 3px rgba(0,113,227,.15);background:#fff}
+.wrap input[type=range]{padding:0;height:28px;accent-color:#0071e3;background:none;border:0}
+.wrap button.pri{background:#0071e3;border-color:#0071e3;color:#fff}
+.wrap .item,.wrap .msgbox{border-top:1px solid #f0f0f4}
+.wrap .subcard,.wrap .gi{background:#fafafc;border-radius:16px}.wrap .gi{padding:12px;margin-top:8px;border:1px solid #eee}
+.sgrid b{color:#0071e3;font-weight:600;margin-left:4px}
+
+.fgrid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:clamp(90px,15vw,190px);gap:clamp(8px,1.6vw,16px)}
+.fcard{position:relative;overflow:hidden;border-radius:var(--r);background:var(--soft);text-decoration:none;color:#fff;grid-column:span 2;grid-row:span 2}
+.fcard.f0{grid-column:span 3;grid-row:span 3}.fcard.f2{grid-row:span 3}.fcard.f4{grid-column:span 3}
+.fcard img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .8s}.fcard:hover img{transform:scale(1.05)}
+.fn{position:absolute;right:12px;top:4px;font:200 clamp(40px,7vw,90px)/1 Georgia,serif;opacity:.85}
+.fi{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.6))}.fi small{opacity:.8;font-size:11px;letter-spacing:.1em;text-transform:uppercase}.fi h4{font-size:clamp(14px,2vw,22px);font-weight:600}
+.ccard.lock .cpic{background:#1d1d1f;display:flex;align-items:center;justify-content:center}.ccard.lock{cursor:default}
+.tl{margin:0 calc(-1*clamp(16px,4vw,24px))}
+.tlr{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 30vw;scrollbar-width:none}.tlr::-webkit-scrollbar{display:none}
+.tlp{flex:none;width:clamp(210px,34vw,380px);scroll-snap-align:center;margin:0 -2vw;transform:scale(.72);transform-origin:50% 0;opacity:.45;transition:transform .6s,opacity .6s;cursor:pointer}
+.tlp.act{transform:none;opacity:1;z-index:2}
+.tly{font-size:clamp(40px,9vw,110px);font-weight:200;letter-spacing:-.04em;line-height:1;text-align:center;color:var(--blue)}
+.tlc{height:clamp(300px,62vh,560px);overflow:hidden;margin-top:18px;-webkit-mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent)}
+.tli{display:flex;flex-direction:column;animation:tlup var(--d,30s) linear infinite}.tli.dn{animation-name:tldn}.tlp:hover .tli{animation-play-state:paused}
+.tli figure{margin:0 0 -26px;transform:rotate(var(--r))}.tli img{width:100%;border-radius:10px;display:block;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.tli figcaption{position:relative;font-size:11px;color:var(--mut);padding:3px 8px;background:var(--bg);width:max-content;max-width:90%;margin:-14px 0 0 8px;border-radius:4px}
+@keyframes tlup{to{transform:translateY(-50%)}}@keyframes tldn{from{transform:translateY(-50%)}to{transform:none}}
+.tlt{display:none;text-align:center}.tlp.act .tlt{display:flex;flex-direction:column;gap:4px;margin-top:14px;font-size:14px}.tlt a{color:var(--blue);text-decoration:none}
+
 .wrap{padding-top:max(40px,env(safe-area-inset-top));padding-bottom:max(120px,env(safe-area-inset-bottom))}html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:none}button{min-height:38px}
 </style>
 </head><body><div class="wrap" id="app"></div>
@@ -262,6 +298,10 @@ function styDecl(st, exact) {
   [["pad", "padding"], ["mt", "margin-top"], ["mb", "margin-bottom"]].forEach(([k, p]) => {
     if (st[k] !== undefined && st[k] !== "" && Number.isFinite(+st[k])) o.push(`${p}:${Math.max(-200, Math.min(400, +st[k]))}px`);
   });
+  const n = k => st[k] !== undefined && st[k] !== "" && Number.isFinite(+st[k]) ? +st[k] : null;
+  if (n("py") !== null || n("px") !== null) o.push(`padding:${n("py") || 0}px ${n("px") || 0}px`);
+  if (n("my") !== null) o.push(`margin-top:${n("my")}px;margin-bottom:${n("my")}px`);
+  if (n("mx") !== null) o.push(`margin-left:${n("mx")}px;margin-right:${n("mx")}px`);
   return o.join(";");
 }
 function sty(st) { const d = styDecl(st); return d ? ` style="${esc(d)}"` : ""; }
@@ -284,7 +324,7 @@ let REG = [];
 async function loadSections() {
   const [a, b] = await Promise.all([sb.from("section_pages").select("*"), sb.from("sections").select("*").order("position")]);
   REG = b.data || [];
-  REG.filter(r => r.type === "custom").forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
+  REG.filter(r => ["custom", "favorites", "timeline", "capsule"].includes(r.type)).forEach(r => MAP[r.key] = { label: r.title || r.key, text: "description", cover: "cover_url", table: "custom_items", filter: r.key, order: ["sort_order", "created_at"], meta: x => x.subtitle || "" });
   return Object.fromEntries((a.data || []).map(r => [r.key, r]));
 }
 function query(t) {
@@ -300,7 +340,7 @@ function buildNav(p, overHero, sp) {
   const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
   const names = { about: "About", contact: "Contact" };
   const T = k => (sp && sp[k] && sp[k].title) || MAP[k].label;
-  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "contact"].includes(r.type)).map(r => [r.key, r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
+  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "favorites", "timeline", "capsule", "contact"].includes(r.type)).map(r => [r.key, r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
     : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;
@@ -476,9 +516,37 @@ function loadTranslate() {
   const s = document.createElement("script"); s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"; document.head.appendChild(s);
 }
 
+/* ---- new section styles: favorites, timeline, time capsule ---- */
+const rimg = r => r.cover_url || ((r.images || [])[0] || {}).url;
+function favView(el, rows, key) {
+  el.className = "fgrid";
+  el.innerHTML = rows.length ? rows.map((r, i) => `<a class="fcard f${i % 5}" href="detail.html?t=${key}&id=${r.id}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy">` : ""}<span class="fn">${i + 1}</span><div class="fi"><small>${esc(r.subtitle || "")}</small><h4${st_(r, "title")}>${esc(r.title)}</h4></div></a>`).join("") : '<p class="empty">Coming soon.</p>';
+}
+function capsuleView(el, rows, key) {
+  el.className = "cgrid";
+  el.innerHTML = rows.length ? rows.map(r => r.open ? `<a class="ccard" href="detail.html?t=${key}&id=${r.id}"><div class="cpic">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="">` : ""}</div><span class="chip">Opened</span><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p></a>`
+    : `<div class="ccard lock"><div class="cpic"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><span class="chip">Sealed</span><h3>${esc(r.title)}</h3><p>Opens on ${esc(fmt(r.open_on))}</p></div>`).join("") : '<p class="empty">Coming soon.</p>';
+}
+function tlView(el, rows, cfg, key) {
+  const spd = Math.min(10, Math.max(1, +cfg.speed || 5)), sec = 8 - spd * .6, first = cfg.dir === "down" ? 1 : 0, by = {};
+  rows.forEach(r => (by[r.subtitle || "—"] = by[r.subtitle || "—"] || []).push(r));
+  const years = Object.keys(by).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  el.className = "tl";
+  el.innerHTML = `<div class="tlr">${years.map((y, i) => {
+    const imgs = by[y].flatMap(r => [r.cover_url ? { url: r.cover_url, caption: r.title } : null, ...(r.images || []).map(m => ({ url: m.url, type: m.type, caption: m.caption || r.title }))]).filter(m => m && m.url && m.type !== "video" && m.type !== "youtube");
+    const col = [...imgs, ...imgs].map((m, k) => `<figure style="--r:${(k % 3 - 1) * 2}deg"><img src="${esc(m.url)}" alt="" loading="lazy"><figcaption>${esc(m.caption || "")}</figcaption></figure>`).join("");
+    return `<div class="tlp"><div class="tly">${esc(y)}</div><div class="tlc"><div class="tli ${(i + first) % 2 ? "dn" : "up"}" style="--d:${Math.max(8, Math.round(imgs.length * sec))}s">${col}</div></div><div class="tlt">${by[y].map(r => `<a href="detail.html?t=${key}&id=${r.id}">${esc(r.title)}</a>`).join("")}</div></div>`;
+  }).join("")}</div>`;
+  const rail = el.firstChild, ps = [...rail.children];
+  const upd = () => { const c = rail.scrollLeft + rail.clientWidth / 2; let b = 0, bd = 1e9; ps.forEach((p, i) => { const d = Math.abs(p.offsetLeft + p.offsetWidth / 2 - c); if (d < bd) { bd = d; b = i; } }); ps.forEach((p, i) => p.classList.toggle("act", i === b)); };
+  rail.addEventListener("scroll", upd, { passive: true });
+  ps.forEach(p => p.onclick = () => rail.scrollTo({ left: p.offsetLeft - (rail.clientWidth - p.offsetWidth) / 2, behavior: "smooth" }));
+  setTimeout(upd, 60);
+}
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v13 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v15 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Photos and videos (each with its own description and text style)", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -532,7 +600,7 @@ const S = {
     F("img_ratio", "Picture shape", "select", { opts: [["portrait", "Tall (4:5)"], ["square", "Square"], ["landscape", "Landscape (4:3)"], ["wide", "Wide (16:9)"]] }),
     F("scroll_speed", "Collection auto-scroll speed (1 slow to 10 fast)", "number"),
     F("side_mode", "Picture side in lists", "select", { opts: [["alternate", "Alternate left / right"], ["left", "Always left"], ["right", "Always right"]] })] },
-  stats: { label: "Visitors", custom: "stats" }, guestbook: { label: "Guest Book", custom: "gb" }
+  stats: { label: "Visitors", custom: "stats" }, backup: { label: "Backup", custom: "backup" }, guestbook: { label: "Guest Book", custom: "gb" }
 };
 let tab = "intro", gal = {}, stys = {}, subsS = {};
 
@@ -554,6 +622,7 @@ function loginView() {
 function shell() {
   app.innerHTML = `<div class="bar"><b>Admin <small style="color:var(--mut);font-weight:400">${VERSION}</small></b><span><a href="index.html" style="font-size:14px;margin-right:14px">View site</a><button id="lo">Sign out</button></span></div>
   <div class="tabs">${Object.entries(S).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc(v.label)}</button>`).join("")}</div>${visBar()}<div id="main"></div>`;
+  ["tsp", "tdr"].forEach(id => $(id) && ($(id).onchange = async () => { const r = REG.find(x => x.key === secKey()); await sb.from("sections").update({ config: Object.assign({}, r.config, { speed: +$("tsp").value, dir: $("tdr").value }) }).eq("key", r.key); await loadReg(); }));
   app.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => { await sb.from("sections").update({ visible: b.dataset.v === "1" }).eq("key", secKey()); await loadReg(); shell(); });
   $("lo").onclick = out;
   app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { tab = b.dataset.t; shell(); });
@@ -562,7 +631,7 @@ function shell() {
 const secKey = () => ({ contacts: "contact" })[tab] || tab;
 function visBar() {
   const r = REG.find(x => x.key === secKey()); if (!r) return "";
-  return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button></div>`;
+  return `<div class="vis">Show on website: <button data-v="1" class="${r.visible ? "on" : ""}">Public</button><button data-v="0" class="${r.visible ? "" : "on"}">Private</button>${r.type === "timeline" ? `<span>Speed <input type="range" id="tsp" min="1" max="10" value="${(r.config || {}).speed || 5}" style="width:110px"></span><select id="tdr" style="width:auto;padding:6px"><option value="up">First year scrolls up</option><option value="down" ${(r.config || {}).dir === "down" ? "selected" : ""}>First year scrolls down</option></select>` : ""}</div>`;
 }
 async function applyAppIcon() {
   try {
@@ -573,6 +642,14 @@ async function applyAppIcon() {
     const man = { name: "Mubin Admin", short_name: "Mubin Admin", start_url: location.origin + location.pathname, scope: location.origin + "/", display: "standalone", background_color: "#ffffff", theme_color: "#ffffff", icons: [{ src: mk(192), sizes: "192x192", type: "image/png", purpose: "any" }, { src: mk(512), sizes: "512x512", type: "image/png", purpose: "any" }] };
     const m = document.querySelector('link[rel="manifest"]'); if (m) m.href = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: "application/manifest+json" }));
   } catch (e) {}
+}
+function backupView() {
+  $("main").innerHTML = '<p class="hint" style="font-size:14px;line-height:1.7">Downloads all your text, settings, links and guest book messages as one file. Photos and videos stay in Supabase Storage; the file keeps their links.</p><div class="actions"><button class="pri" id="bk">Download backup</button></div><p class="msg" id="m"></p>';
+  $("bk").onclick = async () => {
+    const out = { exported: new Date().toISOString() };
+    for (const t of ["profile", "sections", "section_pages", "travel", "collections", "journal", "achievements", "memories", "custom_items", "contacts", "guestbook"]) { const { data } = await sb.from(t).select("*"); out[t] = data || []; }
+    const l = document.createElement("a"); l.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" })); l.download = "mubin-site-backup-" + new Date().toISOString().slice(0, 10) + ".json"; l.click(); $("m").textContent = "Backup downloaded.";
+  };
 }
 async function statsView() {
   const main = $("main"); main.textContent = "Loading…";
@@ -589,22 +666,25 @@ async function statsView() {
     <label>Pages people opened (30 days)</label>${bars(by("page"))}
     <div class="hint" style="margin-top:20px">Private by design: no names, IP addresses or cookies are stored. A visit counts once per browser session, and your own visits while signed in are not counted.</div>`;
 }
+const fieldsFor = t => t === "timeline" ? [TX("title", "Title of the moment"), F("subtitle", "Year (for example 2024)", "text"), AR("description", "Description"), F("cover_url", "Cover photo", "image"), GAL, ...PUB]
+  : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category (Movies, Books, Food, Places, Quotes, Music…)", "text"), AR("description", "Why you love it"), F("cover_url", "Photo", "image"), GAL, ...PUB]
+  : t === "capsule" ? [TX("title", "Title"), F("open_on", "Opens on (locked until this date)", "date"), AR("description", "Message or memory"), F("cover_url", "Photo", "image"), GAL, ...PUB]
+  : [TX("title", "Title"), F("subtitle", "Small line above the title (optional)", "text"), AR("description", "Description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB];
 async function loadReg() {
   const { data } = await sb.from("sections").select("*").order("position"); REG = data || [];
   Object.keys(S).filter(k => S[k].cs).forEach(k => delete S[k]);
-  REG.filter(r => r.type === "custom").forEach(r => S[r.key] = { cs: 1, label: r.title || r.key, table: "custom_items", filter: r.key, title: "title", sub: "subtitle", styled: true,
-    fields: [TX("title", "Title"), F("subtitle", "Small line above the title (optional)", "text"), AR("description", "Description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB] });
+  REG.filter(r => ["custom", "favorites", "timeline", "capsule"].includes(r.type)).forEach(r => S[r.key] = { cs: 1, label: r.title || r.key, table: "custom_items", filter: r.key, title: "title", sub: r.type === "capsule" ? "open_on" : "subtitle", styled: true, fields: fieldsFor(r.type) });
 }
 async function setOrder(keys) { await Promise.all(keys.map((k, n) => sb.from("sections").update({ position: (n + 1) * 10 }).eq("key", k))); }
 function createView() {
-  $("main").innerHTML = `<label>Section name (e.g. Gallery, Projects, Music)</label><input id="cn" maxlength="40"><label>Place it after</label><select id="ca">${REG.map(r => `<option value="${esc(r.key)}">${esc(r.title || r.key)}</option>`).join("")}</select>
+  $("main").innerHTML = `<label>Section name (e.g. Gallery, Projects, Music)</label><input id="cn" maxlength="40"><label>Section style</label><select id="cs"><option value="custom">Magazine (like Travel)</option><option value="favorites">My Favorites (collage of things you love)</option><option value="timeline">Timeline (years with auto-scrolling photos)</option><option value="capsule">Time Capsule (locked until a date)</option></select><label>Place it after</label><select id="ca">${REG.map(r => `<option value="${esc(r.key)}">${esc(r.title || r.key)}</option>`).join("")}</select>
   <div class="hint">The new section works like Travel: entries with a cover photo, a description and sub photos, each on its own page.</div><div class="actions"><button class="pri" id="cb">Create section</button></div><p class="msg" id="m"></p>`;
   const pre = REG.filter(r => r.type !== "contact").pop(); if (pre) $("ca").value = pre.key;
   $("cb").onclick = async () => {
     const name = $("cn").value.trim(); if (!name) { $("m").textContent = "Please write a name."; return; }
     let key = "s-" + (name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || Date.now()); if (REG.some(r => r.key === key)) key += "-" + (Date.now() % 1000);
     const order = REG.map(r => r.key); order.splice(order.indexOf($("ca").value) + 1, 0, key);
-    let { error } = await sb.from("sections").insert({ key, type: "custom", title: name, position: 0 });
+    let { error } = await sb.from("sections").insert({ key, type: $("cs").value, title: name, position: 0 });
     if (!error) ({ error } = await sb.from("section_pages").insert({ key, title: name }));
     if (error) { $("m").textContent = error.message; return; }
     await setOrder(order); await loadReg(); tab = key; shell();
@@ -654,7 +734,7 @@ async function gbAdmin() {
     box.appendChild(d);
   });
 }
-const CUS = { create: createView, order: orderView, gb: gbAdmin, stats: statsView };
+const CUS = { create: createView, order: orderView, gb: gbAdmin, stats: statsView, backup: backupView };
 async function inbox() {
   const main = $("main"); main.textContent = "Loading…";
   const { data, error } = await sb.from("messages").select("*").order("created_at", { ascending: false });
@@ -694,14 +774,15 @@ async function list() {
 function styleEditor(st, lbl) {
   const dt = document.createElement("details"); dt.className = "sted";
   const nm = (f, l) => `<label>${l}<input type="number" data-f="${f}" placeholder="auto"></label>`;
+  const sl = (f, l, lo, hi) => `<label>${l} <b data-o="${f}">0</b><input type="range" data-f="${f}" min="${lo}" max="${hi}" step="2" value="0"></label>`;
   dt.innerHTML = `<summary>${lbl || "Text style (font, size, color, alignment, spacing)"}</summary><div class="sgrid">
     <label>Font<select data-f="font"><option value="">Default</option>${fontOpts()}</select></label>${nm("size", "Size (px)")}
     <label>Color<input type="color" data-f="color" value="#1d1d1f"></label>
     <label>Alignment<select data-f="align"><option value="">Default</option><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
-    ${nm("pad", "Padding (px)")}${nm("mt", "Margin top (px)")}${nm("mb", "Margin bottom (px)")}</div><button type="button" class="rs">Reset text style</button>`;
-  const fill = () => dt.querySelectorAll("[data-f]").forEach(e => { const v = st[e.dataset.f]; e.value = v !== undefined ? v : e.dataset.f === "color" ? "#1d1d1f" : ""; });
+    ${sl("py", "Padding, up-down", 0, 120)}${sl("px", "Padding, left-right", 0, 120)}${sl("my", "Margin, up-down", -40, 160)}${sl("mx", "Margin, left-right", -40, 160)}</div><button type="button" class="rs">Reset text style</button>`;
+  const fill = () => dt.querySelectorAll("[data-f]").forEach(e => { const v = st[e.dataset.f]; e.value = v !== undefined ? v : e.dataset.f === "color" ? "#1d1d1f" : e.type === "range" ? 0 : ""; const o = dt.querySelector(`[data-o="${e.dataset.f}"]`); if (o) o.textContent = e.value; });
   fill();
-  dt.querySelectorAll("[data-f]").forEach(e => { const h = () => { const f = e.dataset.f; if (e.value === "") delete st[f]; else st[f] = e.type === "number" ? +e.value : e.value; }; e.oninput = h; e.onchange = h; });
+  dt.querySelectorAll("[data-f]").forEach(e => { const h = () => { const f = e.dataset.f; const o = dt.querySelector(`[data-o="${f}"]`); if (o) o.textContent = e.value; if (e.value === "" || (e.type === "range" && +e.value === 0)) delete st[f]; else st[f] = e.type === "number" ? +e.value : e.value; }; e.oninput = h; e.onchange = h; });
   dt.querySelector(".rs").onclick = () => { Object.keys(st).forEach(k => delete st[k]); fill(); };
   return dt;
 }
