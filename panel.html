@@ -260,9 +260,6 @@ html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e
 
 .hero>.clock.cp-tl{left:clamp(16px,4vw,40px);right:auto}.hero>.clock.cp-br{top:auto;bottom:24px}.hero>.clock.cp-bl{top:auto;bottom:24px;left:clamp(16px,4vw,40px);right:auto}
 .fmusic{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:14px}.fmusic iframe{width:100%;border:0;border-radius:12px}
-/* journal: paper and typewriter */
-#journal .jlist{background:#fbf7ee repeating-linear-gradient(transparent 0 31px,#eadfc8 31px 32px);color:#2b2418;border:0;border-radius:4px;padding:clamp(6px,2vw,22px) clamp(14px,3vw,40px);box-shadow:0 12px 40px rgba(0,0,0,.12)}
-#journal .jrow{border-bottom:1px dashed #cdbf9f}#journal .jdate{font-family:"Courier New",monospace;color:#8a7a58}#journal .jmain h3{font-family:Georgia,serif;font-weight:400}#journal .jmain p,#journal .jmeta{color:#6b5f46}#journal .jrow:hover h3{color:#a3522c}
 /* achievements: gold plaques */
 #achievements .ccard{background:linear-gradient(160deg,#16161a,#25222a);color:#f4ecd8;border:1px solid #c9a24d;border-radius:14px;padding:18px;text-align:center}
 #achievements .ccard .chip{color:#c9a24d;border-color:#c9a24d66}#achievements .ccard p{color:#cfc6b0}#achievements .cpic{border-radius:50%;width:68%;margin:0 auto 14px;aspect-ratio:1;border:2px solid #c9a24d}
@@ -283,7 +280,6 @@ html[data-theme=dark]{color-scheme:dark;--bg:#0b0b0d;--fg:#f2f2f4;--soft:#1b1b1e
 #achievements .cpic{border-radius:3px;width:100%;aspect-ratio:4/3;margin:0 0 14px;border:0}#achievements .ccard h3{font-family:Georgia,serif;font-weight:400}#achievements .ccard p{color:#6b5f46}#achievements .chip{color:#8a6d22;border-color:#c9a24d88}
 /* memories: sticky notes in detail */
 .th-memories .dintro{background:#fff3a6;color:#3b3510;padding:24px;box-shadow:0 12px 28px rgba(0,0,0,.18);transform:rotate(-.8deg)}.th-memories .dtext,.th-memories .dt{color:#3b3510}
-.th-journal .article{background:#fbf7ee;color:#2b2418;padding:clamp(18px,4vw,44px);box-shadow:0 12px 40px rgba(0,0,0,.12)}.th-journal .article .by,.th-journal .article figcaption{color:#8a7a58}
 /* favorites: shelves, posters, quotes */
 .fshelf{margin-bottom:clamp(30px,6vw,56px)}.fcat{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}.fcat small{font-weight:400;color:var(--mut)}.fcat:after{content:"";flex:1;height:1px;background:var(--line)}
 .frow{display:flex;gap:clamp(10px,2vw,18px);overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 14px;scrollbar-width:none}.frow::-webkit-scrollbar{display:none}
@@ -353,6 +349,41 @@ body.playing .disc.cur i,body.playing .mpd{animation:spin 6s linear infinite}@ke
 .ph{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:6px 0 14px}.wrap #rf{padding:7px 12px;font-size:16px}
 .wrap .tabs{background:transparent}.wrap .tg span{padding-left:4px}
 @media(min-width:1000px){.wrap{max-width:1180px;display:grid;grid-template-columns:250px 1fr;gap:0 26px;align-items:start}.wrap>.bar{grid-column:1/-1}.wrap>.tabs{grid-column:1;grid-row:2/6;position:sticky;top:16px;background:#fff;border-radius:22px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}.wrap .tg{flex-direction:column;align-items:stretch;margin-bottom:12px}.wrap .tg span{width:auto;padding:6px 10px}.wrap .tabs button{text-align:left;border-radius:12px;box-shadow:none;background:transparent;font-size:14px;padding:9px 12px}.wrap .tabs button.on{background:#0071e3;color:#fff}.wrap>.ph,.wrap>.vis,.wrap>#main{grid-column:2}}
+
+/* covers: framed, never full screen */
+.chero{height:clamp(220px,44vw,420px);min-height:0;margin:0 clamp(0px,2vw,20px);border-radius:0 0 var(--r) var(--r);overflow:hidden}
+.capimg{float:right;width:clamp(90px,24vw,150px);border:6px solid #fff;box-shadow:0 8px 22px rgba(0,0,0,.25);transform:rotate(3deg);margin:0 0 10px 14px}
+/* guest book: old-money bound volume */
+.book{background:radial-gradient(circle at 25% 12%,#2d4a3a,transparent 60%),repeating-radial-gradient(circle at 50% 50%,rgba(255,255,255,.02) 0 2px,transparent 2px 4px),linear-gradient(145deg,#1f3a2c,#0e1d15);box-shadow:0 26px 60px rgba(0,0,0,.45),inset 0 0 0 2px #b8924a,inset 0 0 0 7px #0e1d15,inset 0 0 0 8px #b8924a88}
+.gbl{font-family:Georgia,serif;letter-spacing:.3em;color:#c9a561}
+.gbframe{border:1px solid #c9a561;outline:1px solid #c9a56166;outline-offset:6px;border-radius:4px;background:rgba(0,0,0,.18)}
+.gbframe h3{font-family:"Playfair Display",Georgia,serif;font-weight:700;font-style:italic}
+.gbpage:after{right:auto;left:34px;top:-8px}
+.book .gbopen{background:#c9a561;color:#13241a;border-radius:4px;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+/* hidden room: gate and astronaut sky */
+.rv1{transition:opacity 1.1s}.rv1.fade{opacity:0}
+.gate{position:relative;width:min(340px,78%);height:clamp(250px,56vw,390px);margin:34px auto 22px;cursor:pointer;display:flex;border-radius:170px 170px 6px 6px;overflow:hidden;box-shadow:0 0 0 1px #b8924a77,0 34px 90px rgba(0,0,0,.7)}
+.gl,.gr{flex:1;position:relative;z-index:2;background:linear-gradient(100deg,#13131a,#272731 45%,#0e0e13);transition:transform 2.2s cubic-bezier(.7,0,.2,1)}
+.gl{border-right:1px solid #b8924a}.gr{border-left:1px solid #b8924a}
+.gl:after,.gr:after{content:"";position:absolute;inset:14px;border:1px solid #b8924a55;border-radius:150px 150px 4px 4px}
+.gem{position:absolute;left:50%;top:50%;z-index:3;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:radial-gradient(#2c2c36,#0a0a0e);border:1px solid #b8924a;display:flex;align-items:center;justify-content:center;transition:opacity .8s,transform .8s}.gem svg{width:24px;stroke:#b8924a;fill:none;stroke-width:1.5}
+.beam{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 58%,#fff7da,#f2b866 30%,transparent 72%);opacity:0;transition:opacity 1.8s}
+.gate.open .gl{transform:translateX(-101%)}.gate.open .gr{transform:translateX(101%)}.gate.open .gem{opacity:0;transform:scale(.4)}.gate.open .beam{opacity:1}.gate.no{animation:rshake .4s}
+.rin{background:#02030a;border-radius:6px}
+.sky{position:absolute;inset:0;background:radial-gradient(ellipse at 25% 20%,rgba(90,110,255,.18),transparent 55%),radial-gradient(ellipse at 80% 75%,rgba(255,120,160,.12),transparent 55%),radial-gradient(1px 1px at 12% 22%,#fff,transparent),radial-gradient(1px 1px at 38% 70%,#fff,transparent),radial-gradient(1.5px 1.5px at 66% 30%,#fff,transparent),radial-gradient(1px 1px at 82% 58%,#fff,transparent),radial-gradient(1px 1px at 52% 12%,#fff,transparent),radial-gradient(1.5px 1.5px at 90% 14%,#fff,transparent),radial-gradient(1px 1px at 24% 88%,#fff,transparent);animation:twk 6s ease-in-out infinite}
+.astro{position:absolute;right:7%;bottom:12%;width:clamp(56px,10vw,96px);animation:flt 7s ease-in-out infinite;filter:drop-shadow(0 0 18px rgba(140,170,255,.35));pointer-events:none;z-index:1}@keyframes flt{50%{transform:translateY(-18px) rotate(8deg)}}
+.rcard{background:rgba(6,10,24,.94);border:1px solid #6f86d655;border-radius:14px 14px 0 0;font-family:"Courier New",monospace}.rcard h3{font-family:Georgia,serif}.hud{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.2em;color:#7fe0a8;margin-bottom:14px}.rims img{cursor:zoom-in}
+/* favorites: eye-catching shelves */
+.fcat{font-size:15px;letter-spacing:.14em}.fem{font-size:22px;letter-spacing:0}
+.fp.top{width:clamp(180px,34vw,290px);box-shadow:0 14px 34px rgba(0,0,0,.25)}.fp.top.tall{aspect-ratio:2/3}.fp em{position:absolute;top:10px;left:10px;background:#ffd24a;color:#1d1d1f;font-style:normal;font-weight:700;font-size:11px;letter-spacing:.1em;padding:4px 10px;border-radius:980px;text-transform:uppercase}
+#mp.sp{padding:0;background:transparent;box-shadow:none;max-width:92vw;width:380px;display:block;position:fixed}#mp.sp iframe{width:100%;border:0;border-radius:14px;display:block}.mpx{position:absolute;right:6px;top:-12px;background:#111;color:#fff;border:0;border-radius:50%;width:24px;height:24px;min-height:0;padding:0}
+/* contact: premium */
+#contact{max-width:1180px}#contact .clist{background:linear-gradient(145deg,#101014,#1a1a22);border:1px solid #ffffff14;border-radius:24px;padding:clamp(14px,3vw,26px);gap:14px}
+#contact .cc{background:rgba(255,255,255,.04);border:1px solid #ffffff14;color:#f2f2f4;border-radius:16px;transition:transform .3s,background .3s,border-color .3s}#contact a.cc:hover{transform:translateY(-3px);background:rgba(255,255,255,.08);border-color:#ffffff40}
+#contact .cx small{color:#a1a1aa}#contact .ci{border-radius:50%;box-shadow:0 0 20px rgba(255,255,255,.12)}
+/* panel: polish */
+#main .actions{position:sticky;bottom:12px;z-index:6;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);padding:12px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+.wrap .tabs button{letter-spacing:.01em}
 
 .wrap{padding-top:max(40px,env(safe-area-inset-top));padding-bottom:max(120px,env(safe-area-inset-bottom))}html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:none}button{min-height:38px}
 </style>
@@ -424,7 +455,7 @@ function useFont(k) {
 function styDecl(st, exact) {
   if (!st || typeof st !== "object") return "";
   const o = [], f = FONTS[st.font];
-  if (f) { o.push("font-family:" + f.c); useFont(st.font); }
+  if (f) { o.push("font-family:" + f.c + " !important"); useFont(st.font); }
   if (/^#[0-9a-f]{6}$/i.test(st.color || "")) o.push("color:" + st.color);
   const sz = +st.size;
   if (sz >= 8 && sz <= 300) {
@@ -660,28 +691,32 @@ function loadTranslate() {
 const rimg = r => r.cover_url || ((r.images || [])[0] || {}).url;
 const AUD = new Audio(); AUD.loop = true;
 function playTrack(b) {
-  let mp = $("mp");
-  if (!mp) { mp = document.createElement("div"); mp.id = "mp"; mp.innerHTML = '<i class="mpd"></i><span></span><button type="button">❚❚</button>'; document.body.appendChild(mp); mp.querySelector("button").onclick = () => AUD.paused ? AUD.play() : AUD.pause(); AUD.onplay = () => document.body.classList.add("playing"); AUD.onpause = () => document.body.classList.remove("playing"); }
+  let mp = $("mp"); if (!mp) { mp = document.createElement("div"); mp.id = "mp"; document.body.appendChild(mp); }
   document.querySelectorAll(".disc").forEach(d => d.classList.toggle("cur", d === b));
-  if (AUD._u === b.dataset.a) { AUD.paused ? AUD.play() : AUD.pause(); return; }
+  const sp = b.dataset.sp && b.dataset.sp.match(/(track|album|playlist|artist)\/(\w+)/);
+  if (sp) { AUD.pause(); mp.className = "on sp"; mp.innerHTML = `<iframe src="https://open.spotify.com/embed/${sp[1]}/${sp[2]}?autoplay=1" height="80" allow="encrypted-media; autoplay"></iframe><button class="mpx" type="button">×</button>`; mp.querySelector(".mpx").onclick = () => { mp.className = ""; mp.innerHTML = ""; document.body.classList.remove("playing"); }; document.body.classList.add("playing"); return; }
+  if (AUD._u === b.dataset.a && mp.querySelector(".mpd")) { AUD.paused ? AUD.play() : AUD.pause(); return; }
+  mp.className = "on"; mp.innerHTML = '<i class="mpd"></i><span></span><button type="button">❚❚</button>';
+  mp.querySelector("button").onclick = () => AUD.paused ? AUD.play() : AUD.pause(); AUD.onplay = () => document.body.classList.add("playing"); AUD.onpause = () => document.body.classList.remove("playing");
+  mp.querySelector("span").textContent = b.dataset.t; mp.querySelector(".mpd").style.backgroundImage = b.dataset.c ? `url('${b.dataset.c}')` : "";
   AUD._u = b.dataset.a; AUD.src = b.dataset.a; AUD.play();
-  mp.querySelector("span").textContent = b.dataset.t; mp.querySelector(".mpd").style.backgroundImage = b.dataset.c ? `url('${b.dataset.c}')` : ""; mp.classList.add("on");
 }
 function favView(el, rows, key) {
   el.className = "fav";
   if (!rows.length) { el.innerHTML = '<p class="empty">Coming soon.</p>'; return; }
+  const EM = [[/movie|film|series|cinema/i, "🎬"], [/book|read/i, "📚"], [/food|dish|eat|cuisine/i, "🍜"], [/place|travel|city/i, "📍"], [/quote|line|word/i, "❝"], [/football|club|sport|team/i, "⚽"], [/music|song|album|playlist|artist/i, "🎧"], [/person|people|hero|icon/i, "⭐"]];
   const by = {}; rows.forEach(r => (by[r.subtitle || "Favorites"] = by[r.subtitle || "Favorites"] || []).push(r));
   el.innerHTML = Object.entries(by).map(([cat, list]) => {
-    const quote = /quote|line|word/i.test(cat), tall = /movie|film|book|series/i.test(cat), music = /music|song|album|playlist|artist/i.test(cat);
-    return `<div class="fshelf"><h4 class="fcat">${esc(cat)} <small>${list.length}</small></h4><div class="frow">${list.map((r, i) => {
-      const href = `detail.html?t=${key}&id=${r.id}`, m = String(r.description || "").match(/open\.spotify\.com\/(?:intl-\w+\/)?(track|album|playlist|artist)\/(\w+)/);
-      if (m) return `<div class="fmu"><iframe src="https://open.spotify.com/embed/${m[1]}/${m[2]}" height="152" loading="lazy" allow="encrypted-media"></iframe></div>`;
-      if (music || r.audio_url) return `<button class="disc" type="button" data-a="${esc(r.audio_url || "")}" data-t="${esc(r.title)}" data-c="${esc(rimg(r) || "")}"><i style="background-image:url('${esc(rimg(r) || "")}')"></i><span>${esc(r.title)}</span></button>`;
+    const quote = /quote|line|word/i.test(cat), tall = /movie|film|book|series/i.test(cat), music = /music|song|album|playlist|artist/i.test(cat), em = (EM.find(x => x[0].test(cat)) || [0, "✨"])[1];
+    return `<div class="fshelf"><h4 class="fcat"><span class="fem">${em}</span>${esc(cat)} <small>${list.length}</small></h4><div class="frow">${list.map((r, i) => {
+      const href = `detail.html?t=${key}&id=${r.id}`, sp = r.spotify_url || ((String(r.description || "").match(/https?:\/\/open\.spotify\.com\/\S+/) || [])[0]) || "";
+      if (music || r.audio_url || sp) return `<button class="disc" type="button" data-a="${esc(r.audio_url || "")}" data-sp="${esc(sp)}" data-t="${esc(r.title)}" data-c="${esc(rimg(r) || "")}"><i style="background-image:url('${esc(rimg(r) || "")}')"></i><span>${esc(r.title)}</span></button>`;
       if (quote) return `<a class="fq" href="${href}"><span>“</span><p dir="auto">${esc(r.title)}</p><small>${esc((r.description || "").slice(0, 60))}</small></a>`;
-      return `<a class="fp${tall ? " tall" : ""}" href="${href}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy" decoding="async">` : ""}<b>${i + 1}</b><span>${esc(r.title)}</span></a>`;
+      return `<a class="fp${tall ? " tall" : ""}${i === 0 ? " top" : ""}" href="${href}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy" decoding="async">` : ""}${i === 0 ? '<em>My #1</em>' : `<b>${i + 1}</b>`}<span>${esc(r.title)}</span></a>`;
     }).join("")}</div></div>`;
   }).join("");
-  el.querySelectorAll(".disc").forEach(b => b.onclick = () => b.dataset.a ? playTrack(b) : alert("Add an audio file to this entry in the panel to play it here."));
+  el.querySelectorAll(".disc").forEach(b => { b.onclick = () => (b.dataset.a || b.dataset.sp) ? playTrack(b) : 0;
+    if (b.dataset.sp && !b.dataset.c) fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(b.dataset.sp)).then(r => r.json()).then(j => { if (j.thumbnail_url) { b.querySelector("i").style.backgroundImage = `url('${j.thumbnail_url}')`; b.dataset.c = j.thumbnail_url; } }).catch(() => {}); });
 }
 function capsuleView(el, rows, key) {
   useFont("caveat"); el.className = "caps";
@@ -710,32 +745,35 @@ function tlView(el, rows, cfg, key) {
   el.querySelector(".tprev").onclick = () => go(cur - 1); el.querySelector(".tnext").onclick = () => go(cur + 1);
   setTimeout(upd, 60);
 }
-/* ---- Hidden Room: a private night sky, each memory is a star ---- */
+/* ---- Hidden Room: a gate, then a private night sky with an astronaut ---- */
+const ASTRO = '<svg class="astro" viewBox="0 0 64 80"><rect x="14" y="30" width="36" height="34" rx="12" fill="#e9ecf5"/><rect x="8" y="34" width="10" height="22" rx="5" fill="#cfd5e6"/><rect x="46" y="34" width="10" height="22" rx="5" fill="#cfd5e6"/><circle cx="32" cy="22" r="17" fill="#f4f6fb"/><ellipse cx="32" cy="22" rx="11" ry="9" fill="#1b2442"/><ellipse cx="29" cy="19" rx="4" ry="2.4" fill="#6f86d6" opacity=".7"/><rect x="22" y="62" width="8" height="14" rx="4" fill="#cfd5e6"/><rect x="34" y="62" width="8" height="14" rx="4" fill="#cfd5e6"/></svg>';
 function roomView(el, key, cfg) {
   cfg = cfg || {}; const hexv = (v, d) => /^#[0-9a-f]{6}$/i.test(v || "") ? v : d;
   el.className = "room"; el.style.cssText = `--ra:${hexv(cfg.accent, "#e9e6df")};--rb:${hexv(cfg.bg, "#050505")}`;
-  el.innerHTML = `<div class="rv1"><span class="rk">${esc(cfg.label || "Not for everyone")}</span><div class="slit"><i></i></div><p class="rq">${esc(cfg.quote || "There is a sky here that is not on any map.")}</p><button class="rbtn" type="button">${esc(cfg.button || "Speak the word")}</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>`;
-  const v = el.querySelector(".rv1"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn"), RN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
-  b.onclick = () => { b.hidden = true; f.hidden = false; f.querySelector("input").focus(); };
+  el.innerHTML = `<div class="rv1"><span class="rk">${esc(cfg.label || "Not for everyone")}</span><div class="gate"><i class="beam"></i><i class="gl"></i><i class="gr"></i><span class="gem"><svg viewBox="0 0 24 24"><circle cx="12" cy="9.5" r="3.4"/><path d="M12 13v6"/></svg></span></div><p class="rq">${esc(cfg.quote || "Beyond this gate there is a sky that is not on any map.")}</p><button class="rbtn" type="button">${esc(cfg.button || "Speak the word")}</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>`;
+  const v = el.querySelector(".rv1"), g = el.querySelector(".gate"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn");
+  const ask = () => { b.hidden = true; f.hidden = false; f.querySelector("input").focus(); }; b.onclick = ask; g.onclick = ask;
   f.onsubmit = async e => {
     e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "";
     const { data } = await sb.rpc("room_open", { k: key, pw: f.querySelector("input").value });
-    if (!data) { m.textContent = "Not quite."; v.classList.add("no"); setTimeout(() => v.classList.remove("no"), 500); return; }
-    v.classList.add("open");
+    if (!data) { m.textContent = "Not quite."; g.classList.add("no"); setTimeout(() => g.classList.remove("no"), 500); return; }
+    g.classList.add("open"); f.hidden = true;
+    setTimeout(() => v.classList.add("fade"), 1900);
     setTimeout(() => {
-      v.hidden = true; const rin = el.querySelector(".rin"), pos = data.map((_, i) => [10 + (i * 37 + 11) % 78, 14 + (i * 53 + 7) % 64]);
-      rin.innerHTML = data.length ? `<svg class="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${pos.map(p => p.join(",")).join(" ")}"/></svg>${data.map((r, i) => `<button class="star" type="button" data-i="${i}" style="left:${pos[i][0]}%;top:${pos[i][1]}%"><i></i><span>${esc(r.title)}</span></button>`).join("")}<p class="rhin">Touch a star.</p><div class="rcard" hidden></div>` : '<p class="rq" style="padding:40px">The sky is empty… for now.</p>';
+      v.hidden = true; const rin = el.querySelector(".rin"), pos = data.map((_, i) => [12 + (i * 37 + 11) % 74, 18 + (i * 53 + 7) % 58]);
+      rin.innerHTML = `<div class="sky"></div>${ASTRO}` + (data.length ? `<svg class="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${pos.map(p => p.join(",")).join(" ")}"/></svg>${data.map((r, i) => `<button class="star" type="button" data-i="${i}" style="left:${pos[i][0]}%;top:${pos[i][1]}%"><i></i><span>${esc(r.title)}</span></button>`).join("")}<p class="rhin">Tap a star to receive its transmission.</p><div class="rcard" hidden></div>` : '<p class="rq" style="padding:60px 20px;position:relative">No signals yet… the sky is quiet.</p>');
       rin.hidden = false; rin.classList.add("in");
       const card = rin.querySelector(".rcard");
       rin.querySelectorAll(".star").forEach(s => s.onclick = () => {
-        const r = data[+s.dataset.i], t = r.description || "";
-        card.innerHTML = `<button class="rx" type="button">×</button><small>${RN[+s.dataset.i] || +s.dataset.i + 1}</small><h3${st_(r, "title")}>${esc(r.title)}</h3><p dir="auto"${st_(r, "description")}></p><div class="rims">${[r.cover_url, ...(r.images || []).map(x => x && x.url)].filter(Boolean).slice(0, 4).map(u => `<img src="${esc(u)}" alt="" loading="lazy">`).join("")}</div>`;
+        const n = +s.dataset.i, r = data[n], t = r.description || "";
+        card.innerHTML = `<div class="hud"><span>● SIGNAL RECEIVED</span><span>LOG ${String(n + 1).padStart(3, "0")}</span></div><button class="rx" type="button">×</button><h3${st_(r, "title")}>${esc(r.title)}</h3><p dir="auto"${st_(r, "description")}></p><div class="rims">${[r.cover_url, ...(r.images || []).map(x => x && x.url)].filter(Boolean).slice(0, 6).map(u => `<img class="zm" src="${esc(u)}" alt="" loading="lazy">`).join("")}</div>`;
         card.hidden = false; const p = card.querySelector("p"); let k = 0; clearInterval(card._t);
-        card._t = setInterval(() => { p.textContent = t.slice(0, k += 2); if (k >= t.length) clearInterval(card._t); }, 24);
+        card._t = setInterval(() => { p.textContent = t.slice(0, k += 2); if (k >= t.length) clearInterval(card._t); }, 22);
         card.querySelector(".rx").onclick = () => { card.hidden = true; clearInterval(card._t); };
+        card.querySelectorAll(".zm").forEach(im => im.onclick = () => openLB(im.src, ""));
       });
-      const hin = rin.querySelector(".rhin"); hin && setTimeout(() => hin.style.opacity = 0, 5000);
-    }, 1400);
+      const hin = rin.querySelector(".rhin"); hin && setTimeout(() => hin.style.opacity = 0, 6000);
+    }, 3000);
   };
 }
 
@@ -750,13 +788,12 @@ function loadLeaflet() {
 }
 async function mapView(el, rows, key) {
   const pts = rows.map(r => { const m = String(r.latlng || "").match(/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/); return m ? { r, ll: [+m[1], +m[2]] } : null; }).filter(Boolean);
-  if (!pts.length) return;
-  el.innerHTML = `<div class="tmap"></div><p class="mcount">${pts.length} place${pts.length > 1 ? "s" : ""} explored so far</p>`;
+  el.innerHTML = `<div class="tmap"></div><p class="mcount">${pts.length ? pts.length + " place" + (pts.length > 1 ? "s" : "") + " explored so far" : "Every place I visit will appear on this map."}</p>`;
   await loadLeaflet();
-  const map = L.map(el.firstChild, { scrollWheelZoom: false }).setView(pts[0].ll, 3);
+  const map = L.map(el.firstChild, { scrollWheelZoom: false }).setView(pts[0] ? pts[0].ll : [20, 10], pts[0] ? 3 : 2);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
   pts.forEach(p => L.marker(p.ll).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
-  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : map.setView(pts[0].ll, 8);
+  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : pts.length ? map.setView(pts[0].ll, 8) : 0;
 }
 
 /* coin (two overlapping circles) and banknote (two overlapping rectangles) slots for the Collection */
@@ -766,9 +803,12 @@ function cpic(r, img) {
   return `<div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>`;
 }
 
+/* back links return to the page you really came from */
+document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a.back"); if (a && history.length > 1 && document.referrer.indexOf(location.origin) === 0) { e.preventDefault(); history.back(); } });
+
 </script>
 <script>
-const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v20 standalone";
+const app = document.getElementById("app"), MAXPICS = Infinity, VERSION = "v21 standalone";
 const PUB = [{ k: "published", l: "Published", t: "bool" }, { k: "sort_order", l: "Order (small number first)", t: "number" }];
 const GAL = { k: "images", l: "Photos and videos (each with its own description and text style)", t: "gallery" };
 const F = (k, l, t, extra) => Object.assign({ k, l, t }, extra);
@@ -824,7 +864,7 @@ const S = {
     F("img_ratio", "Picture shape", "select", { opts: [["portrait", "Tall (4:5)"], ["square", "Square"], ["landscape", "Landscape (4:3)"], ["wide", "Wide (16:9)"]] }),
     F("scroll_speed", "Collection auto-scroll speed (1 slow to 10 fast)", "number"),
     F("side_mode", "Picture side in lists", "select", { opts: [["alternate", "Alternate left / right"], ["left", "Always left"], ["right", "Always right"]] })] },
-  stats: { label: "Visitors", custom: "stats" }, backup: { label: "Backup", custom: "backup" }, guestbook: { label: "Guest Book", custom: "gb" }
+  notfound: { label: "404 page", custom: "nf" }, stats: { label: "Visitors", custom: "stats" }, backup: { label: "Backup", custom: "backup" }, guestbook: { label: "Guest Book", custom: "gb" }
 };
 S.achievements.fields = [TX("title", "Achievement"), F("achieved_on", "Date", "date"), AR("description", "The story behind it"), F("image_url", "Photo (certificate, medal or moment)", "image"), ...PUB];
 S.memories.fields = [TX("title", "Memory"), F("memory_date", "Date", "date"), AR("description", "What you remember"), F("image_url", "Photo", "image"), ...PUB];
@@ -845,8 +885,9 @@ function loginView() {
   <div class="actions"><button class="pri" id="go">Sign in</button></div><p class="msg" id="m"></p>`;
   $("go").onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: $("em").value.trim(), password: $("pw").value }); if (error) $("m").textContent = error.message; else boot(); };
 }
-const TG = { intro: "Site", logo: "Site", theme: "Site", design: "Site", pages: "Tools", create: "Tools", order: "Tools", stats: "Tools", backup: "Tools" };
-const tabsHtml = () => ["Site", "Sections", "Tools"].map(g => `<div class="tg"><span>${g}</span>${Object.keys(S).filter(k => (TG[k] || "Sections") === g).map(k => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc(S[k].label)}</button>`).join("")}</div>`).join("");
+const TI = { intro: "🏠", logo: "🖼", theme: "🎨", design: "🖌", pages: "📄", notfound: "🧭", create: "＋", order: "↕", stats: "📊", backup: "💾", about: "👤", contacts: "☎", travel: "✈", collections: "🗂", journal: "📖", achievements: "🏆", memories: "🕰", guestbook: "📕" };
+const TG = { intro: "Site", logo: "Site", theme: "Site", design: "Site", pages: "Tools", notfound: "Tools", create: "Tools", order: "Tools", stats: "Tools", backup: "Tools" };
+const tabsHtml = () => ["Site", "Sections", "Tools"].map(g => `<div class="tg"><span>${g}</span>${Object.keys(S).filter(k => (TG[k] || "Sections") === g).map(k => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc((TI[k] || "") + " " + S[k].label)}</button>`).join("")}</div>`).join("");
 function shell() {
   app.innerHTML = `<div class="bar"><b>Admin <small style="color:var(--mut);font-weight:400">${VERSION}</small></b><span><a href="index.html" style="font-size:14px;margin-right:14px">View site</a><button id="rf" title="Refresh">↻</button> <button id="lo">Sign out</button></span></div>
   <div class="tabs">${tabsHtml()}</div><h1 class="ph">${esc(S[tab].label)}</h1>${visBar()}<div id="main"></div>`;
@@ -882,6 +923,13 @@ function backupView() {
     const l = document.createElement("a"); l.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" })); l.download = "mubin-site-backup-" + new Date().toISOString().slice(0, 10) + ".json"; l.click(); $("m").textContent = "Backup downloaded.";
   };
 }
+async function nfView() {
+  const { data } = await sb.from("profile").select("nf").eq("id", 1).maybeSingle(), n = Object.assign({ title: "Lost in space", message: "The page you are looking for drifted away. Let me take you back.", button: "Take me home", theme: "dark" }, (data || {}).nf);
+  $("main").innerHTML = `<p class="hint" style="font-size:14px;line-height:1.7">This page appears when someone opens a link that does not exist. It needs the 404 setting on your Cloudflare worker (see the note I sent with this update).</p><label>Title</label><input id="n1" value="${esc(n.title)}"><label>Message</label><textarea id="n2">${esc(n.message)}</textarea><label>Button text</label><input id="n3" value="${esc(n.button)}"><label>Look</label><select id="n4"><option value="dark" ${n.theme === "dark" ? "selected" : ""}>Night sky with astronaut</option><option value="light" ${n.theme === "light" ? "selected" : ""}>Clean light</option></select><div class="actions"><button class="pri" id="nsave">Save</button><button id="nprev">Preview</button></div><p class="msg" id="m"></p>`;
+  const get = () => ({ title: $("n1").value, message: $("n2").value, button: $("n3").value, theme: $("n4").value });
+  $("nsave").onclick = async () => { const { error } = await sb.from("profile").update({ nf: get() }).eq("id", 1); $("m").textContent = error ? error.message : "Saved."; };
+  $("nprev").onclick = () => { sessionStorage.setItem("nfp", JSON.stringify(get())); window.open("404.html?preview=1", "_blank"); };
+}
 async function statsView() {
   const main = $("main"); main.textContent = "Loading…";
   const day = o => new Date(Date.now() - o * 864e5).toISOString().slice(0, 10);
@@ -899,7 +947,7 @@ async function statsView() {
 }
 const fieldsFor = t => t === "hidden" ? [TX("title", "Title"), AR("description", "Description"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : t === "timeline" ? [TX("title", "Title of the moment"), F("subtitle", "Year (for example 2024)", "text"), AR("description", "Description"), F("cover_url", "Cover photo", "image"), GAL, ...PUB]
-  : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category (Movies, Books, Food, Places, Quotes, Music…)", "text"), AR("description", "Why you love it (for music: set the category to Music and paste the Spotify link of the song, album or playlist here)"), F("cover_url", "Photo (disc cover)", "image"), F("audio_url", "Song file (mp3). It plays from a spinning disc and keeps playing while visitors scroll", "image", { accept: "audio/*" }), GAL, ...PUB]
+  : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category (Movies, Books, Food, Places, Quotes, Music…)", "text"), AR("description", "Why you love it (for music: set the category to Music and paste the Spotify link of the song, album or playlist here)"), F("cover_url", "Photo (disc cover)", "image"), F("spotify_url", "Spotify link of the song, album or playlist (copy it from Spotify: Share, then Copy link). Visitors tap the spinning disc to play it", "text"), F("audio_url", "Song file (mp3). It plays from a spinning disc and keeps playing while visitors scroll", "image", { accept: "audio/*" }), GAL, ...PUB]
   : t === "capsule" ? [TX("title", "Title"), F("open_on", "Opens on (locked until this date)", "date"), AR("description", "Message or memory"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : [TX("title", "Title"), F("subtitle", "Small line above the title (optional)", "text"), AR("description", "Description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB];
 async function loadReg() {
@@ -966,7 +1014,7 @@ async function gbAdmin() {
     box.appendChild(d);
   });
 }
-const CUS = { create: createView, order: orderView, gb: gbAdmin, stats: statsView, backup: backupView };
+const CUS = { create: createView, order: orderView, gb: gbAdmin, stats: statsView, backup: backupView, nf: nfView };
 async function inbox() {
   const main = $("main"); main.textContent = "Loading…";
   const { data, error } = await sb.from("messages").select("*").order("created_at", { ascending: false });

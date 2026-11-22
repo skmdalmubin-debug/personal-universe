@@ -63,7 +63,7 @@ function useFont(k) {
 function styDecl(st, exact) {
   if (!st || typeof st !== "object") return "";
   const o = [], f = FONTS[st.font];
-  if (f) { o.push("font-family:" + f.c); useFont(st.font); }
+  if (f) { o.push("font-family:" + f.c + " !important"); useFont(st.font); }
   if (/^#[0-9a-f]{6}$/i.test(st.color || "")) o.push("color:" + st.color);
   const sz = +st.size;
   if (sz >= 8 && sz <= 300) {
@@ -299,28 +299,32 @@ function loadTranslate() {
 const rimg = r => r.cover_url || ((r.images || [])[0] || {}).url;
 const AUD = new Audio(); AUD.loop = true;
 function playTrack(b) {
-  let mp = $("mp");
-  if (!mp) { mp = document.createElement("div"); mp.id = "mp"; mp.innerHTML = '<i class="mpd"></i><span></span><button type="button">❚❚</button>'; document.body.appendChild(mp); mp.querySelector("button").onclick = () => AUD.paused ? AUD.play() : AUD.pause(); AUD.onplay = () => document.body.classList.add("playing"); AUD.onpause = () => document.body.classList.remove("playing"); }
+  let mp = $("mp"); if (!mp) { mp = document.createElement("div"); mp.id = "mp"; document.body.appendChild(mp); }
   document.querySelectorAll(".disc").forEach(d => d.classList.toggle("cur", d === b));
-  if (AUD._u === b.dataset.a) { AUD.paused ? AUD.play() : AUD.pause(); return; }
+  const sp = b.dataset.sp && b.dataset.sp.match(/(track|album|playlist|artist)\/(\w+)/);
+  if (sp) { AUD.pause(); mp.className = "on sp"; mp.innerHTML = `<iframe src="https://open.spotify.com/embed/${sp[1]}/${sp[2]}?autoplay=1" height="80" allow="encrypted-media; autoplay"></iframe><button class="mpx" type="button">×</button>`; mp.querySelector(".mpx").onclick = () => { mp.className = ""; mp.innerHTML = ""; document.body.classList.remove("playing"); }; document.body.classList.add("playing"); return; }
+  if (AUD._u === b.dataset.a && mp.querySelector(".mpd")) { AUD.paused ? AUD.play() : AUD.pause(); return; }
+  mp.className = "on"; mp.innerHTML = '<i class="mpd"></i><span></span><button type="button">❚❚</button>';
+  mp.querySelector("button").onclick = () => AUD.paused ? AUD.play() : AUD.pause(); AUD.onplay = () => document.body.classList.add("playing"); AUD.onpause = () => document.body.classList.remove("playing");
+  mp.querySelector("span").textContent = b.dataset.t; mp.querySelector(".mpd").style.backgroundImage = b.dataset.c ? `url('${b.dataset.c}')` : "";
   AUD._u = b.dataset.a; AUD.src = b.dataset.a; AUD.play();
-  mp.querySelector("span").textContent = b.dataset.t; mp.querySelector(".mpd").style.backgroundImage = b.dataset.c ? `url('${b.dataset.c}')` : ""; mp.classList.add("on");
 }
 function favView(el, rows, key) {
   el.className = "fav";
   if (!rows.length) { el.innerHTML = '<p class="empty">Coming soon.</p>'; return; }
+  const EM = [[/movie|film|series|cinema/i, "🎬"], [/book|read/i, "📚"], [/food|dish|eat|cuisine/i, "🍜"], [/place|travel|city/i, "📍"], [/quote|line|word/i, "❝"], [/football|club|sport|team/i, "⚽"], [/music|song|album|playlist|artist/i, "🎧"], [/person|people|hero|icon/i, "⭐"]];
   const by = {}; rows.forEach(r => (by[r.subtitle || "Favorites"] = by[r.subtitle || "Favorites"] || []).push(r));
   el.innerHTML = Object.entries(by).map(([cat, list]) => {
-    const quote = /quote|line|word/i.test(cat), tall = /movie|film|book|series/i.test(cat), music = /music|song|album|playlist|artist/i.test(cat);
-    return `<div class="fshelf"><h4 class="fcat">${esc(cat)} <small>${list.length}</small></h4><div class="frow">${list.map((r, i) => {
-      const href = `detail.html?t=${key}&id=${r.id}`, m = String(r.description || "").match(/open\.spotify\.com\/(?:intl-\w+\/)?(track|album|playlist|artist)\/(\w+)/);
-      if (m) return `<div class="fmu"><iframe src="https://open.spotify.com/embed/${m[1]}/${m[2]}" height="152" loading="lazy" allow="encrypted-media"></iframe></div>`;
-      if (music || r.audio_url) return `<button class="disc" type="button" data-a="${esc(r.audio_url || "")}" data-t="${esc(r.title)}" data-c="${esc(rimg(r) || "")}"><i style="background-image:url('${esc(rimg(r) || "")}')"></i><span>${esc(r.title)}</span></button>`;
+    const quote = /quote|line|word/i.test(cat), tall = /movie|film|book|series/i.test(cat), music = /music|song|album|playlist|artist/i.test(cat), em = (EM.find(x => x[0].test(cat)) || [0, "✨"])[1];
+    return `<div class="fshelf"><h4 class="fcat"><span class="fem">${em}</span>${esc(cat)} <small>${list.length}</small></h4><div class="frow">${list.map((r, i) => {
+      const href = `detail.html?t=${key}&id=${r.id}`, sp = r.spotify_url || ((String(r.description || "").match(/https?:\/\/open\.spotify\.com\/\S+/) || [])[0]) || "";
+      if (music || r.audio_url || sp) return `<button class="disc" type="button" data-a="${esc(r.audio_url || "")}" data-sp="${esc(sp)}" data-t="${esc(r.title)}" data-c="${esc(rimg(r) || "")}"><i style="background-image:url('${esc(rimg(r) || "")}')"></i><span>${esc(r.title)}</span></button>`;
       if (quote) return `<a class="fq" href="${href}"><span>“</span><p dir="auto">${esc(r.title)}</p><small>${esc((r.description || "").slice(0, 60))}</small></a>`;
-      return `<a class="fp${tall ? " tall" : ""}" href="${href}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy" decoding="async">` : ""}<b>${i + 1}</b><span>${esc(r.title)}</span></a>`;
+      return `<a class="fp${tall ? " tall" : ""}${i === 0 ? " top" : ""}" href="${href}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy" decoding="async">` : ""}${i === 0 ? '<em>My #1</em>' : `<b>${i + 1}</b>`}<span>${esc(r.title)}</span></a>`;
     }).join("")}</div></div>`;
   }).join("");
-  el.querySelectorAll(".disc").forEach(b => b.onclick = () => b.dataset.a ? playTrack(b) : alert("Add an audio file to this entry in the panel to play it here."));
+  el.querySelectorAll(".disc").forEach(b => { b.onclick = () => (b.dataset.a || b.dataset.sp) ? playTrack(b) : 0;
+    if (b.dataset.sp && !b.dataset.c) fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(b.dataset.sp)).then(r => r.json()).then(j => { if (j.thumbnail_url) { b.querySelector("i").style.backgroundImage = `url('${j.thumbnail_url}')`; b.dataset.c = j.thumbnail_url; } }).catch(() => {}); });
 }
 function capsuleView(el, rows, key) {
   useFont("caveat"); el.className = "caps";
@@ -349,32 +353,35 @@ function tlView(el, rows, cfg, key) {
   el.querySelector(".tprev").onclick = () => go(cur - 1); el.querySelector(".tnext").onclick = () => go(cur + 1);
   setTimeout(upd, 60);
 }
-/* ---- Hidden Room: a private night sky, each memory is a star ---- */
+/* ---- Hidden Room: a gate, then a private night sky with an astronaut ---- */
+const ASTRO = '<svg class="astro" viewBox="0 0 64 80"><rect x="14" y="30" width="36" height="34" rx="12" fill="#e9ecf5"/><rect x="8" y="34" width="10" height="22" rx="5" fill="#cfd5e6"/><rect x="46" y="34" width="10" height="22" rx="5" fill="#cfd5e6"/><circle cx="32" cy="22" r="17" fill="#f4f6fb"/><ellipse cx="32" cy="22" rx="11" ry="9" fill="#1b2442"/><ellipse cx="29" cy="19" rx="4" ry="2.4" fill="#6f86d6" opacity=".7"/><rect x="22" y="62" width="8" height="14" rx="4" fill="#cfd5e6"/><rect x="34" y="62" width="8" height="14" rx="4" fill="#cfd5e6"/></svg>';
 function roomView(el, key, cfg) {
   cfg = cfg || {}; const hexv = (v, d) => /^#[0-9a-f]{6}$/i.test(v || "") ? v : d;
   el.className = "room"; el.style.cssText = `--ra:${hexv(cfg.accent, "#e9e6df")};--rb:${hexv(cfg.bg, "#050505")}`;
-  el.innerHTML = `<div class="rv1"><span class="rk">${esc(cfg.label || "Not for everyone")}</span><div class="slit"><i></i></div><p class="rq">${esc(cfg.quote || "There is a sky here that is not on any map.")}</p><button class="rbtn" type="button">${esc(cfg.button || "Speak the word")}</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>`;
-  const v = el.querySelector(".rv1"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn"), RN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
-  b.onclick = () => { b.hidden = true; f.hidden = false; f.querySelector("input").focus(); };
+  el.innerHTML = `<div class="rv1"><span class="rk">${esc(cfg.label || "Not for everyone")}</span><div class="gate"><i class="beam"></i><i class="gl"></i><i class="gr"></i><span class="gem"><svg viewBox="0 0 24 24"><circle cx="12" cy="9.5" r="3.4"/><path d="M12 13v6"/></svg></span></div><p class="rq">${esc(cfg.quote || "Beyond this gate there is a sky that is not on any map.")}</p><button class="rbtn" type="button">${esc(cfg.button || "Speak the word")}</button><form class="rpw" hidden><input type="password" placeholder="· · · · ·" autocomplete="off" aria-label="Password"><p class="msg"></p></form></div><div class="rin" hidden></div>`;
+  const v = el.querySelector(".rv1"), g = el.querySelector(".gate"), f = el.querySelector(".rpw"), b = el.querySelector(".rbtn");
+  const ask = () => { b.hidden = true; f.hidden = false; f.querySelector("input").focus(); }; b.onclick = ask; g.onclick = ask;
   f.onsubmit = async e => {
     e.preventDefault(); const m = f.querySelector(".msg"); m.textContent = "";
     const { data } = await sb.rpc("room_open", { k: key, pw: f.querySelector("input").value });
-    if (!data) { m.textContent = "Not quite."; v.classList.add("no"); setTimeout(() => v.classList.remove("no"), 500); return; }
-    v.classList.add("open");
+    if (!data) { m.textContent = "Not quite."; g.classList.add("no"); setTimeout(() => g.classList.remove("no"), 500); return; }
+    g.classList.add("open"); f.hidden = true;
+    setTimeout(() => v.classList.add("fade"), 1900);
     setTimeout(() => {
-      v.hidden = true; const rin = el.querySelector(".rin"), pos = data.map((_, i) => [10 + (i * 37 + 11) % 78, 14 + (i * 53 + 7) % 64]);
-      rin.innerHTML = data.length ? `<svg class="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${pos.map(p => p.join(",")).join(" ")}"/></svg>${data.map((r, i) => `<button class="star" type="button" data-i="${i}" style="left:${pos[i][0]}%;top:${pos[i][1]}%"><i></i><span>${esc(r.title)}</span></button>`).join("")}<p class="rhin">Touch a star.</p><div class="rcard" hidden></div>` : '<p class="rq" style="padding:40px">The sky is empty… for now.</p>';
+      v.hidden = true; const rin = el.querySelector(".rin"), pos = data.map((_, i) => [12 + (i * 37 + 11) % 74, 18 + (i * 53 + 7) % 58]);
+      rin.innerHTML = `<div class="sky"></div>${ASTRO}` + (data.length ? `<svg class="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${pos.map(p => p.join(",")).join(" ")}"/></svg>${data.map((r, i) => `<button class="star" type="button" data-i="${i}" style="left:${pos[i][0]}%;top:${pos[i][1]}%"><i></i><span>${esc(r.title)}</span></button>`).join("")}<p class="rhin">Tap a star to receive its transmission.</p><div class="rcard" hidden></div>` : '<p class="rq" style="padding:60px 20px;position:relative">No signals yet… the sky is quiet.</p>');
       rin.hidden = false; rin.classList.add("in");
       const card = rin.querySelector(".rcard");
       rin.querySelectorAll(".star").forEach(s => s.onclick = () => {
-        const r = data[+s.dataset.i], t = r.description || "";
-        card.innerHTML = `<button class="rx" type="button">×</button><small>${RN[+s.dataset.i] || +s.dataset.i + 1}</small><h3${st_(r, "title")}>${esc(r.title)}</h3><p dir="auto"${st_(r, "description")}></p><div class="rims">${[r.cover_url, ...(r.images || []).map(x => x && x.url)].filter(Boolean).slice(0, 4).map(u => `<img src="${esc(u)}" alt="" loading="lazy">`).join("")}</div>`;
+        const n = +s.dataset.i, r = data[n], t = r.description || "";
+        card.innerHTML = `<div class="hud"><span>● SIGNAL RECEIVED</span><span>LOG ${String(n + 1).padStart(3, "0")}</span></div><button class="rx" type="button">×</button><h3${st_(r, "title")}>${esc(r.title)}</h3><p dir="auto"${st_(r, "description")}></p><div class="rims">${[r.cover_url, ...(r.images || []).map(x => x && x.url)].filter(Boolean).slice(0, 6).map(u => `<img class="zm" src="${esc(u)}" alt="" loading="lazy">`).join("")}</div>`;
         card.hidden = false; const p = card.querySelector("p"); let k = 0; clearInterval(card._t);
-        card._t = setInterval(() => { p.textContent = t.slice(0, k += 2); if (k >= t.length) clearInterval(card._t); }, 24);
+        card._t = setInterval(() => { p.textContent = t.slice(0, k += 2); if (k >= t.length) clearInterval(card._t); }, 22);
         card.querySelector(".rx").onclick = () => { card.hidden = true; clearInterval(card._t); };
+        card.querySelectorAll(".zm").forEach(im => im.onclick = () => openLB(im.src, ""));
       });
-      const hin = rin.querySelector(".rhin"); hin && setTimeout(() => hin.style.opacity = 0, 5000);
-    }, 1400);
+      const hin = rin.querySelector(".rhin"); hin && setTimeout(() => hin.style.opacity = 0, 6000);
+    }, 3000);
   };
 }
 
@@ -389,13 +396,12 @@ function loadLeaflet() {
 }
 async function mapView(el, rows, key) {
   const pts = rows.map(r => { const m = String(r.latlng || "").match(/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/); return m ? { r, ll: [+m[1], +m[2]] } : null; }).filter(Boolean);
-  if (!pts.length) return;
-  el.innerHTML = `<div class="tmap"></div><p class="mcount">${pts.length} place${pts.length > 1 ? "s" : ""} explored so far</p>`;
+  el.innerHTML = `<div class="tmap"></div><p class="mcount">${pts.length ? pts.length + " place" + (pts.length > 1 ? "s" : "") + " explored so far" : "Every place I visit will appear on this map."}</p>`;
   await loadLeaflet();
-  const map = L.map(el.firstChild, { scrollWheelZoom: false }).setView(pts[0].ll, 3);
+  const map = L.map(el.firstChild, { scrollWheelZoom: false }).setView(pts[0] ? pts[0].ll : [20, 10], pts[0] ? 3 : 2);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
   pts.forEach(p => L.marker(p.ll).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
-  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : map.setView(pts[0].ll, 8);
+  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : pts.length ? map.setView(pts[0].ll, 8) : 0;
 }
 
 /* coin (two overlapping circles) and banknote (two overlapping rectangles) slots for the Collection */
@@ -404,3 +410,6 @@ function cpic(r, img) {
   if (k && im.length) return `<div class="pair ${k}"><i><img src="${esc(im[0])}" alt="" loading="lazy" decoding="async"></i>${im[1] ? `<i><img src="${esc(im[1])}" alt="" loading="lazy" decoding="async"></i>` : ""}</div>`;
   return `<div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>`;
 }
+
+/* back links return to the page you really came from */
+document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a.back"); if (a && history.length > 1 && document.referrer.indexOf(location.origin) === 0) { e.preventDefault(); history.back(); } });
