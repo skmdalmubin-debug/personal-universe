@@ -13,6 +13,8 @@ if (IS_RELOAD) {
 }
 
 if (!/panel|admin/.test(location.pathname) && localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
+let LBL = {}; const T_ = (k, d) => (LBL[k] || d);
+const ar = v => /^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(v || "") ? ` style="aspect-ratio:${v}"` : "";
 const MAP = {
   travel:       { label: "Travel",       text: "description", cover: "cover_url", order: ["sort_order", "visited_on"],  meta: r => [[r.location, r.country].filter(Boolean).join(", "), fmt(r.visited_on)].filter(Boolean).join(" · ") },
   collections:  { label: "Collection",   text: "description", cover: "image_url", order: ["sort_order", "created_at"], meta: r => r.category || "" },
@@ -93,7 +95,7 @@ function applyDesign(p) {
 }
 async function loadProfile() {
   const { data } = await sb.from("profile").select("*").eq("id", 1).maybeSingle();
-  applyDesign(data || {});
+  LBL = (data && data.labels) || {}; applyDesign(data || {});
   return data || {};
 }
 let REG = [];
@@ -150,8 +152,8 @@ function mag(t, r, i, off, peek) {
   const c = MAP[t], img = firstImg(r, c), side = DESIGN.side_mode;
   const flip = side === "left" ? false : side === "right" ? true : (i + off) % 2 === 1, txt = (r[c.text] || "").trim();
   return `<a class="mag${flip ? " flip" : ""}${peek ? " peek" : ""}" href="${link(t, r, peek)}">
-    <div class="pic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
-    <div class="txt"><div class="meta">${esc(c.meta(r))}</div><h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}<span class="more">View details ›</span></div></a>`;
+    <div class="pic"${ar((r.styles || {})["ar." + c.cover])}>${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>
+    <div class="txt"><div class="meta">${esc(c.meta(r))}</div><h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}<span class="more">${T_("viewdetails", "View details")} ›</span></div></a>`;
 }
 function card(t, r, i, off, peek) {
   const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
@@ -176,13 +178,13 @@ function media(m, n) {
   return `<img data-n="${n}" src="${esc(m.url)}" alt="" loading="lazy">`;
 }
 function subs(imgs, reg) {
-  return imgs.map((m, k) => { const n = reg ? reg.push(m) - 1 : k; return `<div class="sub${k % 2 ? " flip" : ""}"><div class="pic">${media(m, n)}</div>
+  return imgs.map((m, k) => { const n = reg ? reg.push(m) - 1 : k; return `<div class="sub${k % 2 ? " flip" : ""}"><div class="pic"${ar(m.ar)}>${media(m, n)}</div>
     <div class="txt">${m.caption ? `<p class="cap"${sty(m.style)}>${esc(m.caption)}</p>` : ""}</div></div>`; }).join("");
 }
 function subSections(list, reg) {
   return (list || []).filter(s => s && (s.title || (s.images || []).length)).map(s => `<div class="subsec">${s.title ? `<h2 class="sst"${sty(s.tstyle)}>${esc(s.title)}</h2>` : ""}${s.description ? `<div class="dtext"${sty(s.dstyle)}>${esc(s.description)}</div>` : ""}${subs((s.images || []).filter(m => m && m.url), reg)}</div>`).join("");
 }
-const coverHero = u => u ? `<div class="chero"><img class="zoom" src="${esc(u)}" alt=""></div>` : "";
+const coverHero = (u, a) => u ? `<div class="chero"${/^\d+\/\d+$/.test(a || "") ? ` style="height:auto;aspect-ratio:${a}"` : ""}><img class="zoom" src="${esc(u)}" alt=""></div>` : "";
 function wireZoom(root, imgs) {
   root.querySelectorAll(".zoom").forEach(i => i.onclick = () => openLB(i.src, ""));
   root.querySelectorAll("[data-n]").forEach(i => i.onclick = () => openLB(i.src, (imgs[+i.dataset.n] || {}).caption));
@@ -278,7 +280,7 @@ function track(kind, key) {
   try {
     if (Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k))) return;
     const sk = "t:" + kind + ":" + key; if (sessionStorage.getItem(sk)) return; sessionStorage.setItem(sk, 1);
-    sb.from("analytics_events").insert({ kind, key: String(key).slice(0, 40) }).then(() => {});
+    sb.from("analytics_events").insert(kind === "visit" ? Object.assign({ kind, key: String(key).slice(0, 40) }, envInfo()) : { kind, key: String(key).slice(0, 40) }).then(() => {});
   } catch (e) {}
 }
 /* language switch (machine translation by Google Translate, only loaded when chosen) */
@@ -302,7 +304,7 @@ function playTrack(b) {
   let mp = $("mp"); if (!mp) { mp = document.createElement("div"); mp.id = "mp"; document.body.appendChild(mp); }
   document.querySelectorAll(".disc").forEach(d => d.classList.toggle("cur", d === b));
   const sp = b.dataset.sp && b.dataset.sp.match(/(track|album|playlist|artist)\/(\w+)/);
-  if (sp) { AUD.pause(); mp.className = "on sp"; mp.innerHTML = `<iframe src="https://open.spotify.com/embed/${sp[1]}/${sp[2]}?autoplay=1" height="80" allow="encrypted-media; autoplay"></iframe><button class="mpx" type="button">×</button>`; mp.querySelector(".mpx").onclick = () => { mp.className = ""; mp.innerHTML = ""; document.body.classList.remove("playing"); }; document.body.classList.add("playing"); return; }
+  if (sp) { AUD.pause(); playSpotify(b, mp); return; }
   if (AUD._u === b.dataset.a && mp.querySelector(".mpd")) { AUD.paused ? AUD.play() : AUD.pause(); return; }
   mp.className = "on"; mp.innerHTML = '<i class="mpd"></i><span></span><button type="button">❚❚</button>';
   mp.querySelector("button").onclick = () => AUD.paused ? AUD.play() : AUD.pause(); AUD.onplay = () => document.body.classList.add("playing"); AUD.onpause = () => document.body.classList.remove("playing");
@@ -312,15 +314,18 @@ function playTrack(b) {
 function favView(el, rows, key) {
   el.className = "fav";
   if (!rows.length) { el.innerHTML = '<p class="empty">Coming soon.</p>'; return; }
-  const EM = [[/movie|film|series|cinema/i, "🎬"], [/book|read/i, "📚"], [/food|dish|eat|cuisine/i, "🍜"], [/place|travel|city/i, "📍"], [/quote|line|word/i, "❝"], [/football|club|sport|team/i, "⚽"], [/music|song|album|playlist|artist/i, "🎧"], [/person|people|hero|icon/i, "⭐"]];
+  const EM = [[/movie|film|series|cinema|drama|anime/i, "🎬"], [/book|novel|read/i, "📚"], [/food|dish|eat|cuisine|snack|drink/i, "🍜"], [/place|travel|city|spot|destination/i, "📍"], [/quote|line|word/i, "❝"], [/football|club|sport|team|player/i, "⚽"], [/music|song|album|playlist|artist|band/i, "🎧"], [/person|people|hero|icon|idol/i, "⭐"]];
+  const kindOf = c0 => /movie|film|series|cinema|drama|anime/i.test(c0) ? "movie" : /book|novel|read/i.test(c0) ? "book" : /food|dish|eat|cuisine|snack|drink/i.test(c0) ? "food" : /place|travel|city|spot|destination/i.test(c0) ? "place" : /quote|line|word/i.test(c0) ? "quote" : /football|club|sport|team|player/i.test(c0) ? "club" : /music|song|album|playlist|artist|band/i.test(c0) ? "music" : /person|people|hero|icon|idol/i.test(c0) ? "person" : "other";
+  const CTA = { movie: "Watch trailer", book: "Read more", food: "Find it", place: "Open map", club: "Official page", person: "Learn more", other: "Open link" };
+  const star = n => n ? `<span class="fstar">${"★".repeat(Math.min(5, n))}${"☆".repeat(5 - Math.min(5, n))}</span>` : "";
   const by = {}; rows.forEach(r => (by[r.subtitle || "Favorites"] = by[r.subtitle || "Favorites"] || []).push(r));
   el.innerHTML = Object.entries(by).map(([cat, list]) => {
-    const quote = /quote|line|word/i.test(cat), tall = /movie|film|book|series/i.test(cat), music = /music|song|album|playlist|artist/i.test(cat), em = (EM.find(x => x[0].test(cat)) || [0, "✨"])[1];
+    const kind = kindOf(cat), em = (EM.find(x => x[0].test(cat)) || [0, "✨"])[1];
     return `<div class="fshelf"><h4 class="fcat"><span class="fem">${em}</span>${esc(cat)} <small>${list.length}</small></h4><div class="frow">${list.map((r, i) => {
-      const href = `detail.html?t=${key}&id=${r.id}`, sp = r.spotify_url || ((String(r.description || "").match(/https?:\/\/open\.spotify\.com\/\S+/) || [])[0]) || "";
-      if (music || r.audio_url || sp) return `<button class="disc" type="button" data-a="${esc(r.audio_url || "")}" data-sp="${esc(sp)}" data-t="${esc(r.title)}" data-c="${esc(rimg(r) || "")}"><i style="background-image:url('${esc(rimg(r) || "")}')"></i><span>${esc(r.title)}</span></button>`;
-      if (quote) return `<a class="fq" href="${href}"><span>“</span><p dir="auto">${esc(r.title)}</p><small>${esc((r.description || "").slice(0, 60))}</small></a>`;
-      return `<a class="fp${tall ? " tall" : ""}${i === 0 ? " top" : ""}" href="${href}">${rimg(r) ? `<img src="${esc(rimg(r))}" alt="" loading="lazy" decoding="async">` : ""}${i === 0 ? '<em>My #1</em>' : `<b>${i + 1}</b>`}<span>${esc(r.title)}</span></a>`;
+      const href = `detail.html?t=${key}&id=${r.id}`, img = rimg(r), lk = safeUrl(r.link_url), meta = [r.creator, r.year].filter(Boolean).join(" · "), sp = r.spotify_url || ((String(r.description || "").match(/https?:\/\/open\.spotify\.com\/\S+/) || [])[0]) || "";
+      if (kind === "music" || r.audio_url || sp) return `<button class="disc" type="button" data-a="${esc(r.audio_url || "")}" data-sp="${esc(sp)}" data-t="${esc(r.title)}" data-c="${esc(img || "")}"><i style="background-image:url('${esc(img || "")}')"></i><span>${esc(r.title)}</span><small>${esc(meta)}</small></button>`;
+      if (kind === "quote") return `<a class="fq" href="${href}"><span>“</span><p dir="auto">${esc(r.title)}</p><small>${esc(r.creator || (r.description || "").slice(0, 60))}</small></a>`;
+      return `<div class="fk ${kind}"><a class="fimg" href="${href}"${ar((r.styles || {})["ar.cover_url"])}>${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : ""}${i === 0 ? "<em>My #1</em>" : `<b>${i + 1}</b>`}</a><h5>${esc(r.title)}</h5>${meta ? `<small>${esc(meta)}</small>` : ""}${star(r.rating)}${lk ? `<a class="flk" href="${esc(lk)}" target="_blank" rel="noopener">${CTA[kind]} ›</a>` : ""}</div>`;
     }).join("")}</div></div>`;
   }).join("");
   el.querySelectorAll(".disc").forEach(b => { b.onclick = () => (b.dataset.a || b.dataset.sp) ? playTrack(b) : 0;
@@ -394,22 +399,50 @@ function loadLeaflet() {
     const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; s.onload = ok; document.head.appendChild(s);
   });
 }
-async function mapView(el, rows, key) {
-  const pts = rows.map(r => { const m = String(r.latlng || "").match(/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/); return m ? { r, ll: [+m[1], +m[2]] } : null; }).filter(Boolean);
-  el.innerHTML = `<div class="tmap"></div><p class="mcount">${pts.length ? pts.length + " place" + (pts.length > 1 ? "s" : "") + " explored so far" : "Every place I visit will appear on this map."}</p>`;
-  await loadLeaflet();
-  const map = L.map(el.firstChild, { scrollWheelZoom: false }).setView(pts[0] ? pts[0].ll : [20, 10], pts[0] ? 3 : 2);
+const GEO = "https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json";
+const BD = { Barishal: ["Barguna", "Barishal", "Bhola", "Jhalokati", "Patuakhali", "Pirojpur"], Chattogram: ["Bandarban", "Brahmanbaria", "Chandpur", "Chattogram", "Cumilla", "Cox's Bazar", "Feni", "Khagrachhari", "Lakshmipur", "Noakhali", "Rangamati"], Dhaka: ["Dhaka", "Faridpur", "Gazipur", "Gopalganj", "Kishoreganj", "Madaripur", "Manikganj", "Munshiganj", "Narayanganj", "Narsingdi", "Rajbari", "Shariatpur", "Tangail"], Khulna: ["Bagerhat", "Chuadanga", "Jashore", "Jhenaidah", "Khulna", "Kushtia", "Magura", "Meherpur", "Narail", "Satkhira"], Mymensingh: ["Jamalpur", "Mymensingh", "Netrokona", "Sherpur"], Rajshahi: ["Bogura", "Joypurhat", "Naogaon", "Natore", "Chapainawabganj", "Pabna", "Rajshahi", "Sirajganj"], Rangpur: ["Dinajpur", "Gaibandha", "Kurigram", "Lalmonirhat", "Nilphamari", "Panchagarh", "Rangpur", "Thakurgaon"], Sylhet: ["Habiganj", "Moulvibazar", "Sunamganj", "Sylhet"] };
+async function mapView(el, rows, key, cfg) {
+  cfg = cfg || {}; const col = /^#[0-9a-f]{6}$/i.test(cfg.color || "") ? cfg.color : "#e5484d", vc = new Set(cfg.countries || []), vd = new Set(cfg.districts || []);
+  const pts = rows.map(r => { const m = String(r.latlng || "").match(/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/); return m ? { r, ll: [+m[1], +m[2]] } : null; }).filter(Boolean), dv = Object.values(BD);
+  const dDone = dv.flat().filter(d => vd.has(d)).length, vDone = dv.filter(l => l.some(d => vd.has(d))).length;
+  el.innerHTML = '<div class="mapwrap"><div class="tmap"></div><div class="mstats"></div></div>';
+  const mc = (t, n, tot, sfx) => `<div class="mc"><small>${t}</small><b>${n}<span>${sfx || (tot ? "/" + tot : "")}</span></b><i class="mbar"><u style="width:${tot ? Math.round(n / tot * 100) : 0}%;background:${col}"></u></i><em>${tot ? Math.round(n / tot * 100) : 0}% explored</em></div>`;
+  const stats = tot => el.querySelector(".mstats").innerHTML = mc("Bangladesh · districts", dDone, 64) + mc("Bangladesh · divisions", vDone, 8) + mc("World · countries", vc.size, tot);
+  stats(0); await loadLeaflet();
+  const map = L.map(el.querySelector(".tmap"), { scrollWheelZoom: false }).setView([20, 10], 2);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
-  pts.forEach(p => L.marker(p.ll).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
-  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : pts.length ? map.setView(pts[0].ll, 8) : 0;
+  try { const g = await (await fetch(GEO)).json(); L.geoJSON(g, { style: f => vc.has(f.properties.name) ? { color: col, weight: 1, fillColor: col, fillOpacity: .6 } : { weight: 0, fillOpacity: 0 }, interactive: false }).addTo(map); stats(g.features.length); } catch (e) {}
+  pts.forEach(p => L.circleMarker(p.ll, { radius: 8, color: "#fff", weight: 2, fillColor: col, fillOpacity: 1 }).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
+  pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : pts.length ? map.setView(pts[0].ll, 7) : 0;
 }
 
 /* coin (two overlapping circles) and banknote (two overlapping rectangles) slots for the Collection */
 function cpic(r, img) {
   const k = r.shape === "normal" ? "" : r.shape === "coin" || r.shape === "note" ? r.shape : /coin/i.test(r.category || "") ? "coin" : /note/i.test(r.category || "") ? "note" : "", im = [r.cover_url, r.image2_url, ...(r.images || []).map(m => m && m.url)].filter(Boolean);
   if (k && im.length) return `<div class="pair ${k}"><i><img src="${esc(im[0])}" alt="" loading="lazy" decoding="async"></i>${im[1] ? `<i><img src="${esc(im[1])}" alt="" loading="lazy" decoding="async"></i>` : ""}</div>`;
-  return `<div class="cpic">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>`;
+  return `<div class="cpic"${ar((r.styles || {})["ar.cover_url"] || (r.styles || {})["ar.image_url"])}>${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}</div>`;
 }
 
 /* back links return to the page you really came from */
 document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a.back"); if (a && history.length > 1 && document.referrer.indexOf(location.origin) === 0) { e.preventDefault(); history.back(); } });
+
+function envInfo() {
+  const u = navigator.userAgent, q = new URLSearchParams(location.search); let ref = q.get("src") || "";
+  if (!ref) { try { ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : "direct"; if (ref === location.hostname) ref = "direct"; } catch (e) { ref = "direct"; } }
+  const touch = navigator.maxTouchPoints > 1;
+  const os = /Android/i.test(u) ? "Android" : /iPhone|iPod/i.test(u) ? "iOS" : /iPad/i.test(u) || (/Macintosh/.test(u) && touch) ? "iPadOS" : /Windows/i.test(u) ? "Windows" : /Mac OS/i.test(u) ? "macOS" : /Linux/i.test(u) ? "Linux" : "Other";
+  const browser = /Edg\//.test(u) ? "Edge" : /OPR\/|Opera/.test(u) ? "Opera" : /Chrome|CriOS/.test(u) ? "Chrome" : /Firefox|FxiOS/.test(u) ? "Firefox" : /Safari/.test(u) ? "Safari" : "Other";
+  const device = /Mobi|iPhone|iPod/i.test(u) ? "Mobile" : /iPad|Tablet/i.test(u) || (/Macintosh/.test(u) && touch) || (/Android/i.test(u) && !/Mobile/i.test(u)) ? "Tablet" : "Desktop";
+  let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  return { ref: ref.slice(0, 60), os, browser, device, tz, lang: (navigator.language || "").slice(0, 10) };
+}
+
+let SPAPI = null, SPC = null, SPU = null;
+function spotifyApi() { return new Promise(ok => { if (SPAPI) return ok(SPAPI); window.onSpotifyIframeApiReady = a => { SPAPI = a; ok(a); }; const s = document.createElement("script"); s.src = "https://open.spotify.com/embed/iframe-api/v1"; s.async = true; document.body.appendChild(s); }); }
+async function playSpotify(b, mp) {
+  const m = b.dataset.sp.match(/(track|album|playlist|artist|episode)\/(\w+)/); if (!m) return; const uri = `spotify:${m[1]}:${m[2]}`;
+  if (SPC && SPU === uri) { SPC.togglePlay(); return; }
+  const api = await spotifyApi(); mp.className = "on sp"; mp.innerHTML = '<div id="spe"></div><button class="mpx" type="button">×</button>';
+  mp.querySelector(".mpx").onclick = () => { try { SPC && SPC.pause(); } catch (e) {} mp.className = ""; mp.innerHTML = ""; SPC = SPU = null; document.body.classList.remove("playing"); };
+  api.createController(mp.querySelector("#spe"), { uri, width: "100%", height: 80 }, ctl => { SPC = ctl; SPU = uri; ctl.addListener("ready", () => ctl.play()); ctl.addListener("playback_update", e => document.body.classList.toggle("playing", !!e.data && !e.data.isPaused && !e.data.isBuffering)); });
+}
