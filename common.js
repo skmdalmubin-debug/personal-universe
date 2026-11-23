@@ -118,7 +118,7 @@ function buildNav(p, overHero, sp) {
   const logo = safeUrl(p.logo_url), lh = Math.min(120, Math.max(16, +p.logo_h || 36));
   const names = { about: "About", contact: "Contact" };
   const T = k => (sp && sp[k] && sp[k].title) || MAP[k].label;
-  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "favorites", "timeline", "capsule", "contact"].includes(r.type)).map(r => [r.key, r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
+  const links = REG.length ? REG.filter(r => r.visible && ["about", "travel", "collections", "journal", "custom", "favorites", "timeline", "capsule", "contact", "companies"].includes(r.type)).map(r => [r.key, r.type === "companies" ? (r.title || "Companies") : r.type === "about" ? (r.title || "About me") : r.type === "contact" ? "Contact" : T(r.key)])
     : [["about", "About me"], ["travel", T("travel")], ["collections", T("collections")], ["journal", T("journal")], ["contact", "Contact"]];
   const nav = document.createElement("nav"); nav.className = "nav" + (overHero ? "" : " solid");
   nav.innerHTML = `<a class="logo" href="${pre || "#"}">${logo ? `<img src="${esc(logo)}" style="height:${lh}px;border-radius:${Math.min(60, Math.max(0, +p.logo_radius || 0))}px" alt="Home">` : `<span>${esc(p.name || "Home")}</span>`}</a><div class="links">${links.map(([id, l]) => `<a href="${pre}#${id}">${esc(l)}</a>`).join("")}</div>`;

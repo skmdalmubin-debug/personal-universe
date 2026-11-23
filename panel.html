@@ -433,6 +433,32 @@ body.playing .disc.cur i,body.playing .mpd{animation:spin 6s linear infinite}@ke
 .wrap{padding-top:max(40px,env(safe-area-inset-top));padding-bottom:max(120px,env(safe-area-inset-bottom))}html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:none}button{min-height:38px}
 </style>
 </head><body><div class="wrap" id="app"></div>
+<style>
+/* ===== Mubin Admin — app redesign ===== */
+body{background:#0c0d10!important;color:#ecebe6}
+.wrap{--bg:#15171c;--fg:#ecebe6;--mut:#8b8d96;--line:rgba(255,255,255,.09);--soft:#1b1e24;--blue:#d4af6a;color:#ecebe6}
+.wrap .bar{background:linear-gradient(135deg,#1b1e25,#13151a)!important;border:1px solid rgba(212,175,106,.22)!important;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.wrap .bar b{color:#d4af6a;font-size:18px;letter-spacing:.04em}.wrap .bar a{color:#ecebe6}
+.wrap .tabs,.wrap>.tabs{background:#15171c!important;border:1px solid var(--line);border-radius:22px!important;box-shadow:0 10px 40px rgba(0,0,0,.4)!important}
+.wrap .tabs button{background:transparent!important;color:#b9bac2!important;box-shadow:none!important;border:0!important;border-radius:12px;transition:.25s}
+.wrap .tabs button:hover{background:rgba(255,255,255,.06)!important;color:#fff!important}
+.wrap .tabs button.on{background:linear-gradient(135deg,#d4af6a,#a8823c)!important;color:#15130d!important;font-weight:700}
+.wrap .tg span{color:#d4af6a!important}
+.ph{color:#fff;font-size:30px}
+.wrap input,.wrap textarea,.wrap select{background:#0f1115!important;border:1px solid rgba(255,255,255,.1)!important;color:#ecebe6!important;border-radius:14px;transition:border-color .2s,box-shadow .2s}
+.wrap input:focus,.wrap textarea:focus,.wrap select:focus{outline:0;border-color:#d4af6a!important;box-shadow:0 0 0 3px rgba(212,175,106,.18)}
+.wrap button{background:#1d2027;color:#ecebe6;border:1px solid rgba(255,255,255,.1);border-radius:12px;transition:.2s}
+.wrap button:hover{border-color:#d4af6a}
+.wrap button.pri,.wrap button.on{background:linear-gradient(135deg,#d4af6a,#a8823c)!important;border-color:transparent!important;color:#15130d!important;font-weight:700}
+.wrap .item,.wrap .card,.wrap .stats>div{background:#15171c!important;border:1px solid var(--line)!important;border-radius:18px!important;color:#ecebe6;box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.wrap label{color:#9a9ca6}.wrap .hint{color:#80828c}
+.wrap{animation:pin .5s cubic-bezier(.2,.7,.2,1)}@keyframes pin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(max-width:999px){
+ body{padding-bottom:96px}
+ .wrap>.tabs{position:fixed!important;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:50;flex-direction:row!important;overflow-x:auto;padding:8px!important;margin:0!important;gap:4px!important;backdrop-filter:blur(18px);background:rgba(21,23,28,.92)!important}
+ .wrap>.tabs .tg{display:contents}.wrap>.tabs .tg span{display:none}
+ .wrap>.tabs button{flex:0 0 auto;white-space:nowrap;padding:10px 14px}}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js?v=4"></script><script>
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -948,6 +974,7 @@ const S = {
 };
 S.achievements.fields = [TX("title", "Achievement"), F("achieved_on", "Date", "date"), AR("description", "The story behind it"), F("image_url", "Photo (certificate, medal or moment)", "image"), ...PUB];
 S.memories.fields = [TX("title", "Memory"), F("memory_date", "Date", "date"), AR("description", "What you remember"), F("image_url", "Photo", "image"), ...PUB];
+S.companies = { label: "Companies", table: "companies", title: "name", sub: "industry", fields: [F("name", "Company name", "text"), F("industry", "Industry", "text"), F("intro", "Short introduction (shown on the card)", "area"), F("logo_url", "Logo", "image"), F("cover_url", "Cover / hero photo", "image"), F("accent", "Brand colour (e.g. #b8924a)", "text"), F("theme", "Look", "select", { opts: [["dark", "Dark luxury"], ["light", "Light editorial"]] }), F("font", "Heading font", "select", { opts: [["playfair", "Playfair (classic)"], ["cormorant", "Cormorant (elegant)"], ["bodoni", "Bodoni (fashion)"], ["syne", "Syne (modern)"]] }), F("founded", "Founded (year)", "text"), F("location", "Headquarters", "text"), F("website", "Website link", "text"), F("about", "About us", "area"), F("vision", "Vision", "area"), F("mission", "Mission", "area"), F("values_text", "Values — one per line:  Title | description", "area"), F("products_text", "Products & services — one per line:  Name | description", "area"), F("model_text", "Business model", "area"), F("market_text", "Market & industry", "area"), F("market_stats", "Key numbers — one per line:  82,000 sq ft | Warehouse", "area"), F("leaders_text", "Leadership — one per line:  Name | Role | short bio", "area"), F("ownership_text", "Ownership", "area"), F("milestones_text", "Milestones — one per line:  2024 | what happened", "area"), F("future_text", "Future plans", "area"), F("links_text", "Official links — one per line:  Label | https://link", "area"), F("email", "Email", "text"), F("phone", "Phone", "text"), F("address", "Address", "text"), GAL, ...PUB] };
 let tab = "dash", gal = {}, stys = {}, subsS = {};
 
 async function boot() {
@@ -965,7 +992,7 @@ function loginView() {
   <div class="actions"><button class="pri" id="go">Sign in</button></div><p class="msg" id="m"></p>`;
   $("go").onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: $("em").value.trim(), password: $("pw").value }); if (error) $("m").textContent = error.message; else boot(); };
 }
-const TI = { dash: "✨", travelmap: "🗺", labels: "✏️", intro: "🏠", logo: "🖼", theme: "🎨", design: "🖌", pages: "📄", notfound: "🧭", create: "＋", order: "↕", stats: "📊", backup: "💾", about: "👤", contacts: "☎", travel: "✈", collections: "🗂", journal: "📖", achievements: "🏆", memories: "🕰", guestbook: "📕" };
+const TI = { dash: "✨", travelmap: "🗺", labels: "✏️", intro: "🏠", logo: "🖼", theme: "🎨", design: "🖌", pages: "📄", notfound: "🧭", create: "＋", order: "↕", stats: "📊", backup: "💾", about: "👤", contacts: "☎", travel: "✈", collections: "🗂", journal: "📖", achievements: "🏆", memories: "🕰", guestbook: "📕", companies: "🏢" };
 const TG = { dash: "Site", labels: "Tools", intro: "Site", logo: "Site", theme: "Site", design: "Site", pages: "Tools", notfound: "Tools", create: "Tools", order: "Tools", stats: "Tools", backup: "Tools" };
 const tabsHtml = () => ["Site", "Sections", "Tools"].map(g => `<div class="tg"><span>${g}</span>${Object.keys(S).filter(k => (TG[k] || "Sections") === g).map(k => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${esc((TI[k] || "") + " " + S[k].label)}</button>`).join("")}</div>`).join("");
 function shell() {
