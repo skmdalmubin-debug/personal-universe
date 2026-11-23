@@ -2,13 +2,13 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Al Mubin</title><meta name="description" content="The personal digital world of Al Mubin.">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head><body>
 <header class="hero noimg" id="hero"></header>
 <main id="main"></main>
 <footer id="foot"></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=4"></script><script src="common.js?v=4"></script>
+<script src="config.js?v=4"></script><script src="common.js?v=5"></script>
 <script>
 const main = $("main");
 function contactView(list) { $("contact-box").innerHTML = list.length ? contactCards(list) : '<p class="empty">Coming soon.</p>'; }
@@ -61,6 +61,26 @@ async function bookView(cfg) {
     const el = $("c-" + t), o = off++ % 2;
     const rs = vis.find(s => s.key === t);
     try {
+      if (rs.type === "companies") {
+        const { data: companies, error: companyError } = await sb.from("companies")
+          .select("*").eq("published", true).order("sort_order", { ascending: true, nullsFirst: false })
+          .order("created_at", { ascending: true }).limit(100);
+        if (companyError) throw companyError;
+        el.className = "corail";
+        el.innerHTML = (companies || []).length ? companies.map(c => `
+          <a class="cocard" href="companies.html#company/${encodeURIComponent(c.id)}">
+            ${c.cover_url ? `<img class="cobg" src="${esc(c.cover_url)}" alt="" loading="lazy">` : ""}
+            <div class="coin">
+              ${c.logo_url ? `<img class="colg" src="${esc(c.logo_url)}" alt="" loading="lazy">` : `<span class="colg ph">${esc((c.name || "C").charAt(0))}</span>`}
+              <small>${esc(c.industry || "Company")}</small>
+              <h3>${esc(c.name || "Untitled company")}</h3>
+              <p>${esc(c.intro || "")}</p>
+              <em>Explore company ↗</em>
+            </div>
+          </a>`).join("") : '<p class="empty">No companies published yet.</p>';
+        if ((companies || []).length) el.insertAdjacentHTML("afterend", '<a class="seemore" href="companies.html">Explore all companies ↗</a>');
+        continue;
+      }
       if (rs.type === "hidden") { roomView(el, t, rs.config || {}); continue; }
       if (rs.type === "capsule") { const { data: cp } = await sb.rpc("capsules", { k: t }); capsuleView(el, cp || [], t); continue; }
       if (rs.type === "timeline") { el.style.minHeight = "40vh"; const go = async () => { const { data: tr } = await query(t).limit(300); tlView(el, tr || [], rs.config || {}, t); reveal(); }; "IntersectionObserver" in window ? new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { io.disconnect(); go(); } }, { rootMargin: "400px" }).observe(el) : go(); continue; }

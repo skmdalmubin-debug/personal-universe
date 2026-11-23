@@ -20,7 +20,8 @@ const MAP = {
   collections:  { label: "Collection",   text: "description", cover: "image_url", order: ["sort_order", "created_at"], meta: r => r.category || "" },
   journal:      { label: "Journal",      text: "body",        cover: "cover_url", order: ["written_on"],               meta: r => fmt(r.written_on) },
   achievements: { label: "Achievements", text: "description", cover: "image_url", order: ["sort_order", "achieved_on"], meta: r => fmt(r.achieved_on) },
-  memories:     { label: "Memories",     text: "description", cover: "image_url", order: ["sort_order", "memory_date"], meta: r => fmt(r.memory_date) }
+  memories:     { label: "Memories",     text: "description", cover: "image_url", order: ["sort_order", "memory_date"], meta: r => fmt(r.memory_date) },
+  companies:    { label: "Companies",    text: "intro",       cover: "cover_url", order: ["sort_order", "created_at"], meta: r => r.industry || "" }
 };
 
 /* ---------- fonts (g = group, c = css, gf = Google font, m = has bold weight) ---------- */

@@ -436,3 +436,10 @@ body.playing .disc.cur i,body.playing .mpd{animation:spin 6s linear infinite}@ke
 .coin{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:420px;padding:26px;background:linear-gradient(transparent 20%,rgba(0,0,0,.85))}
 .colg{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:auto;border:1px solid var(--ca)}.colg.ph{display:grid;place-items:center;font:600 26px serif;color:var(--ca)}
 .coin small{letter-spacing:.24em;text-transform:uppercase;font-size:11px;color:var(--ca)}.coin h3{font-size:30px;margin:6px 0}.coin p{font-size:14px;opacity:.8}.coin em{margin-top:14px;font-style:normal;color:var(--ca)}
+
+/* Companies section integration */
+.corail{align-items:stretch}
+.cocard{display:block}
+.cocard .coin{box-sizing:border-box}
+.colg.ph{display:grid;place-items:center;font-size:26px;font-weight:600}
+@media(max-width:600px){.cocard{flex-basis:min(84vw,320px);min-height:380px}.coin{min-height:380px}}
