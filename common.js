@@ -318,7 +318,7 @@ function favView(el, rows, key) {
   const EM = [[/movie|film|series|cinema|drama|anime/i, "🎬"], [/book|novel|read/i, "📚"], [/food|dish|eat|cuisine|snack|drink/i, "🍜"], [/place|travel|city|spot|destination/i, "📍"], [/quote|line|word/i, "❝"], [/football|club|sport|team|player/i, "⚽"], [/music|song|album|playlist|artist|band/i, "🎧"], [/person|people|hero|icon|idol/i, "⭐"]];
   const kindOf = c0 => /movie|film|series|cinema|drama|anime/i.test(c0) ? "movie" : /book|novel|read/i.test(c0) ? "book" : /food|dish|eat|cuisine|snack|drink/i.test(c0) ? "food" : /place|travel|city|spot|destination/i.test(c0) ? "place" : /quote|line|word/i.test(c0) ? "quote" : /football|club|sport|team|player/i.test(c0) ? "club" : /music|song|album|playlist|artist|band/i.test(c0) ? "music" : /person|people|hero|icon|idol/i.test(c0) ? "person" : "other";
   const CTA = { movie: "Watch trailer", book: "Read more", food: "Find it", place: "Open map", club: "Official page", person: "Learn more", other: "Open link" };
-  const star = n => n ? `<span class="fstar">${"★".repeat(Math.min(5, n))}${"☆".repeat(5 - Math.min(5, n))}</span>` : "";
+  const star = n => { n = Math.min(5, Math.max(0, Math.round(+n * 2) / 2)); return n ? `<span class="fstar" title="${n} / 5">${[1, 2, 3, 4, 5].map(i => n >= i ? "★" : n >= i - .5 ? '<span class="hs">★</span>' : "☆").join("")}</span>` : ""; };
   const by = {}; rows.forEach(r => (by[r.subtitle || "Favorites"] = by[r.subtitle || "Favorites"] || []).push(r));
   el.innerHTML = Object.entries(by).map(([cat, list]) => {
     const kind = kindOf(cat), em = (EM.find(x => x[0].test(cat)) || [0, "✨"])[1];
@@ -332,13 +332,15 @@ function favView(el, rows, key) {
   el.querySelectorAll(".disc").forEach(b => { b.onclick = () => (b.dataset.a || b.dataset.sp) ? playTrack(b) : 0;
     if (b.dataset.sp && !b.dataset.c) fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(b.dataset.sp)).then(r => r.json()).then(j => { if (j.thumbnail_url) { b.querySelector("i").style.backgroundImage = `url('${j.thumbnail_url}')`; b.dataset.c = j.thumbnail_url; } }).catch(() => {}); });
 }
+const fmtDT = d => { try { return new Date(d).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }); } catch (e) { return ""; } };
 function capsuleView(el, rows, key) {
   useFont("caveat"); el.className = "caps";
   el.innerHTML = rows.length ? rows.map((r, i) => { const rot = `style="--rot:${(i % 3 - 1) * 1.6}deg"`; return r.open
-    ? `<a class="env open" ${rot} href="detail.html?t=${key}&id=${r.id}"><small>Opened</small><h3 dir="auto">${esc(r.title)}</h3><p dir="auto">${esc((r.description || "").slice(0, 150))}</p></a>`
-    : `<div class="env" ${rot}><i class="flap"></i><span class="seal"><svg viewBox="0 0 24 24" fill="none" stroke="#f6d4d4" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><div class="to">To: <b dir="auto">${esc(r.title)}</b></div><div class="cd" data-d="${esc(r.open_on)}"></div><small>Sealed until ${esc(fmt(r.open_on))}</small></div>`; }).join("") : '<p class="empty">Coming soon.</p>';
-  const tick = () => el.querySelectorAll(".cd").forEach(p => { const s = Math.floor((new Date(p.dataset.d + "T00:00:00") - Date.now()) / 1e3); p.innerHTML = s <= 0 ? "Opening…" : `<div class="cdg">${[[Math.floor(s / 86400), "days"], [Math.floor(s % 86400 / 3600), "hrs"], [Math.floor(s % 3600 / 60), "min"], [s % 60, "sec"]].map(([v, l]) => `<div><b>${String(v).padStart(2, "0")}</b><small>${l}</small></div>`).join("")}</div>`; });
-  tick(); setInterval(tick, 1000);
+    ? `<a class="env open" ${rot} href="detail.html?t=${key}&id=${r.id}"><small>Opened ${esc(fmtDT(r.open_ts))}</small><h3 dir="auto">${esc(r.title)}</h3><p dir="auto">${esc((r.description || "").slice(0, 150))}</p></a>`
+    : `<div class="env" ${rot}><i class="flap"></i><span class="seal"><svg viewBox="0 0 24 24" fill="none" stroke="#f6d4d4" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><div class="to">To: <b dir="auto">${esc(r.title)}</b></div><div class="cd" data-d="${esc(r.open_ts)}"></div><small>Sealed until ${esc(fmtDT(r.open_ts))}</small></div>`; }).join("") : '<p class="empty">Coming soon.</p>';
+  const tick = () => el.querySelectorAll(".cd").forEach(p => { const s = Math.floor((new Date(p.dataset.d) - Date.now()) / 1e3); p.innerHTML = s <= 0 ? (reopen(), "Opening…") : `<div class="cdg">${[[Math.floor(s / 86400), "days"], [Math.floor(s % 86400 / 3600), "hrs"], [Math.floor(s % 3600 / 60), "min"], [s % 60, "sec"]].map(([v, l]) => `<div><b>${String(v).padStart(2, "0")}</b><small>${l}</small></div>`).join("")}</div>`; });
+  let busy = false; const reopen = async () => { if (busy) return; busy = true; const { data } = await sb.rpc("capsules", { k: key }); clearInterval(el._ti); capsuleView(el, data || [], key); el.querySelectorAll(".env.open").forEach(e => e.classList.add("unsealed")); };
+  tick(); clearInterval(el._ti); el._ti = setInterval(tick, 1000);
 }
 function tlView(el, rows, cfg, key) {
   useFont("caveat"); const spd = Math.min(10, Math.max(1, +cfg.speed || 5)), sec = 8 - spd * .6, first = cfg.dir === "down" ? 1 : 0, by = {};

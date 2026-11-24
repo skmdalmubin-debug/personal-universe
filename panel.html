@@ -458,6 +458,14 @@ body{background:#0c0d10!important;color:#ecebe6}
  .wrap>.tabs{position:fixed!important;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:50;flex-direction:row!important;overflow-x:auto;padding:8px!important;margin:0!important;gap:4px!important;backdrop-filter:blur(18px);background:rgba(21,23,28,.92)!important}
  .wrap>.tabs .tg{display:contents}.wrap>.tabs .tg span{display:none}
  .wrap>.tabs button{flex:0 0 auto;white-space:nowrap;padding:10px 14px}}
+/* dark-theme completion: every hard-coded white surface */
+#main,#main .actions{background:#15171c!important}
+#main .actions{background:rgba(21,23,28,.94)!important;box-shadow:0 8px 30px rgba(0,0,0,.5)!important}
+.wrap .subcard,.wrap .gi{background:#1b1e24!important}
+.mchk label,.wrap h1,.wrap h2,.wrap b{color:#ecebe6}
+.wrap>.tabs{background:#15171c!important}
+.wrap .tabs button.on{color:#15130d!important}
+.wrap .bar,.wrap .bar span a{color:#ecebe6}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js?v=4"></script><script>
@@ -974,7 +982,7 @@ const S = {
 };
 S.achievements.fields = [TX("title", "Achievement"), F("achieved_on", "Date", "date"), AR("description", "The story behind it"), F("image_url", "Photo (certificate, medal or moment)", "image"), ...PUB];
 S.memories.fields = [TX("title", "Memory"), F("memory_date", "Date", "date"), AR("description", "What you remember"), F("image_url", "Photo", "image"), ...PUB];
-S.companies = { label: "Companies", table: "companies", title: "name", sub: "industry", fields: [F("name", "Company name", "text"), F("industry", "Industry", "text"), F("intro", "Short introduction (shown on the card)", "area"), F("logo_url", "Logo", "image"), F("cover_url", "Cover / hero photo", "image"), F("accent", "Brand colour (e.g. #b8924a)", "text"), F("theme", "Look", "select", { opts: [["dark", "Dark luxury"], ["light", "Light editorial"]] }), F("font", "Heading font", "select", { opts: [["playfair", "Playfair (classic)"], ["cormorant", "Cormorant (elegant)"], ["bodoni", "Bodoni (fashion)"], ["syne", "Syne (modern)"]] }), F("founded", "Founded (year)", "text"), F("location", "Headquarters", "text"), F("website", "Website link", "text"), F("about", "About us", "area"), F("vision", "Vision", "area"), F("mission", "Mission", "area"), F("values_text", "Values — one per line:  Title | description", "area"), F("products_text", "Products & services — one per line:  Name | description", "area"), F("model_text", "Business model", "area"), F("market_text", "Market & industry", "area"), F("market_stats", "Key numbers — one per line:  82,000 sq ft | Warehouse", "area"), F("leaders_text", "Leadership — one per line:  Name | Role | short bio", "area"), F("ownership_text", "Ownership", "area"), F("milestones_text", "Milestones — one per line:  2024 | what happened", "area"), F("future_text", "Future plans", "area"), F("links_text", "Official links — one per line:  Label | https://link", "area"), F("email", "Email", "text"), F("phone", "Phone", "text"), F("address", "Address", "text"), GAL, ...PUB] };
+S.companies = { label: "Companies", table: "companies", title: "name", sub: "industry", fields: [F("name", "Company name", "text"), F("industry", "Industry", "text"), F("intro", "Short introduction (shown on the card)", "area"), F("logo_url", "Logo", "image"), F("cover_url", "Cover / hero photo", "image"), F("accent", "Brand colour (e.g. #b8924a)", "text"), F("theme", "Look", "select", { opts: [["dark", "Dark luxury"], ["light", "Light editorial"]] }), F("font", "Heading font", "select", { opts: [["playfair", "Playfair (classic)"], ["cormorant", "Cormorant (elegant)"], ["bodoni", "Bodoni (fashion)"], ["syne", "Syne (modern)"]] }), F("founded", "Founded (year)", "text"), F("location", "Headquarters", "text"), F("website", "Website link", "text"), F("about", "About us", "area"), F("vision", "Vision", "area"), F("mission", "Mission", "area"), F("values_text", "Values — one per line:  Title | description", "area"), F("products_text", "Products & services — one per line:  Name | description", "area"), F("model_text", "Business model", "area"), F("market_text", "Market & industry", "area"), F("market_stats", "Key numbers — one per line:  82,000 sq ft | Warehouse", "area"), F("leaders_text", "Leadership — one per line:  Name | Role | short bio", "area"), F("ownership_text", "Ownership", "area"), F("milestones_text", "Milestones — one per line:  2024 | what happened", "area"), F("future_text", "Future plans", "area"), F("links_text", "Official links — one per line:  Label | https://link", "area"), F("email", "Email", "text"), F("phone", "Phone", "text"), F("address", "Address", "text"), F("extra_text", "Extra sections — write ## Section title, then anything below it. Add as many as you like (awards, press, clients, CSR…).", "area"), GAL, ...PUB] };
 let tab = "dash", gal = {}, stys = {}, subsS = {};
 
 async function boot() {
@@ -1085,8 +1093,8 @@ async function statsView() {
 }
 const fieldsFor = t => t === "hidden" ? [TX("title", "Title"), AR("description", "Description"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : t === "timeline" ? [TX("title", "Title of the moment"), F("subtitle", "Year (for example 2024)", "text"), AR("description", "Description"), F("cover_url", "Cover photo", "image"), GAL, ...PUB]
-  : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category: Movies, Books, Food, Places, Football, Music, People or Quotes (each gets its own card style)", "text"), F("creator", "Director, author, artist, restaurant, location or club (optional)", "text"), F("year", "Year (optional)", "text"), F("rating", "Your rating, 1 to 5 (optional)", "number"), F("link_url", "Link: trailer, map, website… (optional)", "text"), AR("description", "Why you love it"), F("cover_url", "Photo: poster, cover, crest, portrait or disc art", "image"), F("spotify_url", "Spotify link for songs, albums or playlists (Share, then Copy link). Visitors tap the disc to play it", "text"), F("audio_url", "Or upload a song file (mp3)", "image", { accept: "audio/*" }), ...PUB]
-  : t === "capsule" ? [TX("title", "Title"), F("open_on", "Opens on (locked until this date)", "date"), AR("description", "Message or memory"), F("cover_url", "Photo", "image"), GAL, ...PUB]
+  : t === "favorites" ? [TX("title", "Name"), F("subtitle", "Category: Movies, Books, Food, Places, Football, Music, People or Quotes (each gets its own card style)", "text"), F("creator", "Director, author, artist, restaurant, location or club (optional)", "text"), F("year", "Year (optional)", "text"), F("rating", "Your rating, 0.5 to 5, half stars allowed e.g. 3.5 (optional)", "number"), F("link_url", "Link: trailer, map, website… (optional)", "text"), AR("description", "Why you love it"), F("cover_url", "Photo: poster, cover, crest, portrait or disc art", "image"), F("spotify_url", "Spotify link for songs, albums or playlists (Share, then Copy link). Visitors tap the disc to play it", "text"), F("audio_url", "Or upload a song file (mp3)", "image", { accept: "audio/*" }), ...PUB]
+  : t === "capsule" ? [TX("title", "Title"), F("open_at", "Opens on this date & time (unlocks by itself at that moment)", "dt"), AR("description", "Message or memory"), F("cover_url", "Photo", "image"), GAL, ...PUB]
   : [TX("title", "Title"), F("subtitle", "Small line above the title (optional)", "text"), AR("description", "Description"), F("cover_url", "Cover photo (shown full screen)", "image"), GAL, SUBS, ...PUB];
 async function loadReg() {
   const { data } = await sb.from("sections").select("*").order("position"); REG = data || [];
@@ -1272,6 +1280,7 @@ async function upload(f0) {
   if (error) throw error;
   return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
 }
+const dtLocal = v => { if (!v) return ""; const d = new Date(v); if (isNaN(d)) return ""; const q = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${q(d.getMonth() + 1)}-${q(d.getDate())}T${q(d.getHours())}:${q(d.getMinutes())}`; };
 const AR_OPTS = [["", "Automatic"], ["1/1", "Square 1:1"], ["4/5", "Portrait 4:5"], ["3/4", "Portrait 3:4"], ["2/3", "Tall 2:3"], ["4/3", "Landscape 4:3"], ["3/2", "Landscape 3:2"], ["16/9", "Wide 16:9"], ["21/9", "Ultra wide 21:9"]];
 const arSel = (k, v) => `<label>Picture shape (aspect ratio)</label><select data-ar="${k}">${AR_OPTS.map(([o, n]) => `<option value="${o}" ${o === (v || "") ? "selected" : ""}>${n}</option>`).join("")}</select>`;
 const pvHtml = (k, v) => v ? `${k === "audio_url" ? `<audio src="${esc(v)}" controls style="width:100%;margin-top:8px"></audio>` : k === "hero_video_url" ? `<video class="pv" src="${esc(v)}" muted></video>` : `<img class="pv" src="${esc(v)}">`} <button type="button" class="del" data-rm="${k}" style="margin-top:6px">Remove photo</button>` : "";
@@ -1290,7 +1299,7 @@ async function form(row) {
     if (t === "image") return `<label>${l}</label><input type="file" accept="${f.accept || "image/*"}" data-up="${k}"><input type="hidden" data-k="${k}" value="${esc(v)}"><div id="pv-${k}">${pvHtml(k, v)}</div>${k === "logo_url" ? '<div class="hint">No logo? Your name is shown as text in the top-left instead.</div>' : ""}${s.styled && !f.accept ? arSel(k, saved["ar." + k]) : ""}`;
     if (t === "subs") { subsS[k] = Array.isArray(v) ? v.map(x => Object.assign({}, x)) : []; return `<label>${l}</label><div data-subs="${k}"></div>`; }
     if (t === "gallery") { gal[k] = Array.isArray(v) ? v.filter(i => i && i.url).map(i => ({ url: i.url, caption: i.caption || "", style: Object.assign({}, i.style) })) : []; return `<label>${l}</label><div data-gal="${k}"></div>`; }
-    return `<label>${l}</label><input data-k="${k}" type="${t}" value="${esc(v)}">${hint}${stySlot}`;
+    return `<label>${l}</label><input data-k="${k}" type="${t === "dt" ? "datetime-local" : t}"${t === "number" ? " step=any" : ""} value="${t === "dt" ? dtLocal(v) : esc(v)}">${hint}${stySlot}`;
   }).join("") + `<div class="actions"><button class="pri" id="save">Save</button>${s.single ? "" : '<button id="cancel">Cancel</button>'}</div><p class="msg" id="m"></p>`;
   if (!s.single) $("cancel").onclick = list;
   main.querySelectorAll("[data-sty]").forEach(ph => { const sk = ph.dataset.sty; ph.appendChild(styleEditor(stys[sk] = Object.assign({}, saved[sk]), ph.dataset.lbl)); });
@@ -1307,7 +1316,7 @@ async function form(row) {
     const o = {};
     main.querySelectorAll("[data-k]").forEach(e => {
       const k = e.dataset.k, t = s.fields.find(f => f.k === k).t;
-      o[k] = t === "bool" ? e.checked : t === "number" ? (e.value === "" ? null : +e.value) : (e.value === "" && ["date", "image"].includes(t) ? null : e.value);
+      o[k] = t === "dt" ? (e.value ? new Date(e.value).toISOString() : null) : t === "bool" ? e.checked : t === "number" ? (e.value === "" ? null : +e.value) : (e.value === "" && ["date", "image"].includes(t) ? null : e.value);
     });
     s.fields.filter(f => f.t === "gallery").forEach(f => o[f.k] = gal[f.k]);
     s.fields.filter(f => f.t === "subs").forEach(f => o[f.k] = subsS[f.k]);

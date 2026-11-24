@@ -443,3 +443,9 @@ body.playing .disc.cur i,body.playing .mpd{animation:spin 6s linear infinite}@ke
 .cocard .coin{box-sizing:border-box}
 .colg.ph{display:grid;place-items:center;font-size:26px;font-weight:600}
 @media(max-width:600px){.cocard{flex-basis:min(84vw,320px);min-height:380px}.coin{min-height:380px}}
+
+.fstar .hs{position:relative;display:inline-block;color:transparent;background:linear-gradient(90deg,currentColor 0 50%,transparent 50%);-webkit-background-clip:text;background-clip:text}
+.fstar .hs::before{content:"★";position:absolute;left:0;top:0;width:50%;overflow:hidden;color:var(--star,#f5a623)}
+.fstar .hs::after{content:"☆";position:absolute;left:0;top:0}
+.env.open.unsealed{animation:unseal 1.4s cubic-bezier(.2,.7,.2,1)}
+@keyframes unseal{0%{transform:scale(.9) rotate(-3deg);opacity:0;filter:brightness(1.8)}60%{transform:scale(1.05)}100%{transform:none;opacity:1;filter:none}}

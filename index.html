@@ -41,7 +41,7 @@ async function bookView(cfg) {
   const rules = [["hn", "hero.name"], ["ht", "hero.tagline"], ["hc1", "hero.cap1"], ["hc2", "hero.cap2"]].map(([k, key]) => { const dsk = styDecl(hs[key]), ph = styDecl(hs["m." + key], true); return (dsk ? `.hero .${k}{${dsk}}` : "") + (ph ? `@media(max-width:700px){.hero .${k}{${ph}}}` : ""); }).join("");
   document.head.insertAdjacentHTML("beforeend", `<style>${rules}</style>`);
   const pos = `object-position:${Math.min(100, Math.max(0, +p.hero_fx ?? 50))}% ${Math.min(100, Math.max(0, +p.hero_fy ?? 50))}%`, mob = safeUrl(p.hero_mobile_url);
-  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}${vidU ? `<video src="${esc(vidU)}" autoplay muted loop playsinline ${bg ? `poster="${esc(bg)}"` : ""}></video>` : ""}<p class="greet">${(() => { const g = new Date().getHours(); return (g < 5 ? "Good night" : g < 12 ? "Good morning" : g < 17 ? "Good afternoon" : g < 21 ? "Good evening" : "Good night") + ", " + esc(T_("greet", "welcome to my world")); })()}</p><h1 class="hn">${esc(name)}</h1>
+  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}${vidU ? `<video src="${esc(vidU)}" autoplay muted loop playsinline ${bg ? `poster="${esc(bg)}"` : ""}></video>` : ""}<h1 class="hn">${esc(name)}</h1>
     ${p.tagline ? `<p class="tag ht">${esc(p.tagline)}</p>` : ""}
     ${p.hero_cap1 ? `<p class="cap hc1">${esc(p.hero_cap1)}</p>` : ""}
     ${p.hero_cap2 ? `<p class="cap hc2">${esc(p.hero_cap2)}</p>` : ""}

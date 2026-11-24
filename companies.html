@@ -102,6 +102,7 @@ function renderList(){
 }
 const sec=(k,t,body,i=0)=>body?`<section class="sec"><div class="wrap"><div class="eyebrow rv">${k}</div><h2 class="rv" style="--i:1">${t}</h2>${body}</div></section>`:'';
 const cards=a=>`<div class="cols">${a.map((x,i)=>`<div class="card rv" style="--i:${i%4}"><h3>${esc(x[0])}</h3><p>${esc(x[1]||'')}</p></div>`).join('')}</div>`;
+const extra=t=>String(t||'').split(/^## /m).slice(1).map(b=>{const[h,...r]=b.split('\n');const ps=r.join('\n').trim().split(/\n{2,}/).filter(Boolean);return sec('More',esc(h.trim()),`<div class="rv">${ps.map(p=>`<p class="big" style="margin-bottom:18px">${esc(p)}</p>`).join('')}</div>`)}).join('');
 function renderProfile(c){
   theme(c);document.body.classList.add('open');scrollTo(0,0);
   const name=[...c.name].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join('');
@@ -121,6 +122,7 @@ function renderProfile(c){
   +sec('07 — Journey','Achievements &amp; milestones',ms.length&&`<div class="tl">${ms.map((m,i)=>`<div class="rv" style="--i:${i%3}"><b>${esc(m[0])}</b><span style="color:var(--mut)">${esc(m[1]||'')}</span></div>`).join('')}</div>`)
   +sec('08 — Horizon','Future plans',c.future_text&&`<p class="big rv">${esc(c.future_text)}</p>`)
   +(imgs.length?sec('Gallery','Inside the company',`<div class="gal">${imgs.map((u,i)=>`<img class="rv" style="--i:${i%3}" src="${esc(safeImg(u))}" alt="" loading="lazy">`).join('')}</div>`):'')
+  +extra(c.extra_text)
   +sec('09 — Connect','Contact &amp; official links',`<div class="rv">${c.email?`<a class="btn" href="mailto:${esc(c.email)}">${esc(c.email)}</a>`:''}${c.phone?`<a class="btn" href="tel:${esc(c.phone)}">${esc(c.phone)}</a>`:''}${lk.map(l=>`<a class="btn" target="_blank" rel="noopener" href="${esc(safeUrl(l[1]))}">${esc(l[0])} ↗</a>`).join('')}${c.address?`<p style="margin-top:18px;color:var(--mut)">${esc(c.address)}</p>`:''}</div>`);
   $('#back').onclick=()=>{location.hash=''};
   const i=C.findIndex(x=>x.id===c.id);$('#nx').onclick=()=>{location.hash='company/'+C[(i+1)%C.length].id};
