@@ -1235,7 +1235,8 @@ function styleEditor(st, lbl) {
     <label>Font<select data-f="font"><option value="">Default</option>${fontOpts()}</select></label>${nm("size", "Size (px)")}
     <label>Color<input type="color" data-f="color" value="#1d1d1f"></label>
     <label>Alignment<select data-f="align"><option value="">Default</option><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
-    ${sl("py", "Padding, up-down", 0, 120)}${sl("px", "Padding, left-right", 0, 120)}${sl("my", "Margin, up-down", -40, 160)}${sl("mx", "Margin, left-right", -40, 160)}</div><button type="button" class="srst">Reset text style</button>`;
+    ${sl("py", "Padding, up-down", 0, 120)}${sl("px", "Padding, left-right", 0, 120)}${sl("my", "Margin, up-down", -40, 160)}${sl("mx", "Margin, left-right", -40, 160)}
+    ${sl("x", "Move horizontally", -300, 300)}${sl("y", "Move vertically", -300, 300)}</div><button type="button" class="srst">Reset text style</button>`;
   const fill = () => dt.querySelectorAll("[data-f]").forEach(e => { const v = st[e.dataset.f]; e.value = v !== undefined ? v : e.dataset.f === "color" ? "#1d1d1f" : e.type === "range" ? 0 : ""; const o = dt.querySelector(`[data-o="${e.dataset.f}"]`); if (o) o.textContent = e.value; });
   fill();
   dt.querySelectorAll("[data-f]").forEach(e => { const h = () => { const f = e.dataset.f; const o = dt.querySelector(`[data-o="${f}"]`); if (o) o.textContent = e.value; if (e.value === "" || (e.type === "range" && +e.value === 0)) delete st[f]; else st[f] = e.type === "number" ? +e.value : e.value; }; e.oninput = h; e.onchange = h; });

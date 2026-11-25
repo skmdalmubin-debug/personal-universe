@@ -38,17 +38,28 @@ async function bookView(cfg) {
   const name = p.name || "Al Mubin", bg = safeUrl(p.hero_url) || safeUrl(p.photo_url), vidU = safeUrl(p.hero_video_url), hero = $("hero");
   document.title = name;
   buildNav(p, !!(bg || vidU), sp);
-  hero.className = "hero cinematic-hero" + (bg || vidU ? "" : " noimg");
+  hero.className = "hero" + (bg || vidU ? "" : " noimg");
   const rules = [["hn", "hero.name"], ["ht", "hero.tagline"], ["hc1", "hero.cap1"], ["hc2", "hero.cap2"]].map(([k, key]) => { const dsk = styDecl(hs[key]), ph = styDecl(hs["m." + key], true); return (dsk ? `.hero .${k}{${dsk}}` : "") + (ph ? `@media(max-width:700px){.hero .${k}{${ph}}}` : ""); }).join("");
   document.head.insertAdjacentHTML("beforeend", `<style>${rules}</style>`);
   const pos = `object-position:${Math.min(100, Math.max(0, +p.hero_fx ?? 50))}% ${Math.min(100, Math.max(0, +p.hero_fy ?? 50))}%`, mob = safeUrl(p.hero_mobile_url);
-  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}${vidU ? `<video src="${esc(vidU)}" autoplay muted loop playsinline ${bg ? `poster="${esc(bg)}"` : ""}></video>` : ""}
-    <div class="hero-copy"><p class="hero-kicker">PERSONAL PROFILE &amp; VENTURES</p><h1 class="hn">${esc(name)}</h1>
+  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}${vidU ? `<video src="${esc(vidU)}" autoplay muted loop playsinline ${bg ? `poster="${esc(bg)}"` : ""}></video>` : ""}<h1 class="hn">${esc(name)}</h1>
     ${p.tagline ? `<p class="tag ht">${esc(p.tagline)}</p>` : ""}
     ${p.hero_cap1 ? `<p class="cap hc1">${esc(p.hero_cap1)}</p>` : ""}
     ${p.hero_cap2 ? `<p class="cap hc2">${esc(p.hero_cap2)}</p>` : ""}
-    <a class="hero-scroll-cue" href="#main" aria-label="Scroll down to explore"><span>Scroll to explore</span><i aria-hidden="true"></i></a></div>
+    <a class="hero-scroll-cue" href="#main" aria-label="Scroll down to explore"><span>Scroll to explore</span><i aria-hidden="true"></i></a>
     ${p.clock_show === false ? "" : `<div class="clock cp-${esc(p.clock_pos || "tr")}" id="clk"></div>`}`;
+  const updateHeroScroll = () => {
+    const progress = Math.min(1, Math.max(0, window.scrollY / Math.max(1, hero.offsetHeight * .85)));
+    hero.style.setProperty("--hero-scroll-y", `${-progress * 76}px`);
+    hero.style.setProperty("--hero-scroll-scale", `${1 - progress * .16}`);
+  };
+  let heroScrollFrame = 0;
+  window.addEventListener("scroll", () => {
+    if (heroScrollFrame) return;
+    heroScrollFrame = requestAnimationFrame(() => { heroScrollFrame = 0; updateHeroScroll(); });
+  }, { passive: true });
+  window.addEventListener("resize", updateHeroScroll, { passive: true });
+  updateHeroScroll();
   const clk = $("clk"), tz = p.clock_tz && p.clock_tz !== "local" ? p.clock_tz : undefined;
   if (clk) { const tick = () => { try { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: tz }); } catch (e) { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false }); } }; tick(); setInterval(tick, 1000); }
   $("foot").textContent = p.footer_text || `© ${new Date().getFullYear()} ${name}`;

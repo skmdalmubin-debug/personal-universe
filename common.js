@@ -81,6 +81,7 @@ function styDecl(st, exact) {
   if (n("py") !== null || n("px") !== null) o.push(`padding:${n("py") || 0}px ${n("px") || 0}px`);
   if (n("my") !== null) o.push(`margin-top:${n("my")}px;margin-bottom:${n("my")}px`);
   if (n("mx") !== null) o.push(`margin-left:${n("mx")}px;margin-right:${n("mx")}px`);
+  if (n("x") !== null || n("y") !== null) o.push(`--sty-x:${n("x") || 0}px;--sty-y:${n("y") || 0}px`);
   return o.join(";");
 }
 function sty(st) { const d = styDecl(st); return d ? ` style="${esc(d)}"` : ""; }
