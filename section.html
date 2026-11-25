@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Al Mubin</title><link rel="stylesheet" href="style.css?v=4">
+<title>Al Mubin</title><link rel="stylesheet" href="style.css?v=6">
 </head><body>
 <div id="s"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=4"></script><script src="common.js?v=4"></script>
+<script src="config.js?v=4"></script><script src="common.js?v=6"></script>
 <script>
 const t = new URLSearchParams(location.search).get("t"), s = $("s");
 let rows = [], cat = "", IT;
@@ -16,7 +16,7 @@ function draw() {
     let y = "";
     list.forEach(r => { const yr = r.written_on ? r.written_on.slice(0, 4) : ""; if (yr !== y) { y = yr; body += `${body ? "</div>" : ""}<div class="yr">${esc(y)}</div><div class="jlist">`; } body += entry(t, r); });
     body = body ? body + "</div>" : "";
-  } else { const lay = ((REG.find(r => r.key === t) || {}).config || {}).layout || ({ collections: "grid", achievements: "grid", memories: "grid" })[(REG.find(r => r.key === t) || {}).type] || "magazine"; body = `<div class="${{ grid: "cgrid", list: "jlist" }[lay] || ""}">${list.map((r, i) => (LAY[lay] || mag)(t, r, i, 0)).join("")}</div>`; }
+  } else { const lay = ((REG.find(r => r.key === t) || {}).config || {}).layout || ({ collections: "museum", achievements: "grid", memories: "grid" })[(REG.find(r => r.key === t) || {}).type] || "magazine"; body = `<div class="${{ grid: "cgrid", list: "jlist", museum: "museum-grid" }[lay] || ""}">${list.map((r, i) => (LAY[lay] || mag)(t, r, i, 0)).join("")}</div>`; }
   IT.innerHTML = body;
 }
 (async () => {

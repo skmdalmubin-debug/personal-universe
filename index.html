@@ -2,13 +2,13 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Al Mubin</title><meta name="description" content="The personal digital world of Al Mubin.">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head><body>
 <header class="hero noimg" id="hero"></header>
 <main id="main"></main>
 <footer id="foot"></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=4"></script><script src="common.js?v=5"></script>
+<script src="config.js?v=4"></script><script src="common.js?v=6"></script>
 <script>
 const main = $("main");
 function contactView(list) { $("contact-box").innerHTML = list.length ? contactCards(list) : '<p class="empty">Coming soon.</p>'; }
@@ -21,10 +21,10 @@ async function bookView(cfg) {
   const T = (k, d) => esc(cfg[k] || d), top = T("label", "Al Mubin's Personal Archive");
   const nav = (n, mid) => `<div class="gbnav"><button id="gp" ${n <= 0 ? "disabled" : ""}>‹ Previous</button><span>${mid}</span><button id="gn" ${n >= rows.length ? "disabled" : ""}>Next ›</button></div><button class="gbback" id="gc">Back to Cover</button>`;
   const draw = () => {
-    if (i < 0) el.innerHTML = `<div class="gbl">${top}</div><div class="gbframe"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg><h3>${T("title", "The Guestbook")}</h3><hr><p>${T("subtitle", "A collection of words & memories")}</p><small>${T("est", "EST. " + new Date().getFullYear())}</small></div><button class="gbopen" id="go">${T("button", "Open the Book")}</button>`;
+    if (i < 0) el.innerHTML = `<div class="gbl">${top}</div><div class="gbframe"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg><h3>${T("title", "The Guestbook")}</h3><hr><p>${T("subtitle", "A collection of words & memories")}</p><small>${T("est", "EST. " + new Date().getFullYear())}</small></div><div class="gbrib" aria-hidden="true"><span class="rl"></span><span class="rr"></span><span class="rk2"></span><span class="rt1"></span><span class="rt2"></span></div><button class="gbopen" id="go">${T("button", "Open the Book")}</button>`;
     else if (i < rows.length) { const r = rows[i]; el.innerHTML = `<div class="gbl">${top}</div><div class="gbstage"><div class="gbpage"><div class="gbtop"><span>${T("pagetitle", "Al Mubin's Guestbook")}</span><span>Page ${pad(i + 1)}</span></div><h4>${T("dear", "Dear Mubin,")}</h4><div class="who">${esc(r.name)}${r.location ? "<br>" + esc(r.location) : ""}</div><div class="gbmsg" dir="auto">${esc(r.message)}</div><div class="gbfoot">— ${esc((r.name || "").split(" ")[0])}<br>${esc(fmt(r.created_at))}</div></div></div>${nav(i, `${i + 1} / ${rows.length}`)}`; }
     else el.innerHTML = `<div class="gbl">${top}</div><div class="gbstage"><div class="gbpage"><div class="gbtop"><span>${T("pagetitle", "Al Mubin's Guestbook")}</span><span>Page ${pad(i + 1)}</span></div><h4>Send your message</h4><form id="gf"><input name="name" placeholder="Your name" maxlength="100" required style="margin-top:16px"><input name="location" placeholder="City, country (optional)" maxlength="100"><textarea name="message" placeholder="Write your message" maxlength="1000" required></textarea><input class="hp" name="website" tabindex="-1" autocomplete="off"><button type="submit">Send</button><p class="msg" id="gm"></p></form></div></div>${nav(i, "Your page")}`;
-    $("go")?.addEventListener("click", () => { i = 0; draw(); }); $("gp")?.addEventListener("click", () => turn(-1)); $("gn")?.addEventListener("click", () => turn(1)); $("gc")?.addEventListener("click", () => { i = -1; draw(); });
+    $("go")?.addEventListener("click", () => { sfx(false); i = 0; draw(); }); $("gp")?.addEventListener("click", () => turn(-1)); $("gn")?.addEventListener("click", () => turn(1)); $("gc")?.addEventListener("click", () => { sfx(true); i = -1; draw(); });
     $("gf")?.addEventListener("submit", async e => { e.preventDefault(); const f = e.target; if (f.website.value) return;
       const { error } = await sb.from("guestbook").insert({ name: f.name.value.trim(), location: f.location.value.trim() || null, message: f.message.value.trim() });
       $("gm").textContent = error ? "Could not send. Please try again." : "Thank you! Your message will appear in the book after approval."; if (!error) f.reset(); });
@@ -38,14 +38,16 @@ async function bookView(cfg) {
   const name = p.name || "Al Mubin", bg = safeUrl(p.hero_url) || safeUrl(p.photo_url), vidU = safeUrl(p.hero_video_url), hero = $("hero");
   document.title = name;
   buildNav(p, !!(bg || vidU), sp);
-  hero.className = "hero" + (bg || vidU ? "" : " noimg");
+  hero.className = "hero cinematic-hero" + (bg || vidU ? "" : " noimg");
   const rules = [["hn", "hero.name"], ["ht", "hero.tagline"], ["hc1", "hero.cap1"], ["hc2", "hero.cap2"]].map(([k, key]) => { const dsk = styDecl(hs[key]), ph = styDecl(hs["m." + key], true); return (dsk ? `.hero .${k}{${dsk}}` : "") + (ph ? `@media(max-width:700px){.hero .${k}{${ph}}}` : ""); }).join("");
   document.head.insertAdjacentHTML("beforeend", `<style>${rules}</style>`);
   const pos = `object-position:${Math.min(100, Math.max(0, +p.hero_fx ?? 50))}% ${Math.min(100, Math.max(0, +p.hero_fy ?? 50))}%`, mob = safeUrl(p.hero_mobile_url);
-  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}${vidU ? `<video src="${esc(vidU)}" autoplay muted loop playsinline ${bg ? `poster="${esc(bg)}"` : ""}></video>` : ""}<h1 class="hn">${esc(name)}</h1>
+  hero.innerHTML = `${bg ? (mob ? `<picture><source media="(max-width:700px)" srcset="${esc(mob)}"><img src="${esc(bg)}" alt="" style="${pos}"></picture>` : `<img src="${esc(bg)}" alt="" style="${pos}">`) : ""}${vidU ? `<video src="${esc(vidU)}" autoplay muted loop playsinline ${bg ? `poster="${esc(bg)}"` : ""}></video>` : ""}
+    <div class="hero-copy"><p class="hero-kicker">PERSONAL PROFILE &amp; VENTURES</p><h1 class="hn">${esc(name)}</h1>
     ${p.tagline ? `<p class="tag ht">${esc(p.tagline)}</p>` : ""}
     ${p.hero_cap1 ? `<p class="cap hc1">${esc(p.hero_cap1)}</p>` : ""}
     ${p.hero_cap2 ? `<p class="cap hc2">${esc(p.hero_cap2)}</p>` : ""}
+    <a class="hero-scroll-cue" href="#main" aria-label="Scroll down to explore"><span>Scroll to explore</span><i aria-hidden="true"></i></a></div>
     ${p.clock_show === false ? "" : `<div class="clock cp-${esc(p.clock_pos || "tr")}" id="clk"></div>`}`;
   const clk = $("clk"), tz = p.clock_tz && p.clock_tz !== "local" ? p.clock_tz : undefined;
   if (clk) { const tick = () => { try { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: tz }); } catch (e) { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false }); } }; tick(); setInterval(tick, 1000); }
@@ -86,13 +88,13 @@ async function bookView(cfg) {
       if (rs.type === "capsule") { const { data: cp } = await sb.rpc("capsules", { k: t }); capsuleView(el, cp || [], t); continue; }
       if (rs.type === "timeline") { el.style.minHeight = "40vh"; const go = async () => { const { data: tr } = await query(t).limit(300); tlView(el, tr || [], rs.config || {}, t); reveal(); }; "IntersectionObserver" in window ? new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { io.disconnect(); go(); } }, { rootMargin: "400px" }).observe(el) : go(); continue; }
       if (rs.type === "favorites") { const { data: fr } = await query(t).limit(300); favView(el, fr || [], t); continue; }
-      const lay = (rs.config || {}).layout || ({ collections: "strip", journal: "list", achievements: "grid", memories: "grid" })[rs.type] || "magazine";
+      const lay = (rs.config || {}).layout || ({ collections: "museum", journal: "list", achievements: "grid", memories: "grid" })[rs.type] || "magazine";
       if (rs.type === "travel") sb.from("travel").select("id,title,latlng").eq("published", true).not("latlng", "is", null).then(({ data: mp }) => { if (mp) { el.insertAdjacentHTML("beforebegin", '<div class="tmapw"></div>'); mapView(el.previousElementSibling, mp, t, p.map); } });
       const NB = ["achievements", "memories", "journal"].includes(rs.type), NBN = rs.type === "journal" ? 3 : 6;
       const { data, error } = await query(t).limit(lay === "strip" ? 30 : NB ? 7 : 3);
       if (error) throw error;
       if (lay === "strip" && data.length) { el.className = "strip"; el.innerHTML = `<div class="track">${data.map(r => card(t, r)).join("")}</div>`; el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">${T_("viewall", "View all")} ›</a>`); startStrip(el, p.scroll_speed); continue; }
-      el.className = { grid: "cgrid", list: "jlist" }[lay] || "";
+      el.className = { grid: "cgrid", list: "jlist", museum: "museum-grid" }[lay] || "";
       el.innerHTML = data.length ? (NB ? data.slice(0, NBN) : data.slice(0, 2)).map((r, i) => LAY[lay](t, r, i, o)).join("") + (!NB && data.length > 2 ? LAY[lay](t, data[2], 2, o, true) : "") : '<p class="empty">Coming soon.</p>';
       if (NB ? data.length > NBN : data.length > 2) el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">${NB ? T_("viewall", "View all") : T_("seemore", "See more")} ›</a>`);
     } catch (e) { el.innerHTML = '<p class="empty">Coming soon.</p>'; } finally { reveal(); }

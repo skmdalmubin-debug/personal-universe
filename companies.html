@@ -63,6 +63,15 @@ body.open #list{display:none}body.open #prof{display:block}
 .btn:hover{background:var(--acc);color:#111}
 @media(max-width:760px){.row{grid-template-columns:36px 1fr 64px}.row p{display:none}.row .lg,.lgph{width:60px;height:60px;font-size:22px}.row>div:nth-child(3){display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}.hero h1 span{transform:none}}
+/* Structured company divisions / sub-sections */
+.company-subsec{padding:clamp(28px,5vw,54px) 0;border-top:1px solid var(--line);margin-top:26px}
+.company-subsec h3{font-family:var(--hf);font-size:clamp(26px,4vw,44px);font-weight:500;letter-spacing:-.025em;margin:10px 0 16px}
+.company-subsec .big{max-width:850px}
+.company-sub-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:24px}
+.company-sub-media{margin:0;overflow:hidden;background:var(--soft);border:1px solid var(--line)}
+.company-sub-media img,.company-sub-media video{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.company-sub-media figcaption{padding:10px 12px;color:var(--mut);font-size:12px}
+@media(max-width:640px){.company-sub-gallery{grid-template-columns:1fr}}
 </style></head><body>
 <main id="list"><div class="wrap">
   <div class="eyebrow rv">Companies &amp; Ventures</div>
@@ -102,6 +111,19 @@ function renderList(){
 }
 const sec=(k,t,body,i=0)=>body?`<section class="sec"><div class="wrap"><div class="eyebrow rv">${k}</div><h2 class="rv" style="--i:1">${t}</h2>${body}</div></section>`:'';
 const cards=a=>`<div class="cols">${a.map((x,i)=>`<div class="card rv" style="--i:${i%4}"><h3>${esc(x[0])}</h3><p>${esc(x[1]||'')}</p></div>`).join('')}</div>`;
+const companySubs=list=>{
+  const sections=Array.isArray(list)?list.filter(s=>s&&((s.title||'').trim()||(s.description||'').trim()||(s.images||[]).length)):[];
+  if(!sections.length)return '';
+  return sec('Company divisions','Inside the organisation',sections.map((s,i)=>{
+    const media=(Array.isArray(s.images)?s.images:[]).filter(m=>m&&m.url).map((m,j)=>{
+      const url=safeImg(m.url); if(!url)return '';
+      const isVideo=m.type==='video'||/\.(mp4|webm|mov)(?:\?|$)/i.test(url);
+      const visual=isVideo?`<video src="${esc(url)}" controls playsinline preload="metadata"></video>`:`<img src="${esc(url)}" alt="${esc(m.caption||s.title||'')}" loading="lazy" decoding="async">`;
+      return `<figure class="company-sub-media rv" style="--i:${j%3}">${visual}${m.caption?`<figcaption>${esc(m.caption)}</figcaption>`:''}</figure>`;
+    }).join('');
+    return `<article class="company-subsec"><div class="eyebrow rv">${String(i+1).padStart(2,'0')} / ${sections.length}</div>${s.title?`<h3 class="rv">${esc(s.title)}</h3>`:''}${s.description?`<p class="big rv">${esc(s.description)}</p>`:''}${media?`<div class="company-sub-gallery">${media}</div>`:''}</article>`;
+  }).join(''));
+};
 const extra=t=>String(t||'').split(/^## /m).slice(1).map(b=>{const[h,...r]=b.split('\n');const ps=r.join('\n').trim().split(/\n{2,}/).filter(Boolean);return sec('More',esc(h.trim()),`<div class="rv">${ps.map(p=>`<p class="big" style="margin-bottom:18px">${esc(p)}</p>`).join('')}</div>`)}).join('');
 function renderProfile(c){
   theme(c);document.body.classList.add('open');scrollTo(0,0);
@@ -122,7 +144,7 @@ function renderProfile(c){
   +sec('07 — Journey','Achievements &amp; milestones',ms.length&&`<div class="tl">${ms.map((m,i)=>`<div class="rv" style="--i:${i%3}"><b>${esc(m[0])}</b><span style="color:var(--mut)">${esc(m[1]||'')}</span></div>`).join('')}</div>`)
   +sec('08 — Horizon','Future plans',c.future_text&&`<p class="big rv">${esc(c.future_text)}</p>`)
   +(imgs.length?sec('Gallery','Inside the company',`<div class="gal">${imgs.map((u,i)=>`<img class="rv" style="--i:${i%3}" src="${esc(safeImg(u))}" alt="" loading="lazy">`).join('')}</div>`):'')
-  +extra(c.extra_text)
+  +companySubs(c.subs)+extra(c.extra_text)
   +sec('09 — Connect','Contact &amp; official links',`<div class="rv">${c.email?`<a class="btn" href="mailto:${esc(c.email)}">${esc(c.email)}</a>`:''}${c.phone?`<a class="btn" href="tel:${esc(c.phone)}">${esc(c.phone)}</a>`:''}${lk.map(l=>`<a class="btn" target="_blank" rel="noopener" href="${esc(safeUrl(l[1]))}">${esc(l[0])} ↗</a>`).join('')}${c.address?`<p style="margin-top:18px;color:var(--mut)">${esc(c.address)}</p>`:''}</div>`);
   $('#back').onclick=()=>{location.hash=''};
   const i=C.findIndex(x=>x.id===c.id);$('#nx').onclick=()=>{location.hash='company/'+C[(i+1)%C.length].id};

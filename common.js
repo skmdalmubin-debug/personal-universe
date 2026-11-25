@@ -242,14 +242,40 @@ function reveal(root = document) {
 }
 /* right-to-left auto-scroll strip (speed 1..10) */
 function startStrip(el, speed) {
-  const tr = el.firstElementChild; if (!tr || !tr.children.length) return;
-  const kids = [...tr.children], one = tr.scrollWidth, copies = Math.ceil(el.clientWidth / Math.max(one, 1)) + 1;
+  const tr = el.firstElementChild;
+  if (!tr || !tr.children.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const kids = [...tr.children], one = tr.scrollWidth;
+  if (!one) return;
+  const copies = Math.ceil(el.clientWidth / one) + 1;
   for (let i = 1; i < copies; i++) kids.forEach(k => tr.appendChild(k.cloneNode(true)));
-  const v = 12 + Math.min(10, Math.max(1, +speed || 5)) * 14; let x = 0, last = 0, hold = false;
-  el.addEventListener("mouseenter", () => hold = true); el.addEventListener("mouseleave", () => hold = false);
-  el.addEventListener("touchstart", () => hold = true, { passive: true }); el.addEventListener("touchend", () => setTimeout(() => hold = false, 1500));
-  const step = t => { if (last && !hold) { x -= v * Math.min(.05, (t - last) / 1000); if (x <= -one) x += one; tr.style.transform = `translateX(${x}px)`; } last = t; requestAnimationFrame(step); };
-  requestAnimationFrame(step);
+  const v = 12 + Math.min(10, Math.max(1, +speed || 5)) * 14;
+  let x = 0, last = 0, hold = false, visible = false, raf = 0;
+  const pause = () => { if (raf) cancelAnimationFrame(raf); raf = 0; last = 0; };
+  const step = t => {
+    if (!visible || document.hidden) { pause(); return; }
+    if (last && !hold) {
+      x -= v * Math.min(.05, (t - last) / 1000);
+      if (x <= -one) x += one;
+      tr.style.transform = `translate3d(${x}px,0,0)`;
+    }
+    last = t;
+    raf = requestAnimationFrame(step);
+  };
+  const resume = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(step); };
+  el.addEventListener("mouseenter", () => { hold = true; });
+  el.addEventListener("mouseleave", () => { hold = false; });
+  el.addEventListener("focusin", () => { hold = true; });
+  el.addEventListener("focusout", () => { hold = false; });
+  el.addEventListener("touchstart", () => { hold = true; }, { passive: true });
+  el.addEventListener("touchend", () => { hold = false; }, { passive: true });
+  document.addEventListener("visibilitychange", () => document.hidden ? pause() : resume());
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(es => {
+      visible = !!es[0]?.isIntersecting;
+      visible ? resume() : pause();
+    }, { rootMargin: "80px" });
+    io.observe(el);
+  } else { visible = true; resume(); }
 }
 
 /* about section (summary on home, full on about.html) */
@@ -313,7 +339,7 @@ function playTrack(b) {
   AUD._u = b.dataset.a; AUD.src = b.dataset.a; AUD.play();
 }
 function favView(el, rows, key) {
-  el.className = "fav";
+  el.className = "fav museum-favourites";
   if (!rows.length) { el.innerHTML = '<p class="empty">Coming soon.</p>'; return; }
   const EM = [[/movie|film|series|cinema|drama|anime/i, "🎬"], [/book|novel|read/i, "📚"], [/food|dish|eat|cuisine|snack|drink/i, "🍜"], [/place|travel|city|spot|destination/i, "📍"], [/quote|line|word/i, "❝"], [/football|club|sport|team|player/i, "⚽"], [/music|song|album|playlist|artist|band/i, "🎧"], [/person|people|hero|icon|idol/i, "⭐"]];
   const kindOf = c0 => /movie|film|series|cinema|drama|anime/i.test(c0) ? "movie" : /book|novel|read/i.test(c0) ? "book" : /food|dish|eat|cuisine|snack|drink/i.test(c0) ? "food" : /place|travel|city|spot|destination/i.test(c0) ? "place" : /quote|line|word/i.test(c0) ? "quote" : /football|club|sport|team|player/i.test(c0) ? "club" : /music|song|album|playlist|artist|band/i.test(c0) ? "music" : /person|people|hero|icon|idol/i.test(c0) ? "person" : "other";
@@ -393,7 +419,16 @@ function roomView(el, key, cfg) {
   };
 }
 
-const LAY = { magazine: mag, grid: card, list: entry };
+function museumCard(t, r, i, off, peek) {
+  const c = MAP[t], img = firstImg(r, c), txt = (r[c.text] || "").trim();
+  return `<a class="museum-card${peek ? " peek" : ""}" href="${link(t, r, peek)}">
+    <span class="museum-no">${String(i + 1).padStart(2, "0")}</span>
+    <div class="museum-frame">${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : `<span class="museum-empty">Archive</span>`}</div>
+    <div class="museum-copy">${(r.category || c.meta(r)) ? `<span class="chip">${esc(r.category || c.meta(r))}</span>` : ""}
+      <h3${st_(r, "title")}>${esc(r.title)}</h3>${txt ? `<p${st_(r, c.text)}>${esc(txt)}</p>` : ""}
+      <span class="museum-open">View object ↗</span></div></a>`;
+}
+const LAY = { magazine: mag, grid: card, list: entry, museum: museumCard };
 /* ---- travel map (Leaflet + OpenStreetMap) ---- */
 function loadLeaflet() {
   return new Promise(ok => {
