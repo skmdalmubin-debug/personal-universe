@@ -402,6 +402,7 @@ function loadLeaflet() {
     const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; s.onload = ok; document.head.appendChild(s);
   });
 }
+const BDGEO = "https://cdn.jsdelivr.net/npm/bangladesh-geojson/src/data/bangladesh.geojson";
 const GEO = "https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json";
 const BD = { Barishal: ["Barguna", "Barishal", "Bhola", "Jhalokati", "Patuakhali", "Pirojpur"], Chattogram: ["Bandarban", "Brahmanbaria", "Chandpur", "Chattogram", "Cumilla", "Cox's Bazar", "Feni", "Khagrachhari", "Lakshmipur", "Noakhali", "Rangamati"], Dhaka: ["Dhaka", "Faridpur", "Gazipur", "Gopalganj", "Kishoreganj", "Madaripur", "Manikganj", "Munshiganj", "Narayanganj", "Narsingdi", "Rajbari", "Shariatpur", "Tangail"], Khulna: ["Bagerhat", "Chuadanga", "Jashore", "Jhenaidah", "Khulna", "Kushtia", "Magura", "Meherpur", "Narail", "Satkhira"], Mymensingh: ["Jamalpur", "Mymensingh", "Netrokona", "Sherpur"], Rajshahi: ["Bogura", "Joypurhat", "Naogaon", "Natore", "Chapainawabganj", "Pabna", "Rajshahi", "Sirajganj"], Rangpur: ["Dinajpur", "Gaibandha", "Kurigram", "Lalmonirhat", "Nilphamari", "Panchagarh", "Rangpur", "Thakurgaon"], Sylhet: ["Habiganj", "Moulvibazar", "Sunamganj", "Sylhet"] };
 async function mapView(el, rows, key, cfg) {
@@ -415,6 +416,14 @@ async function mapView(el, rows, key, cfg) {
   const map = L.map(el.querySelector(".tmap"), { scrollWheelZoom: false }).setView([20, 10], 2);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
   try { const g = await (await fetch(GEO)).json(); L.geoJSON(g, { style: f => vc.has(f.properties.name) ? { color: col, weight: 1, fillColor: col, fillOpacity: .6 } : { weight: 0, fillOpacity: 0 }, interactive: false }).addTo(map); stats(g.features.length); } catch (e) {}
+  try {
+    const gd = await (await fetch(cfg.geo_url || BDGEO)).json(), K = s => String(s || "").toLowerCase().replace(/[^a-z]/g, ""),
+      AL = { jessore: "jashore", comilla: "cumilla", bogra: "bogura", barisal: "barishal", chittagong: "chattogram", jhalakati: "jhalokati", jhalakathi: "jhalokati", nawabganj: "chapainawabganj", maulvibazar: "moulvibazar", netrakona: "netrokona", khagrachari: "khagrachhari", brahamanbaria: "brahmanbaria", coxsbazar: "coxsbazar", chapainawabganj: "chapainawabganj", chowdanga: "chuadanga", nilphamari: "nilphamari", panchagarh: "panchagarh", sirajgonj: "sirajganj", maulvibazar2: "moulvibazar" },
+      sel = new Set([...vd].map(K)), nm = f => { const p = f.properties || {}; return K(AL[K(p.ADM2_EN || p.district || p.District || p.NAME_2 || p.shapeName || p.name)] || (p.ADM2_EN || p.district || p.District || p.NAME_2 || p.shapeName || p.name)); },
+      byD = {}; (gd.features || []).forEach(f => { const k = nm(f); if (k) (byD[k] = byD[k] || []).push(f); });
+    const hit = [...sel].flatMap(k => byD[AL[k] || k] || []);
+    if (hit.length) { const lay = L.geoJSON({ type: "FeatureCollection", features: hit }, { style: { color: "#fff", weight: 1, fillColor: col, fillOpacity: .72 }, onEachFeature: (f, l) => l.bindTooltip(esc((f.properties || {}).ADM2_EN || (f.properties || {}).district || (f.properties || {}).shapeName || ""), { sticky: true }) }).addTo(map); if (!pts.length && !vc.size) map.fitBounds(lay.getBounds(), { padding: [30, 30] }); }
+  } catch (e) {}
   pts.forEach(p => L.circleMarker(p.ll, { radius: 8, color: "#fff", weight: 2, fillColor: col, fillOpacity: 1 }).addTo(map).bindPopup(`<b>${esc(p.r.title)}</b><br><a href="detail.html?t=${key}&id=${p.r.id}">Open ›</a>`));
   pts.length > 1 ? map.fitBounds(pts.map(p => p.ll), { padding: [40, 40] }) : pts.length ? map.setView(pts[0].ll, 7) : 0;
 }

@@ -1287,7 +1287,7 @@ const pvHtml = (k, v) => v ? `${k === "audio_url" ? `<audio src="${esc(v)}" cont
 async function form(row) {
   const s = S[tab], tb = s.table || tab, pk = s.pk || "id", main = $("main"); gal = {}; stys = {}; subsS = {};
   if (row === null) { const { data } = await sb.from("profile").select("*").eq("id", 1).maybeSingle(); row = data || { id: 1 }; }
-  const saved = row.styles || {};
+  const saved = row.styles || {}, snap = JSON.parse(JSON.stringify(saved)), nz = v => (v === undefined || v === null || v === "" || (typeof v === "object" && !Object.keys(v).length)) ? "" : JSON.stringify(v);
   main.innerHTML = s.fields.map(f => {
     const v = row[f.k], k = f.k, l = f.l, t = f.t;
     const hint = f.hint ? `<div class="hint">${esc(f.hint)}</div>` : "", sk = f.sk || f.k;
@@ -1321,7 +1321,12 @@ async function form(row) {
     s.fields.filter(f => f.t === "gallery").forEach(f => o[f.k] = gal[f.k]);
     s.fields.filter(f => f.t === "subs").forEach(f => o[f.k] = subsS[f.k]);
     s.fields.filter(f => f.t === "number" && o[f.k] === null).forEach(f => delete o[f.k]);
-    if (Object.keys(stys).length) o.styles = Object.assign({}, saved, stys);
+    if (Object.keys(stys).length) {
+      let base = saved;
+      try { const idv = s.single ? 1 : row[pk]; if (idv) { const { data: cur, error: ce } = await sb.from(tb).select("styles").eq(s.single ? "id" : pk, idv).maybeSingle(); if (!ce && cur) base = cur.styles || {}; } } catch (e) {}
+      const ch = {}; Object.keys(stys).forEach(k => { if (nz(stys[k]) !== nz(snap[k])) ch[k] = stys[k]; });
+      o.styles = Object.assign({}, base, ch);
+    }
     if (s.filter) o.section_key = s.filter;
     if (s.single) { o.id = 1; o.updated_at = new Date().toISOString(); }
     else { if (!s.noreq && !o[s.title]) { $("m").textContent = "Title is required."; return; } if (row[pk]) o[pk] = row[pk]; }
