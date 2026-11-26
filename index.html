@@ -2,13 +2,13 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Al Mubin</title><meta name="description" content="The personal digital world of Al Mubin.">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=6"><link rel="stylesheet" href="fx.css?v=1">
 </head><body>
 <header class="hero noimg" id="hero"></header>
 <main id="main"></main>
 <footer id="foot"></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=4"></script><script src="common.js?v=6"></script>
+<script src="config.js?v=5"></script><script src="common.js?v=6"></script><script src="editor.js?v=1"></script><script src="gbsfx.js?v=1"></script>
 <script>
 const main = $("main");
 function contactView(list) { $("contact-box").innerHTML = list.length ? contactCards(list) : '<p class="empty">Coming soon.</p>'; }
@@ -21,16 +21,17 @@ async function bookView(cfg) {
   const T = (k, d) => esc(cfg[k] || d), top = T("label", "Al Mubin's Personal Archive");
   const nav = (n, mid) => `<div class="gbnav"><button id="gp" ${n <= 0 ? "disabled" : ""}>‹ Previous</button><span>${mid}</span><button id="gn" ${n >= rows.length ? "disabled" : ""}>Next ›</button></div><button class="gbback" id="gc">Back to Cover</button>`;
   const draw = () => {
-    if (i < 0) el.innerHTML = `<div class="gbl">${top}</div><div class="gbframe"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg><h3>${T("title", "The Guestbook")}</h3><hr><p>${T("subtitle", "A collection of words & memories")}</p><small>${T("est", "EST. " + new Date().getFullYear())}</small></div><div class="gbrib" aria-hidden="true"><span class="rl"></span><span class="rr"></span><span class="rk2"></span><span class="rt1"></span><span class="rt2"></span></div><button class="gbopen" id="go">${T("button", "Open the Book")}</button>`;
+    if (i < 0) el.innerHTML = `<div class="gbl">${top}</div><div class="gbframe"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg><h3>${T("title", "The Guestbook")}</h3><hr><p>${T("subtitle", "A collection of words & memories")}</p><small>${T("est", "EST. " + new Date().getFullYear())}</small></div><button class="gbopen" id="go">${T("button", "Open the Book")}</button>`;
     else if (i < rows.length) { const r = rows[i]; el.innerHTML = `<div class="gbl">${top}</div><div class="gbstage"><div class="gbpage"><div class="gbtop"><span>${T("pagetitle", "Al Mubin's Guestbook")}</span><span>Page ${pad(i + 1)}</span></div><h4>${T("dear", "Dear Mubin,")}</h4><div class="who">${esc(r.name)}${r.location ? "<br>" + esc(r.location) : ""}</div><div class="gbmsg" dir="auto">${esc(r.message)}</div><div class="gbfoot">— ${esc((r.name || "").split(" ")[0])}<br>${esc(fmt(r.created_at))}</div></div></div>${nav(i, `${i + 1} / ${rows.length}`)}`; }
     else el.innerHTML = `<div class="gbl">${top}</div><div class="gbstage"><div class="gbpage"><div class="gbtop"><span>${T("pagetitle", "Al Mubin's Guestbook")}</span><span>Page ${pad(i + 1)}</span></div><h4>Send your message</h4><form id="gf"><input name="name" placeholder="Your name" maxlength="100" required style="margin-top:16px"><input name="location" placeholder="City, country (optional)" maxlength="100"><textarea name="message" placeholder="Write your message" maxlength="1000" required></textarea><input class="hp" name="website" tabindex="-1" autocomplete="off"><button type="submit">Send</button><p class="msg" id="gm"></p></form></div></div>${nav(i, "Your page")}`;
-    $("go")?.addEventListener("click", () => { sfx(false); i = 0; draw(); }); $("gp")?.addEventListener("click", () => turn(-1)); $("gn")?.addEventListener("click", () => turn(1)); $("gc")?.addEventListener("click", () => { sfx(true); i = -1; draw(); });
+    $("go")?.addEventListener("click", () => { window.GBSFX && GBSFX.open(); i = 0; draw(); }); $("gp")?.addEventListener("click", () => turn(-1)); $("gn")?.addEventListener("click", () => turn(1)); $("gc")?.addEventListener("click", () => { window.GBSFX && GBSFX.close(); i = -1; draw(); });
     $("gf")?.addEventListener("submit", async e => { e.preventDefault(); const f = e.target; if (f.website.value) return;
       const { error } = await sb.from("guestbook").insert({ name: f.name.value.trim(), location: f.location.value.trim() || null, message: f.message.value.trim() });
-      $("gm").textContent = error ? "Could not send. Please try again." : "Thank you! Your message will appear in the book after approval."; if (!error) f.reset(); });
+      $("gm").textContent = error ? "Could not send. Please try again." : "Thank you! Your message will appear in the book after approval."; if (!error) { f.reset(); window.GBSFX && GBSFX.stamp(); } });
+    window.GBSFX && GBSFX.dress(el, i, rows.length, n => { sfx(n < i); i = n; draw(); });
   };
-  const sfx = rev => { try { const A = window.AC || (window.AC = new (window.AudioContext || window.webkitAudioContext)()), n = Math.floor(A.sampleRate * .38), b = A.createBuffer(1, n, A.sampleRate), c = b.getChannelData(0); for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2) * Math.sin(Math.min(1, i / (n * .15)) * Math.PI / 2) * (rev ? .8 : 1); const s = A.createBufferSource(), f = A.createBiquadFilter(), g = A.createGain(); f.type = "bandpass"; f.frequency.value = rev ? 1700 : 2500; g.gain.value = .16; s.buffer = b; s.connect(f); f.connect(g); g.connect(A.destination); s.start(); } catch (e) {} };
-  const turn = d => { sfx(d < 0); const old = el.querySelector(".gbpage"), cl = old ? old.cloneNode(true) : null; i += d; draw(); const np = el.querySelector(".gbpage"); if (cl && np) { if (d > 0) { np.parentNode.insertBefore(cl, np); cl.classList.add("flipout"); setTimeout(() => cl.remove(), 900); } else np.classList.add("flipin"); } };
+  const sfx = rev => window.GBSFX && GBSFX.page(rev);
+  const turn = d => { sfx(d < 0); const old = el.querySelector(".gbpage"), cl = old ? old.cloneNode(true) : null; i += d; draw(); const np = el.querySelector(".gbpage"); if (cl && np) { if (d > 0) { np.parentNode.insertBefore(cl, np); cl.classList.add("flipout"); setTimeout(() => cl.remove(), 1100); } else { np.classList.add("flipin"); np.parentNode.insertBefore(cl, np); cl.classList.add("under"); setTimeout(() => cl.remove(), 1100); } } };
   draw();
 }
 (async () => {
@@ -46,20 +47,7 @@ async function bookView(cfg) {
     ${p.tagline ? `<p class="tag ht">${esc(p.tagline)}</p>` : ""}
     ${p.hero_cap1 ? `<p class="cap hc1">${esc(p.hero_cap1)}</p>` : ""}
     ${p.hero_cap2 ? `<p class="cap hc2">${esc(p.hero_cap2)}</p>` : ""}
-    <a class="hero-scroll-cue" href="#main" aria-label="Scroll down to explore"><span>Scroll to explore</span><i aria-hidden="true"></i></a>
     ${p.clock_show === false ? "" : `<div class="clock cp-${esc(p.clock_pos || "tr")}" id="clk"></div>`}`;
-  const updateHeroScroll = () => {
-    const progress = Math.min(1, Math.max(0, window.scrollY / Math.max(1, hero.offsetHeight * .85)));
-    hero.style.setProperty("--hero-scroll-y", `${-progress * 76}px`);
-    hero.style.setProperty("--hero-scroll-scale", `${1 - progress * .16}`);
-  };
-  let heroScrollFrame = 0;
-  window.addEventListener("scroll", () => {
-    if (heroScrollFrame) return;
-    heroScrollFrame = requestAnimationFrame(() => { heroScrollFrame = 0; updateHeroScroll(); });
-  }, { passive: true });
-  window.addEventListener("resize", updateHeroScroll, { passive: true });
-  updateHeroScroll();
   const clk = $("clk"), tz = p.clock_tz && p.clock_tz !== "local" ? p.clock_tz : undefined;
   if (clk) { const tick = () => { try { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: tz }); } catch (e) { clk.textContent = new Date().toLocaleTimeString("en-GB", { hour12: false }); } }; tick(); setInterval(tick, 1000); }
   $("foot").textContent = p.footer_text || `© ${new Date().getFullYear()} ${name}`;
@@ -82,13 +70,14 @@ async function bookView(cfg) {
         if (companyError) throw companyError;
         el.className = "corail";
         el.innerHTML = (companies || []).length ? companies.map(c => `
-          <a class="cocard" href="companies.html#company/${encodeURIComponent(c.id)}">
+          <a class="cocard" style="--ca:${hx(c.accent, '#b8924a')}" href="companies.html#company/${encodeURIComponent(c.id)}">
             ${c.cover_url ? `<img class="cobg" src="${esc(c.cover_url)}" alt="" loading="lazy">` : ""}
             <div class="coin">
               ${c.logo_url ? `<img class="colg" src="${esc(c.logo_url)}" alt="" loading="lazy">` : `<span class="colg ph">${esc((c.name || "C").charAt(0))}</span>`}
               <small>${esc(c.industry || "Company")}</small>
               <h3>${esc(c.name || "Untitled company")}</h3>
               <p>${esc(c.intro || "")}</p>
+              ${(c.founded || c.location) ? `<div class="cometa">${c.founded ? `<span>Est. ${esc(c.founded)}</span>` : ""}${c.location ? `<span>${esc(c.location)}</span>` : ""}</div>` : ""}
               <em>Explore company ↗</em>
             </div>
           </a>`).join("") : '<p class="empty">No companies published yet.</p>';
@@ -99,13 +88,13 @@ async function bookView(cfg) {
       if (rs.type === "capsule") { const { data: cp } = await sb.rpc("capsules", { k: t }); capsuleView(el, cp || [], t); continue; }
       if (rs.type === "timeline") { el.style.minHeight = "40vh"; const go = async () => { const { data: tr } = await query(t).limit(300); tlView(el, tr || [], rs.config || {}, t); reveal(); }; "IntersectionObserver" in window ? new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { io.disconnect(); go(); } }, { rootMargin: "400px" }).observe(el) : go(); continue; }
       if (rs.type === "favorites") { const { data: fr } = await query(t).limit(300); favView(el, fr || [], t); continue; }
-      const lay = (rs.config || {}).layout || ({ collections: "museum", journal: "list", achievements: "grid", memories: "grid" })[rs.type] || "magazine";
+      const lay = (rs.config || {}).layout || ({ collections: "strip", journal: "list", achievements: "grid", memories: "grid" })[rs.type] || "magazine";
       if (rs.type === "travel") sb.from("travel").select("id,title,latlng").eq("published", true).not("latlng", "is", null).then(({ data: mp }) => { if (mp) { el.insertAdjacentHTML("beforebegin", '<div class="tmapw"></div>'); mapView(el.previousElementSibling, mp, t, p.map); } });
       const NB = ["achievements", "memories", "journal"].includes(rs.type), NBN = rs.type === "journal" ? 3 : 6;
       const { data, error } = await query(t).limit(lay === "strip" ? 30 : NB ? 7 : 3);
       if (error) throw error;
       if (lay === "strip" && data.length) { el.className = "strip"; el.innerHTML = `<div class="track">${data.map(r => card(t, r)).join("")}</div>`; el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">${T_("viewall", "View all")} ›</a>`); startStrip(el, p.scroll_speed); continue; }
-      el.className = { grid: "cgrid", list: "jlist", museum: "museum-grid" }[lay] || "";
+      el.className = { grid: "cgrid", list: "jlist" }[lay] || "";
       el.innerHTML = data.length ? (NB ? data.slice(0, NBN) : data.slice(0, 2)).map((r, i) => LAY[lay](t, r, i, o)).join("") + (!NB && data.length > 2 ? LAY[lay](t, data[2], 2, o, true) : "") : '<p class="empty">Coming soon.</p>';
       if (NB ? data.length > NBN : data.length > 2) el.insertAdjacentHTML("afterend", `<a class="seemore" href="section.html?t=${t}">${NB ? T_("viewall", "View all") : T_("seemore", "See more")} ›</a>`);
     } catch (e) { el.innerHTML = '<p class="empty">Coming soon.</p>'; } finally { reveal(); }
@@ -113,4 +102,4 @@ async function bookView(cfg) {
   if ("IntersectionObserver" in window) { const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { track("section", e.target.id); io.unobserve(e.target); } }), { threshold: .35 }); document.querySelectorAll("main section[id]").forEach(x => io.observe(x)); }
   if (!IS_RELOAD && location.hash) $(location.hash.slice(1))?.scrollIntoView();
 })();
-</script></body></html>
+</script><script src="fx.js?v=1"></script></body></html>

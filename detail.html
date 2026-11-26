@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Al Mubin</title><link rel="stylesheet" href="style.css?v=6">
+<title>Al Mubin</title><link rel="stylesheet" href="style.css?v=6"><link rel="stylesheet" href="fx.css?v=1">
 </head><body>
 <div id="d"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=4"></script><script src="common.js?v=6"></script>
+<script src="config.js?v=5"></script><script src="common.js?v=6"></script><script src="editor.js?v=1"></script>
 <script>
 const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("id"), d = $("d");
 (async () => {
@@ -32,4 +32,4 @@ const qs = new URLSearchParams(location.search), t = qs.get("t"), id = qs.get("i
   }
   wireZoom(d, reg);
 })();
-</script></body></html>
+</script><script src="fx.js?v=1"></script></body></html>

@@ -1,0 +1,168 @@
+/* ===== fx.css — cinematic motion, museum sections, professional companies, performance ===== */
+:root{--ease:cubic-bezier(.2,.7,.2,1);--gold:#c9a24d}
+/* progress bar */
+#fxbar{position:fixed;top:0;left:0;right:0;height:2px;z-index:80;transform-origin:0 50%;transform:scaleX(var(--sp,0));background:var(--blue);pointer-events:none}
+/* ---- performance ---- */
+section[id]{content-visibility:auto;contain-intrinsic-size:auto 720px}html.fx-nocv section[id]{content-visibility:visible}
+img{image-rendering:auto}.strip .track,.tli,.hero>img,.hero>picture,.hero>video{backface-visibility:hidden}
+.rv{will-change:opacity,transform}.rv.in{will-change:auto}
+/* ---- hero: layered scroll-down text ---- */
+.hero{--p:0;isolation:isolate}
+.hero>img,.hero>picture,.hero>video{transform:translate3d(0,calc(var(--p)*9vh),0) scale(calc(1.04 + var(--p)*.1));transform-origin:50% 30%;will-change:transform}
+.hero .hn{transform:translate3d(0,calc(var(--p)*28vh),0) scale(calc(1 - var(--p)*.06));opacity:calc(1 - var(--p)*1.3);will-change:transform,opacity}
+.hero .ht,.hero .hc1,.hero .hc2{transform:translate3d(0,calc(var(--p)*14vh),0);opacity:calc(1 - var(--p)*1.7)}
+.hero.noimg .hn{opacity:calc(1 - var(--p)*1.1)}
+.hero>.hfg{position:absolute!important;inset:0;z-index:2!important;width:100%;height:100%;object-fit:cover;pointer-events:none;max-width:none}
+.hero:after{z-index:1}
+.hero .hn .w{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .04em .12em;margin:0 -.04em}
+.hero .hn .w{transform:translate3d(calc(var(--p)*var(--dir,0)*38vw),0,0);will-change:transform}
+.hero .hn .w>i{display:inline-block;font-style:normal;transform:translateY(112%);animation:wrise 1.15s var(--ease) forwards;animation-delay:calc(.25s + var(--k)*.12s)}
+@keyframes wrise{to{transform:none}}
+.hero .tag,.hero .cap{animation:hfade 1.2s var(--ease) both;animation-delay:.9s}
+.hero .cap{animation-delay:1.1s}
+@keyframes hfade{from{opacity:0;translate:0 18px}}
+.hero .cue{position:absolute;left:50%;bottom:16px;translate:-50%;width:auto!important;z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:inherit;text-decoration:none;opacity:calc(1 - var(--p)*4);animation:cuein 1s 1.6s both}
+@keyframes cuein{from{opacity:0;transform:translateY(18px)}}
+.hero .cue i{width:1px;height:44px;background:linear-gradient(currentColor,transparent);transform-origin:50% 0;animation:cue 2s var(--ease) infinite}
+@keyframes cue{0%{transform:scaleY(0)}45%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
+/* ---- site-wide cinematic reveals ---- */
+.rv{transition-duration:1.1s}
+section>h2.rv{clip-path:inset(0 0 100% 0);transform:translateY(24px)}
+section>h2.rv.in{clip-path:inset(-10% 0 -10% 0)}
+.mag.rv .pic{clip-path:inset(0 0 12% 0 round var(--r));transition:clip-path 1.2s var(--ease)}.mag.rv.in .pic{clip-path:inset(0 0 0 0 round var(--r))}
+.mag.rv:not(.in) .pic img{transform:scale(1.18)}
+.ccard.rv:nth-child(3n+2){transition-delay:.09s}.ccard.rv:nth-child(3n){transition-delay:.18s}
+.cc.rv:nth-child(3n+2){transition-delay:.08s}.cc.rv:nth-child(3n){transition-delay:.16s}
+/* ---- Memories: photos developing onto the wall ---- */
+#memories .ccard.rv:not(.in){opacity:0;transform:translateY(70px) rotate(var(--tl,-7deg)) scale(.9);filter:sepia(1) blur(7px) brightness(1.3)}
+#memories .ccard.rv.in{opacity:1;transform:rotate(var(--tl,-1.8deg));filter:none;transition:opacity .9s var(--ease),transform 1.1s var(--ease),filter 1.6s ease}
+#memories .ccard.rv.in:hover{transform:rotate(0) scale(1.03)}
+#memories .ccard:nth-child(even){--tl:1.6deg}#memories .ccard:nth-child(3n){--tl:-.6deg}
+/* ---- Museum: Collection ---- */
+section#collections.museum{max-width:none;background:radial-gradient(120% 60% at 50% 0,#2a2218 0,#14110d 70%);color:#efe3c8;padding-inline:max(16px,calc((100vw - 1180px)/2))}
+section#collections.museum>h2,.museum .gallery-title{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;color:#f1e6cc;letter-spacing:.02em;text-align:center}
+section#collections.museum>h2:after{content:"";display:block;width:64px;height:1px;margin:18px auto 0;background:var(--gold)}
+body:has(div#collections.museum){background:#14110d;color:#efe3c8}
+.museum .ccard{position:relative;text-align:center;padding-top:26px;--r:2px}
+.museum .ccard:before{content:"";position:absolute;left:50%;top:-14px;width:150%;height:80%;translate:-50%;background:radial-gradient(ellipse 40% 100% at 50% 0,rgba(255,226,160,.2),transparent 75%);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);pointer-events:none;opacity:.55;transition:opacity .6s}
+.museum .ccard:hover:before{opacity:1}
+.museum .cpic{border:9px solid transparent;border-image:linear-gradient(135deg,#e9cf8a,#7a5a22 38%,#e9cf8a 62%,#6b4c1a) 1;background:#f1ebdd;padding:12px;border-radius:0;box-shadow:0 22px 40px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.25);transition:transform .8s var(--ease),box-shadow .8s}
+.museum .cpic img{box-shadow:inset 0 0 12px rgba(0,0,0,.35)}
+.museum .ccard:hover .cpic{transform:translateY(-6px);box-shadow:0 34px 50px rgba(0,0,0,.65),0 0 40px rgba(233,207,138,.18)}
+.museum .pair{filter:drop-shadow(0 18px 20px rgba(0,0,0,.55))}
+.museum .ccard .chip{border-color:#c9a24d66;color:#c9a24d;margin:14px 0 0}
+.museum .ccard h3{display:inline-block;margin-top:12px;padding:7px 16px;background:linear-gradient(#d5bb83,#9c7e45);color:#2a2112;font:600 clamp(10px,1.3vw,12.5px)/1.3 Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.4)}
+.museum .ccard p{color:#b8ab8e;font:italic clamp(12px,1.3vw,15px)/1.5 "Cormorant Garamond",Georgia,serif;margin-top:10px}
+.museum .seemore{color:#e9cf8a}
+/* ---- Museum: Favourites ---- */
+.fav-museum{max-width:none!important;background:radial-gradient(120% 50% at 50% 0,#2b2118 0,#120f0b 72%);color:#efe3c8;padding-inline:max(16px,calc((100vw - 1180px)/2))!important}
+.fav-museum>h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;color:#f1e6cc;text-align:center}
+.fav-museum .fav{counter-reset:gal}
+.fav-museum .fshelf{counter-increment:gal;position:relative;margin-bottom:clamp(44px,7vw,84px);padding-bottom:26px}
+.fav-museum .fshelf:after{content:"";position:absolute;left:0;right:0;bottom:0;height:22px;background:linear-gradient(#0000,#000a);border-bottom:1px solid #c9a24d44}
+.fav-museum .fcat{font:500 clamp(13px,1.8vw,16px) "Cormorant Garamond",Georgia,serif;letter-spacing:.3em;color:#e9cf8a;justify-content:center;margin-bottom:20px}
+.fav-museum .fcat:before{content:"Gallery " counter(gal,upper-roman) " ·";opacity:.55}.fav-museum .fcat:after{display:none}
+.fav-museum .fem{display:none}.fav-museum .fcat small{color:#a89a7c}
+.fav-museum .frow{gap:clamp(18px,3vw,34px);padding:30px 14px 26px;justify-content:flex-start}
+.fav-museum .fk{position:relative;text-align:center}
+.fav-museum .fk:before{content:"";position:absolute;left:50%;top:-20px;width:170%;height:70%;translate:-50%;background:linear-gradient(rgba(255,226,160,.16),transparent);clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);pointer-events:none}
+.fav-museum .fimg{border:7px solid transparent;border-image:linear-gradient(135deg,#e9cf8a,#7a5a22 40%,#e9cf8a 62%,#6b4c1a) 1;border-radius:0!important;background:#f1ebdd;padding:8px;box-shadow:0 18px 30px rgba(0,0,0,.6);transition:transform .7s var(--ease)}
+.fav-museum .fk .fimg img{box-shadow:inset 0 0 10px rgba(0,0,0,.4)}
+.fav-museum .fk.food .fimg,.fav-museum .fk.person .fimg,.fav-museum .fk.club .fimg{border-radius:50%!important;border-image:none;border-color:#b8923f}
+.fav-museum .fk:hover .fimg{transform:translateY(-6px)}
+.fav-museum .fimg b{color:#2a2112;text-shadow:none;font-size:16px}
+.fav-museum .fk h5{display:inline-block;margin:14px auto 4px;padding:5px 12px;background:linear-gradient(#d5bb83,#9c7e45);color:#2a2112;font:600 11px/1.3 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;border-radius:2px}
+.fav-museum .fk small{color:#a89a7c;font:italic 13px "Cormorant Garamond",Georgia,serif}
+.fav-museum .fstar{color:#e9cf8a;display:block;letter-spacing:2px;font-size:13px}.fav-museum .flk{color:#e9cf8a;font-size:12px}
+.fav-museum .fq{background:none;border:1px solid #c9a24d55;border-radius:0;color:#efe3c8}.fav-museum .fq span{color:#c9a24d}
+.fav-museum .disc span{color:#efe3c8}.fav-museum .disc i{box-shadow:0 0 0 7px #0b0907,0 0 0 8px #c9a24d66,0 18px 30px rgba(0,0,0,.6)}
+/* ---- Companies: professional cards ---- */
+.corail{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:clamp(14px,2vw,22px);overflow:visible!important;padding:0!important}
+.corail .cocard{--ca:#b8924a;flex:none;min-height:0;display:flex;flex-direction:column;border-radius:16px;background:#14130f;transition:transform .5s var(--ease),box-shadow .5s,border-color .4s}
+.corail .cocard:hover{transform:translateY(-6px);box-shadow:0 24px 40px rgba(0,0,0,.28)}
+.corail .cocard:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--ca);z-index:2}
+.corail .cobg{height:150px;position:relative;inset:auto;opacity:.55;mask-image:linear-gradient(#000 40%,transparent)}
+.corail .coin{min-height:0;flex:1;justify-content:flex-start;gap:4px;margin-top:-44px;background:none;padding:0 22px 22px}
+.corail .colg{width:68px;height:68px;margin:0 0 14px;border-radius:14px;background:#fff;padding:6px;object-fit:contain;box-shadow:0 8px 20px rgba(0,0,0,.35);border:0}
+.corail .colg.ph{background:#1d1b15;color:var(--ca);border:1px solid var(--ca)}
+.corail .coin h3{font-size:22px;letter-spacing:-.01em;margin:4px 0 2px}.corail .coin p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.corail .cometa{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}.corail .cometa span{font-size:11px;letter-spacing:.04em;padding:3px 10px;border:1px solid #ffffff26;border-radius:980px;color:#d9d2c3}
+.corail .coin em{margin-top:auto;padding-top:16px;font-size:13px;letter-spacing:.04em}
+@media(prefers-reduced-motion:reduce){.hero .hn .w>i,.hero .tag,.hero .cap,.hero .cue,.hero .cue i{animation:none;transform:none}.hero{--p:0!important}.rv{transition:none}}
+/* ===== back button on every page ===== */
+.fxback{position:fixed;left:14px;top:14px;z-index:90;width:40px;height:40px;border-radius:50%;border:1px solid rgba(128,128,128,.4);background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#111;font:400 22px/1 system-ui;display:grid;place-items:center;cursor:pointer;padding:0;transition:transform .3s var(--ease)}
+.fxback:hover{transform:translateX(-3px)}html[data-theme=dark] .fxback{background:rgba(20,20,22,.82);color:#fff}
+/* ===== guest book: interior, 3D page turn ===== */
+.book{overflow:visible;margin-bottom:60px}
+.book .gbstage{perspective:2200px;position:relative;padding-left:10px}
+.book .gbstage:before{content:"";position:absolute;inset:0 0 0 10px;border-radius:6px 20px 20px 6px;background:var(--gbp);box-shadow:inset 0 0 40px rgba(0,0,0,.25)}
+.book .gbpage{position:relative;z-index:2;transform-style:preserve-3d;padding-left:clamp(46px,9vw,72px);border-radius:4px 20px 20px 4px;animation:pgreveal .8s ease both;
+ background:linear-gradient(90deg,transparent clamp(38px,7.4vw,60px),rgba(190,60,60,.38) 0 calc(clamp(38px,7.4vw,60px) + 1px),transparent 0),repeating-linear-gradient(transparent 0 33px,rgba(70,100,150,.17) 33px 34px),radial-gradient(120% 90% at 20% 0,rgba(255,255,255,.35),transparent 60%),var(--gbp);
+ box-shadow:1px 1px 0 #d8cfba,2px 2px 0 #cdc3ac,3px 3px 0 #d8cfba,4px 4px 0 #cdc3ac,6px 8px 18px rgba(0,0,0,.4),inset 26px 0 24px -20px rgba(0,0,0,.45)}
+.book .gbpage:after{content:"";position:absolute;right:0;bottom:0;width:46px;height:46px;border-radius:0 0 20px 0;background:linear-gradient(135deg,transparent 50%,rgba(0,0,0,.14) 50%,rgba(255,255,255,.5));pointer-events:none}
+.book .gbtop{font-family:"Cormorant Garamond",Georgia,serif;letter-spacing:.22em;border-bottom:1px double rgba(59,49,36,.5)}
+.book .gbpage h4{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:600}
+.book .gbpage .who{font:600 12px Inter,system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#7a2a2a;opacity:.85}
+.book .gbmsg{text-shadow:0 0 .6px rgba(30,25,60,.55);color:#1f2a52;transform:rotate(-.4deg)}
+.book .gbfoot{font-family:"Caveat",cursive;font-size:22px;border-top:0;background:radial-gradient(ellipse at 20% 0,rgba(59,49,36,.25),transparent 70%) top/60% 1px no-repeat}
+.book .gbpage.flipout{position:absolute;left:10px;right:0;top:0;z-index:6;transform-origin:0 50%;animation:pgturn 1.05s cubic-bezier(.5,.05,.25,1) forwards;pointer-events:none}
+.book .gbpage.flipin{z-index:6;transform-origin:0 50%;animation:pgback 1.05s cubic-bezier(.5,.05,.25,1) both}
+.book .gbpage.flipout:before,.book .gbpage.flipin:before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:5;pointer-events:none;background:linear-gradient(90deg,#cdc3ab,#e8e0cd 40%,#d8cfba);box-shadow:inset 0 0 40px rgba(0,0,0,.25)}
+.book .gbpage.flipout:before{animation:pgbackface 1.05s steps(1) forwards}.book .gbpage.flipin:before{animation:pgbackface2 1.05s steps(1) forwards}
+@keyframes pgturn{0%{transform:rotateY(0) skewY(0);box-shadow:0 0 0 rgba(0,0,0,0)}25%{transform:rotateY(-38deg) skewY(1.4deg);box-shadow:-18px 12px 40px rgba(0,0,0,.35)}55%{transform:rotateY(-108deg) skewY(-1.6deg);box-shadow:-30px 14px 50px rgba(0,0,0,.4)}85%{transform:rotateY(-166deg) skewY(.6deg)}100%{transform:rotateY(-180deg);opacity:0;box-shadow:none}}
+@keyframes pgback{0%{transform:rotateY(-180deg);opacity:1}15%{transform:rotateY(-166deg) skewY(.6deg)}45%{transform:rotateY(-108deg) skewY(-1.6deg);box-shadow:-30px 14px 50px rgba(0,0,0,.4)}75%{transform:rotateY(-38deg) skewY(1.4deg)}100%{transform:rotateY(0)}}
+@keyframes pgbackface{0%,49%{opacity:0}50%,100%{opacity:1}}@keyframes pgbackface2{0%,50%{opacity:1}51%,100%{opacity:0}}
+@keyframes pgreveal{from{filter:brightness(.82)}to{filter:none}}
+.book .gbpage.under{position:absolute;left:10px;right:0;top:0;z-index:1;animation:none}
+.gbrib{position:absolute;bottom:-44px;left:clamp(60px,18%,150px);width:17px;height:96px;background:linear-gradient(90deg,#7a1020,#cc2c43 50%,#7a1020);clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);transform-origin:50% 0;animation:rsway 5s ease-in-out infinite;cursor:pointer;z-index:7;border:0;padding:0;min-height:0;filter:drop-shadow(0 4px 3px rgba(0,0,0,.4))}
+.gbrib:hover{animation-duration:1.4s}.gbrib.set{background:linear-gradient(90deg,#8a6a1c,#e4bf5a 50%,#8a6a1c)}
+@keyframes rsway{50%{transform:rotate(3.5deg)}}
+.gbsnd{position:absolute;right:18px;top:14px;width:30px!important;height:30px;padding:0!important;border-radius:50%!important;font-size:14px;min-height:0}
+/* ===== Favourites: curated halls ===== */
+.fhall{text-align:center;margin:-20px auto 44px;max-width:640px}
+.fhall p{font:italic clamp(15px,2vw,19px)/1.6 "Cormorant Garamond",Georgia,serif;color:#b8ab8e}
+.fhall nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+.fhall nav a{font:600 11px Inter,system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#e9cf8a;border:1px solid #c9a24d55;padding:7px 14px;text-decoration:none;border-radius:2px;transition:background .3s}
+.fhall nav a:hover{background:#c9a24d22}
+.fwall{max-width:520px;margin:-6px auto 24px;text-align:center;font:italic 15px/1.6 "Cormorant Garamond",Georgia,serif;color:#a89a7c}
+.fwall b{display:block;font:500 clamp(24px,4vw,38px) "Cormorant Garamond",Georgia,serif;font-style:normal;color:#f1e6cc;letter-spacing:.04em}
+.fav-museum .fshelf{scroll-margin-top:80px}
+/* movies: cinema marquee */
+.fshelf[data-kind=movie]{background:radial-gradient(90% 60% at 50% 0,#4a0f18,transparent 70%);padding-top:18px}
+.fshelf[data-kind=movie]:before{content:"";display:block;height:10px;margin:0 8% 14px;background:radial-gradient(circle 4px,#ffe29a 98%,transparent) 0 50%/26px 10px repeat-x;filter:drop-shadow(0 0 6px #ffcf6a);animation:bulbs 2.4s steps(2) infinite}
+@keyframes bulbs{50%{opacity:.55}}
+.fshelf[data-kind=movie] .fimg{aspect-ratio:2/3;box-shadow:0 0 0 3px #0a0a0a,0 18px 34px rgba(0,0,0,.7)}
+/* books: wooden shelf, leaning spines */
+.fshelf[data-kind=book] .frow{border-bottom:16px solid #5a3b1d;border-image:linear-gradient(#8a5d33,#3a2511) 0 0 1;align-items:flex-end;padding-bottom:0}
+.fshelf[data-kind=book] .fk:nth-child(3n+1) .fimg{transform:rotate(-2deg)}.fshelf[data-kind=book] .fk:nth-child(3n) .fimg{transform:rotate(1.8deg)}
+.fshelf[data-kind=book] .fimg{border-radius:2px 8px 8px 2px!important;border-width:0!important;padding:0!important;background:#3a2511}
+/* music: listening room */
+.fshelf[data-kind=music] .frow{background:linear-gradient(#0000 78%,#1b140e 78%);padding-bottom:40px;align-items:flex-end}
+.fshelf[data-kind=music] .disc i{box-shadow:0 0 0 6px #0b0907,0 0 0 7px #c9a24d55,0 24px 24px -8px rgba(0,0,0,.8)}
+/* food: round plates on a table */
+.fshelf[data-kind=food] .frow{background:repeating-linear-gradient(90deg,#3a2616 0 38px,#44301b 38px 40px);border-radius:8px;padding:28px 22px;box-shadow:inset 0 0 40px #000a}
+.fshelf[data-kind=food] .fimg{border:6px solid #f5efe2!important;box-shadow:0 14px 22px rgba(0,0,0,.65),inset 0 0 0 3px #d8cfba;padding:0!important}
+/* places: pinned postcards */
+.fshelf[data-kind=place] .fk{width:clamp(230px,38vw,330px)}.fshelf[data-kind=place] .fimg{border:10px solid #f8f4ea!important;border-image:none!important;padding:0!important;transform:rotate(-1.6deg);aspect-ratio:3/2}
+.fshelf[data-kind=place] .fk:nth-child(even) .fimg{transform:rotate(1.8deg)}
+.fshelf[data-kind=place] .fk:after{content:"";position:absolute;left:50%;top:-8px;width:62px;height:18px;translate:-50%;background:rgba(233,207,138,.55);transform:rotate(-3deg);box-shadow:0 1px 3px #0006}
+/* people: oval cameos */
+.fshelf[data-kind=person] .fimg{border-radius:50%/42%!important;aspect-ratio:3/4!important}
+/* clubs: trophy cabinet */
+.fshelf[data-kind=club] .frow{background:linear-gradient(135deg,#ffffff0d,transparent 40%),#1a130b;border:6px solid #6b4c1a;border-radius:6px;box-shadow:inset 0 0 40px #000}
+/* quotes: engraved wall */
+.fshelf[data-kind=quote] .frow{flex-wrap:wrap;overflow:visible}.fshelf[data-kind=quote] .fq{border-width:1px 0;padding:26px 8px;background:none;min-height:0;text-shadow:0 1px 0 #000,0 -1px 0 #ffffff1c}
+/* ===== extra motion styles ===== */
+html.fx-on .nav{transition:transform .5s var(--ease),background .3s,color .3s,box-shadow .3s}html.fx-on .nav.hid{transform:translateY(-110%)}
+.fx-l{display:inline-block;transform:translateY(105%);opacity:0;transition:transform .9s var(--ease),opacity .9s;transition-delay:calc(var(--k)*22ms)}.fx-lw{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.12em}
+.in .fx-l,.fx-in .fx-l{transform:none;opacity:1}
+[data-par]{will-change:transform}.fx-skew{will-change:transform}
+.fx-glow{position:relative}.fx-glow:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,226,160,.13),transparent 60%);opacity:0;transition:opacity .4s}.fx-glow.fx-hot:after{opacity:1}
+[data-tilt]{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .35s var(--ease)}
+.fx-mag{transition:transform .35s var(--ease)}
+.seemore,.bm,.back,.more{background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size .5s var(--ease)}.seemore:hover,.bm:hover,.back:hover,.more:hover{background-size:100% 1px}
+.pic.rv:not(.in),.cpic.rv:not(.in){clip-path:inset(0 100% 0 0)}.pic.rv.in,.cpic.rv.in{clip-path:inset(0);transition:clip-path 1.2s var(--ease)}
+#fxcurtain{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:transform .9s var(--ease) .1s;pointer-events:none}#fxcurtain.go{transform:translateY(-101%)}
+#fxcurtain i{width:56px;height:1px;background:var(--fg);animation:cue 1.2s var(--ease) infinite;transform-origin:0}
+@media(prefers-reduced-motion:reduce){#fxcurtain{display:none}.fx-l{transform:none;opacity:1;transition:none}[data-tilt],[data-par]{transform:none!important}.book .gbpage.flipout,.book .gbpage.flipin{animation-duration:.01s}.gbrib{animation:none}}
+html.fx-off *{animation-duration:.001s!important;transition-duration:.001s!important}
